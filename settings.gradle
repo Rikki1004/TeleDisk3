@@ -1,0 +1,3 @@
+rootProject.name='TeleDisk'
+include ':libtd-ktx'
+include ':app'
