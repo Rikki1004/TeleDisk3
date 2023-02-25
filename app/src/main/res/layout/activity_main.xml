@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".presentation.main.MainActivity"
-    android:name="com.rikkimikki.teledisk.presentation.main.MainFragment"
-    android:id="@+id/main_view_container">
+    android:id="@+id/main_view_container"
+    tools:layout="@layout/fragment_main">
+
+    <!--android:name="com.rikkimikki.teledisk.presentation.main.MainFragment"-->
 
 </androidx.fragment.app.FragmentContainerView>

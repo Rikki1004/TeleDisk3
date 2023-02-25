@@ -10,6 +10,7 @@ import com.rikkimikki.teledisk.databinding.FileItemBinding
 import com.rikkimikki.teledisk.domain.TdObject
 import com.rikkimikki.teledisk.domain.Tfile
 import com.rikkimikki.teledisk.domain.Tfolder
+import com.rikkimikki.teledisk.utils.covertTimestampToTime
 import com.squareup.picasso.Picasso
 
 class ListFilesAdapter (
@@ -32,23 +33,26 @@ class ListFilesAdapter (
     }
 
     override fun onBindViewHolder(holder: ListFilesViewHolder, position: Int) {
-        val coin = getItem(position)
+        val item = getItem(position)
         with(holder.binding) {
-            with(coin) {
-                if (this is Tfile){
+            when(item) {
+                is Tfile ->{
                     val resId = R.drawable.file_asset
-                    textViewItemFile.text = if (name.length>10) name.substring(0,9) else name
-                    Picasso.get().load(resId).into(imageViewItemFile)
+                    itemName.text = item.name
+                    itemDate.text = covertTimestampToTime(item.unixTimeDate)
+                    Picasso.get().load(resId).into(itemIcon)
                     //Glide.with(context).load(resId).into(imageViewItemFile)
-                } else if (this is Tfolder){
+                }
+                is Tfolder -> {
                     val resId = R.drawable.folder_asset
-                    textViewItemFile.text = if (name.length>10) name.substring(0,9) else name
+                    itemName.text = item.name
+                    itemDate.text = covertTimestampToTime(item.unixTimeDate)
                     //Glide.with(context).load(resId).into(imageViewItemFile)
-                    Picasso.get().load(resId).into(imageViewItemFile)
+                    Picasso.get().load(resId).into(itemIcon)
                 }
-                root.setOnClickListener {
-                    onFileClickListener?.onFileClick(this)
-                }
+            }
+            this.root.setOnClickListener {
+                onFileClickListener?.onFileClick(item)
             }
         }
     }
