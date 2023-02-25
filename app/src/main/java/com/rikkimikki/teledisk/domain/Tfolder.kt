@@ -6,6 +6,7 @@ data class Tfolder(
     val name:String,
     val type: FolderType,
     val path:String,
+    val groupID:Long=0L,
     val unixTimeDate:Long=0,
     val size:Long=0,
     val tdObject:List<TdObject> = listOf<TdObject>()

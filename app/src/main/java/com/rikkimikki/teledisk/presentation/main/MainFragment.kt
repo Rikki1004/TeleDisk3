@@ -47,15 +47,19 @@ class MainFragment : Fragment() {
             constraintLayoutStorageMain.setOnClickListener {
                 requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.Local))
+                    .addToBackStack(null)
                 .commit()
             }
             constraintLayoutStorageSd.setOnClickListener {
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.TeleDisk))
+                    .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
+                    .addToBackStack(null)
                     .commit()
             }
-            constraintLayoutStorageTd.setOnClickListener { requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
+            constraintLayoutStorageTd.setOnClickListener {
+                requireActivity().supportFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.TeleDisk))
                 .commit()
             }
 
@@ -63,6 +67,6 @@ class MainFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance() = MainLoginFragment()
+        fun newInstance() = MainFragment()
     }
 }
