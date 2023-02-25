@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import com.rikkimikki.teledisk.R
 
 class MainActivity : AppCompatActivity() {
@@ -21,4 +22,5 @@ class MainActivity : AppCompatActivity() {
             return Intent(context,MainActivity::class.java)
         }
     }
+
 }

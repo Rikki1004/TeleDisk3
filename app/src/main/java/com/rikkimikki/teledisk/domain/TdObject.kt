@@ -1,4 +1,7 @@
 package com.rikkimikki.teledisk.domain
 
-open class TdObject {
+import org.drinkless.td.libcore.telegram.TdApi
+
+open class TdObject (
+){
 }

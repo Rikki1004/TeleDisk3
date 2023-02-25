@@ -1,15 +1,17 @@
 package com.rikkimikki.teledisk.data.local
 
 import androidx.lifecycle.MutableLiveData
+import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.domain.*
 import java.io.*
 
-object TdRepositoryImpl {
+object TdRepositoryImpl{
+
 
     val dataFromLocal = MutableLiveData<List<TdObject>>()
 
 
-    fun getDataFromLocal(path:String){
+    fun getDataFromLocalOld(path:String){
         val tempList = mutableListOf<TdObject>()
         File(path).listFiles()?.forEach {
             if (it.isFile)

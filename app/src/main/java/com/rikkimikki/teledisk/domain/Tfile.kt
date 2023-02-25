@@ -13,5 +13,5 @@ data class Tfile(
     val preview: TdApi.File? = null,
     val groupID:Long=0L,
     val fileID:Long=0L
-) : TdObject(){
+) : TdObject() {
 }

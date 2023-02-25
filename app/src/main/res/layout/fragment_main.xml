@@ -78,7 +78,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:id="@+id/constraintLayoutStorageMain">
 
             <TextView
                 android:id="@+id/textViewStorageMain1"
@@ -115,7 +116,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:id="@+id/constraintLayoutStorageTd">
 
             <TextView
                 android:id="@+id/textViewStorageTd1"
@@ -152,7 +154,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:id="@+id/constraintLayoutStorageSd">
 
             <TextView
                 android:id="@+id/textViewStorageSd1"

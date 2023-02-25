@@ -1,12 +1,15 @@
 package com.rikkimikki.teledisk.data.tdLib
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
-import com.rikkimikki.teledisk.domain.FileType
-import com.rikkimikki.teledisk.domain.TdObject
-import com.rikkimikki.teledisk.domain.Tfile
+import com.rikkimikki.teledisk.data.local.TdRepositoryImpl
+import com.rikkimikki.teledisk.domain.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.supervisorScope
 import kotlinx.telegram.core.TelegramException
 import kotlinx.telegram.core.TelegramFlow
 import kotlinx.telegram.coroutines.*
@@ -18,10 +21,14 @@ import kotlinx.telegram.flows.userStatusFlow
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.Chat
 import org.drinkless.td.libcore.telegram.TdApi.Message
+import java.io.File
+import kotlin.concurrent.thread
 
-object TelegramRepository : UserKtx, ChatKtx {
+object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
-    val dataFromRemote = MutableLiveData<List<TdObject>>()
+
+    val dataFromStore = MutableLiveData<List<TdObject>>()
+
 
     val is_ready = MutableLiveData<Boolean>()
     var counter = 0
@@ -30,16 +37,6 @@ object TelegramRepository : UserKtx, ChatKtx {
     override val api: TelegramFlow = TelegramFlow()
 
     val allChats = MutableLiveData<List<Chat>>()
-
-    //val chathFlow = api.getUpdatesFlowOfType<TdApi.UpdateChatChatList>().onEach {
-//TdApi.UpdateChatChatList
-
-        //chatOffset = it.chatId
-    // chatChatListFlow().onEach {
-    //Thread.sleep(1000)
-        //println("chat---------")
-    //println("chat---------"+api.getChat(it.chatId).title)
-//}
 
     val authFlow = api.authorizationStateFlow()
         .onEach {
@@ -54,44 +51,22 @@ object TelegramRepository : UserKtx, ChatKtx {
                 else -> null
             }
         }
-
     private suspend fun checkRequiredParams(state: TdApi.AuthorizationState?) {
         when (state) {
             is TdApi.AuthorizationStateWaitTdlibParameters ->
                 api.setTdlibParameters(TelegramCredentials.parameters)
             is TdApi.AuthorizationStateWaitEncryptionKey ->{
                 api.checkDatabaseEncryptionKey(null)
-
                 is_ready.value = api.runCatching { api.getMe() }.isSuccess
-                //api.runCatching { api.getMe() }.exceptionOrNull()
-                //is_ready.value = retryConnect()
-                /*try {
-                    api.runCatching { api.getMe() }.isSuccess
-
-                    is_ready.value = true
-                }catch (e:java.lang.Exception){
-                    is_ready.value = false
-                }*/
-
-                //loadAllChats()
-                //loadFolder(-567578282)
             }
-
         }
     }
-
-    suspend fun retryConnect() :Boolean{
-        delay(100)
-        if (counter++ >= 5) return false
-        return api.runCatching { api.getMe() }.fold({true},{retryConnect()})
-    }
-
 
     private val messagesResult = mutableListOf<TdObject>()
     private suspend fun loadFolder(chatId: Long, order:Long = 0, offset:Int = -1){
         val messages = api.getChatHistory(chatId,order,offset,100,false).messages
         if (messages.isEmpty()) {
-            dataFromRemote.value = messagesResult
+            dataFromStore.value = messagesResult
             messagesResult.clear()
             return
         }
@@ -156,6 +131,17 @@ object TelegramRepository : UserKtx, ChatKtx {
         loadAllChats()
     }
 
+    fun getDataFromDisk(path:String){
+        val tempList = mutableListOf<TdObject>()
+        File(path).listFiles()?.forEach {
+            if (it.isFile)
+                tempList.add(Tfile(it.name,FileType.LocalFile,it.totalSpace,it.absolutePath,it.lastModified()))
+            else
+                tempList.add(Tfolder(it.name,FolderType.LocalFolder,it.absolutePath,it.lastModified(), it.totalSpace))
+        }
+        dataFromStore.value = tempList
+    }
+
     suspend fun sendPhone(phone: String) {
         api.setAuthenticationPhoneNumber(phone, null)
     }
@@ -200,4 +186,62 @@ object TelegramRepository : UserKtx, ChatKtx {
             userInfo.joinToString()
         }
     }.retryWhen { cause, _ -> cause is TelegramException }
+
+
+
+
+    override suspend fun getAllChats() : LiveData<List<Chat>>{
+        loadAllChats()
+        return allChats
+    }
+
+    override suspend fun getRemoteFiles(id: Long,path: String): LiveData<List<TdObject>> {
+        loadFolder(id)
+        return dataFromStore
+    }
+
+    override fun getLocalFiles(path: String): LiveData<List<TdObject>> {
+        thread { getDataFromDisk(path) }
+        return dataFromStore
+    }
+
+    override fun getChatFolder(id: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun createFile(path: String, name: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun createFolder(path: String, name: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getStorages(): LiveData<List<ScopeType>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun renameFile(file: Tfile, newName: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun renameFolder(folder: Tfolder, newName: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun transferFileLocalToLocal(from: Tfile, to: Tfolder) {
+        TODO("Not yet implemented")
+    }
+
+    override fun transferFileLocalToRemote(from: Tfile, to: Tfolder) {
+        TODO("Not yet implemented")
+    }
+
+    override fun transferFileRemoteToLocal(from: Tfile, to: Tfolder) {
+        TODO("Not yet implemented")
+    }
+
+    override fun transferFileRemoteToRemote(from: Tfile, to: Tfolder) {
+        TODO("Not yet implemented")
+    }
 }
