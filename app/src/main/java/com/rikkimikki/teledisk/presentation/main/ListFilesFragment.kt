@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
@@ -23,6 +24,7 @@ class ListFilesFragment : Fragment() {
     private var _binding: FragmentListFilesBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: ListFileViewModel
+    private val args by navArgs<ListFilesFragmentArgs>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,15 +37,15 @@ class ListFilesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,object :OnBackPressedCallback(true){
+        /*requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,object :OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
-                /*requireActivity().supportFragmentManager.beginTransaction()
+                *//*requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_view_container,MainFragment.newInstance())
-                    .commit()*/
+                    .commit()*//*
                 //requireActivity().startActivity(MainActivity.getInstance(requireContext()))
                 requireActivity().supportFragmentManager.popBackStackImmediate()
             }
-        })
+        })*/
 
         val adapter = ListFilesAdapter(requireContext())
 
@@ -88,13 +90,15 @@ class ListFilesFragment : Fragment() {
         })*/
 
 
-        when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
+        //when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
+        when(args.scopeType){
             //ScopeType.TeleDisk -> viewModel.getChats()
             ScopeType.TeleDisk -> {
-                viewModel.chatScope.observe(viewLifecycleOwner, Observer {
+                /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
                     viewModel.getRemoteFiles(-567578282,"/")
-                })
-                viewModel.getChats()
+                })*/
+                viewModel.getRemoteFiles(-567578282,"/")
+                //viewModel.getChats()
             }
             ScopeType.Local -> viewModel.getLocalFiles("/storage/emulated/0")
             ScopeType.VkMsg -> {}
