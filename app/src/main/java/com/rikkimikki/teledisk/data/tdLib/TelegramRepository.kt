@@ -315,4 +315,9 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     override fun transferFileRemoteToRemote(from: Tfile, to: Tfolder) {
         TODO("Not yet implemented")
     }
+
+    fun reload() {
+        dataFromStore.value = listOf ()
+        allChats.value = listOf()
+    }
 }

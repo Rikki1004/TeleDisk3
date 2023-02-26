@@ -6,11 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.rikkimikki.teledisk.R
+import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FragmentMainBinding
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.presentation.login.LoginViewModel
 import com.rikkimikki.teledisk.presentation.login.MainLoginFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
@@ -29,6 +37,12 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         initClickListeners()
+
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            TelegramRepository.getAllChats()
+        }
+        //view.findNavController().navigate(R.id.viewTransactionsAction)
     }
 
     override fun onDestroyView() {
@@ -44,23 +58,33 @@ class MainFragment : Fragment() {
             textViewTopPanelMusic.setOnClickListener {  }
             textViewTopPanelVideo.setOnClickListener {  }
 
+            //val navHostFragment = requireActivity().supportFragmentManager.primaryNavigationFragment //findFragmentById(R.id.main_view_container) as MainFragment
+
             constraintLayoutStorageMain.setOnClickListener {
-                requireActivity().supportFragmentManager.beginTransaction()
+
+                findNavController()
+                    //.navigate(R.id.action_mainFragment_to_listFilesFragment)
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.Local))
+                /*requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.Local))
                     .addToBackStack(null)
-                .commit()
+                .commit()*/
             }
             constraintLayoutStorageSd.setOnClickListener {
-                requireActivity().supportFragmentManager.beginTransaction()
+                findNavController()
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.VkMsg))
+                /*requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
                     .addToBackStack(null)
-                    .commit()
+                    .commit()*/
             }
             constraintLayoutStorageTd.setOnClickListener {
-                requireActivity().supportFragmentManager.beginTransaction()
+                findNavController()
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.TeleDisk))
+                /*requireActivity().supportFragmentManager.beginTransaction()
                 .addToBackStack(null)
                 .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.TeleDisk))
-                .commit()
+                .commit()*/
             }
 
         }

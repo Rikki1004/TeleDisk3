@@ -23,6 +23,9 @@ class ListFileViewModel:ViewModel() {
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
+init {
+    repository.reload()
+}
     val isRemoteDownloadComplete = MutableLiveData<String>()
 
     fun getRemoteFiles(id:Long,path:String){
