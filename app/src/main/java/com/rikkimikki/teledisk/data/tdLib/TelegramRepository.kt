@@ -3,13 +3,8 @@ package com.rikkimikki.teledisk.data.tdLib
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
-import com.rikkimikki.teledisk.data.local.TdRepositoryImpl
 import com.rikkimikki.teledisk.domain.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.supervisorScope
 import kotlinx.telegram.core.TelegramException
 import kotlinx.telegram.core.TelegramFlow
 import kotlinx.telegram.coroutines.*
@@ -21,7 +16,6 @@ import kotlinx.telegram.flows.userFlow
 import kotlinx.telegram.flows.userStatusFlow
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.Chat
-import org.drinkless.td.libcore.telegram.TdApi.Message
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -68,7 +62,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         val messages = api.getChatHistory(chatId,order,offset,100,false).messages
         if (offset == -1 && requiredPath != "/"){
             val backFolder = requiredPath.substring(0,requiredPath.lastIndexOf("/")).ifBlank { "/" }
-            messagesResult.add(Tfolder("..",FolderType.TeleDiskFolder,backFolder,chatId))
+            messagesResult.add(TdObject("..",PlaceType.TeleDisk,FileType.Folder,backFolder, groupID = chatId))
         }
 
         if (messages.isEmpty()) {
@@ -91,33 +85,39 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                     }
                     if (name.isBlank())
                         continue
-                    val thumbnail = doc.document.thumbnail?.photo
+                    val thumbnail = doc.document.thumbnail?.photo?.id// ?.local?.path
                     val id = doc.document.document.id.toLong()
                     val size = doc.document.document.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(Tfile(name,FileType.TeleDiskFile, size,path,time,thumbnail,chatId,id))
+                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
                 }
                 TdApi.MessagePhoto.CONSTRUCTOR -> {
                     val photo = message.content as TdApi.MessagePhoto
-                    val thumbnail = photo.photo.sizes[photo.photo.sizes.size-1].photo
+                    //val thumbnail = photo.photo.sizes.map { it.photo.local.path }
+                    val thumbnail = photo.photo.sizes[0].photo.id
+                    //var thumbnail : String? = null
+                    //for (i in photo.photo.sizes)
+                    //    if (i.photo.local.path.isNotBlank())
+                    //        thumbnail = i.photo.local.path
+                    //val thumbnail = photo.photo.sizes[0].photo.local.path
                     val (name,path) = prepareFileName(photo.caption.text.ifBlank { "noNameFile"+ counter+".jpeg" },requiredPath,chatId)
                     if (name.isBlank())
                         continue
-                    val id = photo.photo.sizes[0].photo.id.toLong()
-                    val size = photo.photo.sizes[0].photo.size.toLong()
+                    val id = photo.photo.sizes[photo.photo.sizes.size-1].photo.id.toLong()
+                    val size = photo.photo.sizes[photo.photo.sizes.size-1].photo.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(Tfile(name,FileType.TeleDiskFile, size,path,time,thumbnail,chatId,id))
+                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
                 }
                 TdApi.MessageVideo.CONSTRUCTOR -> {
                     val video = message.content as TdApi.MessageVideo
-                    val thumbnail = video.video.thumbnail?.photo
+                    val thumbnail = video.video.thumbnail?.photo?.id//?.local?.path
                     val (name,path) = prepareFileName(video.caption.text.ifBlank { video.video.fileName.ifBlank { "noNameFile"+ counter+".mp4" } },requiredPath,chatId)
                     if (name.isBlank())
                         continue
                     val id = video.video.video.id.toLong()
                     val size = video.video.video.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(Tfile(name,FileType.TeleDiskFile, size,path,time,thumbnail,chatId,id))
+                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
                 }
                 else -> {}
             }
@@ -150,7 +150,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                 val currentFolderPath = clearName.substring(0,secondSlashPosition)
                 if (currentFolderPath !in folderList){
                     folderList.add(currentFolderPath)
-                    messagesResult.add(Tfolder(currentFolderPath.substring(currentFolderPath.lastIndexOf("/")+1),FolderType.TeleDiskFolder,"/"+currentFolderPath,chatId))
+                    messagesResult.add(TdObject(currentFolderPath.substring(currentFolderPath.lastIndexOf("/")+1),PlaceType.TeleDisk,FileType.Folder,"/"+currentFolderPath, groupID = chatId))
                 }
             }else
                 return Pair(clearName.substring(clearName.lastIndexOf("/")+1),"/"+clearName)
@@ -200,14 +200,14 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
         if (path != "/storage/emulated/0"){
             val backFolder = path.substring(0,path.lastIndexOf("/")).ifBlank { "/" }
-            tempList.add(Tfolder("..",FolderType.LocalFolder,backFolder))
+            tempList.add(TdObject("..",PlaceType.Local,FileType.Folder,backFolder))
         }
 
         File(path).listFiles()?.forEach {
             if (it.isFile)
-                tempList.add(Tfile(it.name,FileType.LocalFile,it.totalSpace,it.absolutePath,it.lastModified()))
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.totalSpace,it.lastModified()))
             else
-                tempList.add(Tfolder(it.name,FolderType.LocalFolder,it.absolutePath,it.lastModified(), it.totalSpace))
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.Folder,it.absolutePath, it.totalSpace,it.lastModified()))
         }
         //dataFromStore.value = tempList
         dataFromStore.postValue(tempList)
@@ -260,6 +260,9 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
 
 
+    suspend fun loadPreview(id: Int): TdApi.File {
+        return api.downloadFile(id,32,0,0,true)
+    }
 
     override suspend fun getAllChats() : LiveData<List<Chat>>{
         loadAllChats()
@@ -292,27 +295,27 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         TODO("Not yet implemented")
     }
 
-    override fun renameFile(file: Tfile, newName: String) {
+    override fun renameFile(file: TdObject, newName: String) {
         TODO("Not yet implemented")
     }
 
-    override fun renameFolder(folder: Tfolder, newName: String) {
+    override fun renameFolder(folder: TdObject, newName: String) {
         TODO("Not yet implemented")
     }
 
-    override fun transferFileLocalToLocal(from: Tfile, to: Tfolder) {
+    override fun transferFileLocalToLocal(from: TdObject, to: TdObject) {
         TODO("Not yet implemented")
     }
 
-    override fun transferFileLocalToRemote(from: Tfile, to: Tfolder) {
+    override fun transferFileLocalToRemote(from: TdObject, to: TdObject) {
         TODO("Not yet implemented")
     }
 
-    override fun transferFileRemoteToLocal(from: Tfile, to: Tfolder) {
+    override fun transferFileRemoteToLocal(from: TdObject, to: TdObject) {
         TODO("Not yet implemented")
     }
 
-    override fun transferFileRemoteToRemote(from: Tfile, to: Tfolder) {
+    override fun transferFileRemoteToRemote(from: TdObject, to: TdObject) {
         TODO("Not yet implemented")
     }
 

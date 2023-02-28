@@ -16,6 +16,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
+import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
 import com.rikkimikki.teledisk.domain.*
 import java.io.File
@@ -51,12 +52,16 @@ class ListFilesFragment : Fragment() {
 
         adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener{
             override fun onFileClick(tdObject: TdObject) {
-                if (tdObject is Tfolder)
+                if (tdObject.is_folder())
                     viewModel.changeDirectory(tdObject)
-                if(tdObject is Tfile){
-                    if (tdObject.type == FileType.TeleDiskFile)
-                        viewModel.openFile(tdObject)
-                    if(tdObject.type == FileType.LocalFile)
+                if(tdObject.is_file()){
+                    if (tdObject.placeType == PlaceType.TeleDisk){
+                        //viewModel.openFile(tdObject)
+                        //FileBackgroundTransfer.startService(requireContext(),tdObject.fileID.toInt())
+                        val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject.fileID.toInt())
+                        ContextCompat.startForegroundService(requireActivity(), startIntent)
+                    }
+                    if(tdObject.placeType == PlaceType.Local)
                         openLocalFile(tdObject.path)
                 }
 

@@ -1,15 +1,11 @@
 package com.rikkimikki.teledisk.presentation.main
 
-import android.app.Application
-import android.content.Intent
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.*
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
 import com.rikkimikki.teledisk.domain.*
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
-import java.net.URI
 
 class ListFileViewModel:ViewModel() {
     var currentLocalPath = "/"
@@ -40,21 +36,23 @@ init {
         viewModelScope.launch { getAllChatsUseCase() }
     }
 
-    fun changeDirectory(directory:Tfolder) {
-        if (directory.type == FolderType.TeleDiskFolder)
+    fun changeDirectory(directory:TdObject) {
+        if (directory.is_folder() && directory.placeType == PlaceType.TeleDisk)
             getRemoteFiles(directory.groupID,directory.path)
-        if (directory.type == FolderType.LocalFolder)
+        if (directory.is_folder() && directory.placeType == PlaceType.Local)
             getLocalFiles(directory.path)
     }
 
-    fun openFile(file: Tfile) {
-        if (file.type == FileType.LocalFile){
+    fun openFile(file: TdObject) {
+        if (file.is_file() && file.placeType == PlaceType.Local){
             TODO()
         }
-        if (file.type == FileType.TeleDiskFile)
+        if (file.is_file() && file.placeType == PlaceType.TeleDisk){
             viewModelScope.launch {
                 TelegramRepository.loadFile(file.fileID.toInt())
             }
+        }
+
     }
     fun getDwndLD():LiveData<TdApi.File>{
         //val medLD = MediatorLiveData<TdApi.File>()

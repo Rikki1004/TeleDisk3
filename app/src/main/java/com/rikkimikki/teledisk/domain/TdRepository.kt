@@ -11,10 +11,10 @@ interface TdRepository {
     fun getLocalFiles(path: String) : LiveData<List<TdObject>>
     suspend fun getRemoteFiles(id: Long,path: String) : LiveData<List<TdObject>>
     fun getStorages() : LiveData<List<ScopeType>>
-    fun renameFile(file: Tfile,newName:String)
-    fun renameFolder(folder: Tfolder,newName:String)
-    fun transferFileLocalToLocal(from:Tfile,to: Tfolder)
-    fun transferFileLocalToRemote(from:Tfile,to: Tfolder)
-    fun transferFileRemoteToLocal(from:Tfile,to: Tfolder)
-    fun transferFileRemoteToRemote(from:Tfile,to: Tfolder)
+    fun renameFile(file: TdObject,newName:String)
+    fun renameFolder(folder: TdObject,newName:String)
+    fun transferFileLocalToLocal(from:TdObject,to: TdObject)
+    fun transferFileLocalToRemote(from:TdObject,to: TdObject)
+    fun transferFileRemoteToLocal(from:TdObject,to: TdObject)
+    fun transferFileRemoteToRemote(from:TdObject,to: TdObject)
 }

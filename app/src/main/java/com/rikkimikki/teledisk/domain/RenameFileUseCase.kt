@@ -1,5 +1,5 @@
 package com.rikkimikki.teledisk.domain
 
 class RenameFileUseCase(private val repository:TdRepository) {
-    operator fun invoke(file: Tfile,newName:String) = repository.renameFile(file,newName)
+    operator fun invoke(file: TdObject,newName:String) = repository.renameFile(file,newName)
 }
