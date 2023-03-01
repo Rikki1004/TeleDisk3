@@ -14,6 +14,7 @@ import com.rikkimikki.teledisk.domain.LoadThumbnailUseCase
 import com.rikkimikki.teledisk.domain.PlaceType
 import com.rikkimikki.teledisk.domain.TdObject
 import com.rikkimikki.teledisk.utils.covertTimestampToTime
+import com.rikkimikki.teledisk.utils.humanReadableByteCountSI
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,7 @@ class ListFilesAdapter (
                 val resId = R.drawable.file_asset
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
+                itemDetails.text = humanReadableByteCountSI(item.size)
                 if (item.previewFile != null){
                     scope.launch {
                         val preview = loadThumbnailUseCase(item.previewFile)
@@ -71,6 +73,7 @@ class ListFilesAdapter (
                 val resId = R.drawable.folder_asset
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
+                //itemDetails.text = humanReadableByteCountSI(item.size)
                 //Glide.with(context).load(resId).into(imageViewItemFile)
                 Picasso.get().load(resId).into(itemIcon)
             }

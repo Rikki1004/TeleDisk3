@@ -126,7 +126,6 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     }
 
     val downloadLD = api.fileFlow().asLiveData()
-    val needOpen = MutableLiveData<TdApi.File>()
     suspend fun loadFile(id: Int) {
         val load = api.downloadFile(id,32,0,0,false)
         //downloadLD.value = api.fileFlow().asLiveData()
@@ -206,9 +205,9 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
         File(path).listFiles()?.forEach {
             if (it.isFile)
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.totalSpace,it.lastModified()))
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))
             else
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.Folder,it.absolutePath, it.totalSpace,it.lastModified()))
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.Folder,it.absolutePath, 0L,it.lastModified()))
         }
         //dataFromStore.value = tempList
         dataFromStore.postValue(tempList)
@@ -259,7 +258,10 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         }
     }.retryWhen { cause, _ -> cause is TelegramException }
 
-
+    val needOpenLD = MutableLiveData<Pair<String,Boolean>>()//MutableLiveData<TdApi.File>()
+    override fun fileOperationComplete(): MutableLiveData<Pair<String,Boolean>> {
+        return needOpenLD
+    }
 
     override suspend fun transferFile(from: TdObject) : TdApi.File{
         return api.downloadFile(from.fileID,31,0,0,false)

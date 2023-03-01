@@ -1,6 +1,7 @@
 package com.rikkimikki.teledisk.domain
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import org.drinkless.td.libcore.telegram.TdApi
 
 interface TdRepository {
@@ -15,4 +16,7 @@ interface TdRepository {
     fun renameFolder(folder: TdObject,newName:String)
     suspend fun transferFile(from:TdObject) : TdApi.File
     suspend fun loadThumbnail(id:Int) : TdApi.File
+
+    fun fileOperationComplete() : MutableLiveData<Pair<String, Boolean>>
+
 }

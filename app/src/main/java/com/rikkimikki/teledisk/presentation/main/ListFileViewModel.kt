@@ -3,7 +3,6 @@ package com.rikkimikki.teledisk.presentation.main
 import androidx.lifecycle.*
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
-import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.needOpen
 import com.rikkimikki.teledisk.domain.*
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
@@ -17,6 +16,7 @@ class ListFileViewModel:ViewModel() {
     private val getRemoteFilesUseCase = GetRemoteFilesUseCase(repository)
     private val getLocalFilesUseCase = GetLocalFilesUseCase(repository)
     private val getAllChatsUseCase = GetAllChatsUseCase(repository)
+    private val fileOperationComplete = FileOperationCompleteUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
@@ -61,8 +61,8 @@ init {
         //return medLD
         return downloadLD
     }
-    fun getNeedOpenLD():LiveData<TdApi.File>{
-        return needOpen
+    fun getNeedOpenLD(): LiveData<Pair<String, Boolean>> {
+        return fileOperationComplete()
     }
     //getDataFromLocal("/storage/emulated/0/Download")
 }

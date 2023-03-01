@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_DEFAULT
 import androidx.core.app.NotificationCompat.PRIORITY_MAX
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
-import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.needOpen
 import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.presentation.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +26,7 @@ class FileBackgroundTransfer: Service() {
     private val getLocalFilesUseCase = GetLocalFilesUseCase(repository)
     private val getAllChatsUseCase = GetAllChatsUseCase(repository)
     private val fileTransferFileUseCase = TransferFileUseCase(repository)
+    private val fileOperationComplete = FileOperationCompleteUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
     private var currentFileId = -1
@@ -74,6 +74,27 @@ class FileBackgroundTransfer: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
+        createNotificationChannel()
+        //val notificationIntent = Intent(this, MainActivity::class.java)
+
+        val pendingIntent: PendingIntent =
+            Intent(this, MainActivity::class.java).let { notificationIntent ->
+                PendingIntent.getActivity(this, 0, notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE)
+            }
+        notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Загружается")
+            .setContentText("Файл")
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentIntent(pendingIntent)
+            .setOnlyAlertOnce(true)
+            .setPriority(PRIORITY_MAX)
+            .setDefaults(FOREGROUND_SERVICE_DEFAULT)
+            //.addAction()
+            .build()
+
+        startForeground(SERVICE_ID, notification)
+
 
         startObservers()
 
@@ -85,15 +106,15 @@ class FileBackgroundTransfer: Service() {
         if (folder == null ) when{
             file.is_local()  -> {throw java.lang.Exception()}
             !file.is_local()  -> {
-                lambda = {needOpen.value = it; stopSelf()}
-                scope.launch {fileTransferFileUseCase(file).let { if (it.local.isDownloadingCompleted) needOpen.postValue(it) } }
+                lambda = {fileOperationComplete().postValue(Pair(it.local.path,true)); stopSelf()}
+                scope.launch {fileTransferFileUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) } }
             }
 
         } else when{
             file.is_local() && folder.is_local() -> {}
             file.is_local() && !folder.is_local() -> {}
+            !file.is_local() && !folder.is_local() -> {}
             !file.is_local() && folder.is_local() -> {
-
                 lambda = { it ->
                     //val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                     val localFileOnTd = File(it.local.path)
@@ -119,37 +140,19 @@ class FileBackgroundTransfer: Service() {
                     //localFileOnTd.renameTo(fileDestination)
                     localFileOnTd.copyTo(fileDestination)
 
+                    fileOperationComplete().postValue(Pair(it.local.path,false))
+
                     stopSelf()
                 }
                 scope.launch {fileTransferFileUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) } }
                 //scope.launch {fileTransferFileUseCase(file)}
 
             }
-            !file.is_local() && !folder.is_local() -> {}
         }
 
 
 
-        createNotificationChannel()
-        val notificationIntent = Intent(this, MainActivity::class.java)
 
-        val pendingIntent: PendingIntent =
-            Intent(this, MainActivity::class.java).let { notificationIntent ->
-                PendingIntent.getActivity(this, 0, notificationIntent,
-                    PendingIntent.FLAG_IMMUTABLE)
-            }
-        notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Загружается")
-            .setContentText("Файл")
-            .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentIntent(pendingIntent)
-            .setOnlyAlertOnce(true)
-            .setPriority(PRIORITY_MAX)
-            .setDefaults(FOREGROUND_SERVICE_DEFAULT)
-            //.addAction()
-            .build()
-
-        startForeground(SERVICE_ID, notification)
         //stopSelf();
         return START_NOT_STICKY
     }

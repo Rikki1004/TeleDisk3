@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -80,9 +81,9 @@ class ListFilesFragment : Fragment() {
 
 
         viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
-            //println(""+it.local.downloadedPrefixSize+"/"+it.size)
-            if (it.local.isDownloadingCompleted)
-                openLocalFile(it.local.path)
+            Toast.makeText(requireContext(), "операция успешно завершена: "+it.first, Toast.LENGTH_SHORT).show()
+            if (it.second)
+                openLocalFile(it.first)
         })
 
         viewModel.fileScope.observe(viewLifecycleOwner, Observer {
