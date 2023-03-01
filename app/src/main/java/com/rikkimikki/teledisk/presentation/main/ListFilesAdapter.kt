@@ -9,9 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FileItemBinding
+import com.rikkimikki.teledisk.domain.GetRemoteFilesUseCase
+import com.rikkimikki.teledisk.domain.LoadThumbnailUseCase
 import com.rikkimikki.teledisk.domain.PlaceType
 import com.rikkimikki.teledisk.domain.TdObject
 import com.rikkimikki.teledisk.utils.covertTimestampToTime
+import com.rikkimikki.teledisk.utils.humanReadableByteCountSI
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +27,9 @@ class ListFilesAdapter (
 
     private val scope:CoroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private val repository = TelegramRepository
+
+    private val loadThumbnailUseCase = LoadThumbnailUseCase(repository)
 
     class ListFilesViewHolder(
         val binding: FileItemBinding
@@ -47,9 +53,10 @@ class ListFilesAdapter (
                 val resId = R.drawable.file_asset
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
+                itemDetails.text = humanReadableByteCountSI(item.size)
                 if (item.previewFile != null){
                     scope.launch {
-                        val preview = TelegramRepository.loadPreview(item.previewFile)
+                        val preview = loadThumbnailUseCase(item.previewFile)
                         Picasso.get().load(File(preview.local.path)).into(itemIcon)
                     }
                     //Picasso.get().load(File(item.previewFile)).into(itemIcon)
@@ -66,6 +73,7 @@ class ListFilesAdapter (
                 val resId = R.drawable.folder_asset
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
+                //itemDetails.text = humanReadableByteCountSI(item.size)
                 //Glide.with(context).load(resId).into(imageViewItemFile)
                 Picasso.get().load(resId).into(itemIcon)
             }

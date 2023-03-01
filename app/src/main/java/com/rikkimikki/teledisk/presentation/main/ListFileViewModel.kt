@@ -16,6 +16,7 @@ class ListFileViewModel:ViewModel() {
     private val getRemoteFilesUseCase = GetRemoteFilesUseCase(repository)
     private val getLocalFilesUseCase = GetLocalFilesUseCase(repository)
     private val getAllChatsUseCase = GetAllChatsUseCase(repository)
+    private val fileOperationComplete = FileOperationCompleteUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
@@ -59,6 +60,9 @@ init {
         //medLD.addSource(downloadLD, Observer { if (it.local.isDownloadingCompleted) isRemoteDownloadComplete.value = "" })
         //return medLD
         return downloadLD
+    }
+    fun getNeedOpenLD(): LiveData<Pair<String, Boolean>> {
+        return fileOperationComplete()
     }
     //getDataFromLocal("/storage/emulated/0/Download")
 }
