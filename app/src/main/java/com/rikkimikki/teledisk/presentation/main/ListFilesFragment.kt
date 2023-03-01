@@ -56,9 +56,13 @@ class ListFilesFragment : Fragment() {
                     viewModel.changeDirectory(tdObject)
                 if(tdObject.is_file()){
                     if (tdObject.placeType == PlaceType.TeleDisk){
-                        //viewModel.openFile(tdObject)
-                        //FileBackgroundTransfer.startService(requireContext(),tdObject.fileID.toInt())
-                        val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject.fileID.toInt())
+                        val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject)
+                        /*val startIntent = FileBackgroundTransfer.getIntent(
+                            requireActivity(),
+                            tdObject,
+                            TdObject("Downloads",PlaceType.Local,FileType.Folder,"/storage/emulated/0/Download/1"),
+
+                        )*/
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
                     if(tdObject.placeType == PlaceType.Local)
@@ -75,7 +79,7 @@ class ListFilesFragment : Fragment() {
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
 
 
-        viewModel.getDwndLD().observe(viewLifecycleOwner, Observer {
+        viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
             //println(""+it.local.downloadedPrefixSize+"/"+it.size)
             if (it.local.isDownloadingCompleted)
                 openLocalFile(it.local.path)

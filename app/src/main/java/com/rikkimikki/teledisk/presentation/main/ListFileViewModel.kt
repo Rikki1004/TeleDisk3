@@ -3,6 +3,7 @@ package com.rikkimikki.teledisk.presentation.main
 import androidx.lifecycle.*
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
+import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.needOpen
 import com.rikkimikki.teledisk.domain.*
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
@@ -59,6 +60,9 @@ init {
         //medLD.addSource(downloadLD, Observer { if (it.local.isDownloadingCompleted) isRemoteDownloadComplete.value = "" })
         //return medLD
         return downloadLD
+    }
+    fun getNeedOpenLD():LiveData<TdApi.File>{
+        return needOpen
     }
     //getDataFromLocal("/storage/emulated/0/Download")
 }

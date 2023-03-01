@@ -13,8 +13,6 @@ interface TdRepository {
     fun getStorages() : LiveData<List<ScopeType>>
     fun renameFile(file: TdObject,newName:String)
     fun renameFolder(folder: TdObject,newName:String)
-    fun transferFileLocalToLocal(from:TdObject,to: TdObject)
-    fun transferFileLocalToRemote(from:TdObject,to: TdObject)
-    fun transferFileRemoteToLocal(from:TdObject,to: TdObject)
-    fun transferFileRemoteToRemote(from:TdObject,to: TdObject)
+    suspend fun transferFile(from:TdObject) : TdApi.File
+    suspend fun loadThumbnail(id:Int) : TdApi.File
 }

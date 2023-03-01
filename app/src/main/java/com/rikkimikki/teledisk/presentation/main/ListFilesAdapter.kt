@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FileItemBinding
+import com.rikkimikki.teledisk.domain.GetRemoteFilesUseCase
+import com.rikkimikki.teledisk.domain.LoadThumbnailUseCase
 import com.rikkimikki.teledisk.domain.PlaceType
 import com.rikkimikki.teledisk.domain.TdObject
 import com.rikkimikki.teledisk.utils.covertTimestampToTime
@@ -24,6 +26,9 @@ class ListFilesAdapter (
 
     private val scope:CoroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private val repository = TelegramRepository
+
+    private val loadThumbnailUseCase = LoadThumbnailUseCase(repository)
 
     class ListFilesViewHolder(
         val binding: FileItemBinding
@@ -49,7 +54,7 @@ class ListFilesAdapter (
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
                 if (item.previewFile != null){
                     scope.launch {
-                        val preview = TelegramRepository.loadPreview(item.previewFile)
+                        val preview = loadThumbnailUseCase(item.previewFile)
                         Picasso.get().load(File(preview.local.path)).into(itemIcon)
                     }
                     //Picasso.get().load(File(item.previewFile)).into(itemIcon)

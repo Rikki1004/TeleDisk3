@@ -86,7 +86,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                     if (name.isBlank())
                         continue
                     val thumbnail = doc.document.thumbnail?.photo?.id// ?.local?.path
-                    val id = doc.document.document.id.toLong()
+                    val id = doc.document.document.id
                     val size = doc.document.document.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
                     messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
@@ -103,7 +103,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                     val (name,path) = prepareFileName(photo.caption.text.ifBlank { "noNameFile"+ counter+".jpeg" },requiredPath,chatId)
                     if (name.isBlank())
                         continue
-                    val id = photo.photo.sizes[photo.photo.sizes.size-1].photo.id.toLong()
+                    val id = photo.photo.sizes[photo.photo.sizes.size-1].photo.id
                     val size = photo.photo.sizes[photo.photo.sizes.size-1].photo.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
                     messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
@@ -114,7 +114,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                     val (name,path) = prepareFileName(video.caption.text.ifBlank { video.video.fileName.ifBlank { "noNameFile"+ counter+".mp4" } },requiredPath,chatId)
                     if (name.isBlank())
                         continue
-                    val id = video.video.video.id.toLong()
+                    val id = video.video.video.id
                     val size = video.video.video.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
                     messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
@@ -126,6 +126,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     }
 
     val downloadLD = api.fileFlow().asLiveData()
+    val needOpen = MutableLiveData<TdApi.File>()
     suspend fun loadFile(id: Int) {
         val load = api.downloadFile(id,32,0,0,false)
         //downloadLD.value = api.fileFlow().asLiveData()
@@ -260,8 +261,16 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
 
 
-    suspend fun loadPreview(id: Int): TdApi.File {
+    override suspend fun transferFile(from: TdObject) : TdApi.File{
+        return api.downloadFile(from.fileID,31,0,0,false)
+    }
+
+    override suspend fun loadThumbnail(id: Int): TdApi.File {
         return api.downloadFile(id,32,0,0,true)
+    }
+
+    override suspend fun TdApi.User.addChatMember(chatId: Long, forwardLimit: Int) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun getAllChats() : LiveData<List<Chat>>{
@@ -303,21 +312,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         TODO("Not yet implemented")
     }
 
-    override fun transferFileLocalToLocal(from: TdObject, to: TdObject) {
-        TODO("Not yet implemented")
-    }
 
-    override fun transferFileLocalToRemote(from: TdObject, to: TdObject) {
-        TODO("Not yet implemented")
-    }
-
-    override fun transferFileRemoteToLocal(from: TdObject, to: TdObject) {
-        TODO("Not yet implemented")
-    }
-
-    override fun transferFileRemoteToRemote(from: TdObject, to: TdObject) {
-        TODO("Not yet implemented")
-    }
 
     fun reload() {
         dataFromStore.value = listOf ()
