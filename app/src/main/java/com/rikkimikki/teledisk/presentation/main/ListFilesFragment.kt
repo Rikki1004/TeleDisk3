@@ -57,17 +57,26 @@ class ListFilesFragment : Fragment() {
                     viewModel.changeDirectory(tdObject)
                 if(tdObject.is_file()){
                     if (tdObject.placeType == PlaceType.TeleDisk){
-                        val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject)
+                        //val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject)
                         /*val startIntent = FileBackgroundTransfer.getIntent(
                             requireActivity(),
                             tdObject,
                             TdObject("Downloads",PlaceType.Local,FileType.Folder,"/storage/emulated/0/Download/1"),
 
                         )*/
+                        //ContextCompat.startForegroundService(requireActivity(), startIntent)
+                    }
+                    if(tdObject.placeType == PlaceType.Local){
+                        //openLocalFile(tdObject.path)
+                        val startIntent = FileBackgroundTransfer.getIntent(
+                            requireActivity(),
+                            tdObject,
+                            TdObject("Downloads",PlaceType.TeleDisk,FileType.Folder,"/", groupID = -567578282L),
+
+                            )
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
-                    if(tdObject.placeType == PlaceType.Local)
-                        openLocalFile(tdObject.path)
+
                 }
 
             }

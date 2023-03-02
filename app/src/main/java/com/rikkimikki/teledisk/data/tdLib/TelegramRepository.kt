@@ -16,6 +16,7 @@ import kotlinx.telegram.flows.userFlow
 import kotlinx.telegram.flows.userStatusFlow
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.Chat
+import org.drinkless.td.libcore.telegram.TdApi.InputMessageContent
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -263,8 +264,18 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         return needOpenLD
     }
 
-    override suspend fun transferFile(from: TdObject) : TdApi.File{
+    override suspend fun transferFileDownload(from: TdObject) : TdApi.File{
         return api.downloadFile(from.fileID,31,0,0,false)
+    }
+    override suspend fun transferFileUpload(from: TdObject) : TdApi.File{
+        val file = TdApi.InputFileLocal(from.path)
+        return api.uploadFile(file, TdApi.FileTypeDocument(),31)
+
+        //api.sendMessage(from.fileID,31,0,0,false)
+    }
+    override suspend fun sendUploadedFile(chatId:Long,doc: TdApi.InputMessageContent):TdApi.File{
+        val result = api.sendMessage(chatId,0, null,null, doc).content as TdApi.MessageDocument
+        return result.document.document
     }
 
     override suspend fun loadThumbnail(id: Int): TdApi.File {
