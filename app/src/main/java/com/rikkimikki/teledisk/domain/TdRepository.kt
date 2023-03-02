@@ -14,7 +14,10 @@ interface TdRepository {
     fun getStorages() : LiveData<List<ScopeType>>
     fun renameFile(file: TdObject,newName:String)
     fun renameFolder(folder: TdObject,newName:String)
-    suspend fun transferFile(from:TdObject) : TdApi.File
+    suspend fun transferFileDownload(from:TdObject) : TdApi.File
+    suspend fun transferFileUpload(from:TdObject) : TdApi.File
+
+    suspend fun sendUploadedFile(chatId:Long,doc: TdApi.InputMessageContent):TdApi.File
     suspend fun loadThumbnail(id:Int) : TdApi.File
 
     fun fileOperationComplete() : MutableLiveData<Pair<String, Boolean>>
