@@ -12,6 +12,7 @@
 
     <color name="pressed_item_foreground">#08000000</color>
     <color name="activated_item_foreground">#44888888</color>
+    <color name="just_item_foreground">#FFF</color>
     <color name="divider_grey">#88808080</color>
     <color name="default_text_color_light">@color/md_grey_800</color>
     <color name="default_text_color_dark">@color/md_grey_white</color>

@@ -13,7 +13,9 @@ data class TdObject (
     val unixTimeDate:Long=0,
     val previewFile: Int? = null, //String? = null,
     val groupID:Long=0L,
-    val fileID:Int=-1
+    val fileID:Int=-1,
+    val messageID:Long=-1L,
+    var isChecked:Boolean = false
 ): Parcelable{
     fun is_file():Boolean{
         return fileType == FileType.File
@@ -23,5 +25,8 @@ data class TdObject (
     }
     fun is_local():Boolean{
         return placeType == PlaceType.Local
+    }
+    fun getFilePath():String{
+        return path.substringBeforeLast("/")+"/"
     }
 }

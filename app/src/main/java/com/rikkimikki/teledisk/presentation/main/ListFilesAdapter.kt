@@ -36,6 +36,7 @@ class ListFilesAdapter (
     ) : RecyclerView.ViewHolder(binding.root)
 
     var onFileClickListener: OnFileClickListener? = null
+    var onFileLongClickListener: OnFileLongClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListFilesViewHolder {
         val binding = FileItemBinding.inflate(
@@ -49,6 +50,10 @@ class ListFilesAdapter (
     override fun onBindViewHolder(holder: ListFilesViewHolder, position: Int) {
         val item = getItem(position)
         with(holder.binding) {
+            if (item.isChecked)
+                root.setBackgroundColor(context.getColor(R.color.activated_item_foreground))
+            else
+                root.setBackgroundColor(context.getColor(R.color.just_item_foreground))
             if (item.is_file()) {
                 val resId = R.drawable.file_asset
                 itemName.text = item.name
@@ -80,11 +85,18 @@ class ListFilesAdapter (
             root.setOnClickListener {
                 onFileClickListener?.onFileClick(item)
             }
+            root.setOnLongClickListener {
+                onFileLongClickListener?.onFileLongClick(item)
+                return@setOnLongClickListener false
+            }
 
         }
     }
 
     interface OnFileClickListener {
         fun onFileClick(tdObject: TdObject)
+    }
+    interface OnFileLongClickListener {
+        fun onFileLongClick(tdObject: TdObject)
     }
 }
