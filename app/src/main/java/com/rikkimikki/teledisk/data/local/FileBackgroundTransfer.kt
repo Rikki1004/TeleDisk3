@@ -193,7 +193,7 @@ class FileBackgroundTransfer: Service() {
 
                     stopSelf()
                 }
-                val a = scope.launch {transferFileDownloadUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) } }
+                scope.launch {transferFileDownloadUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) } }
                 //scope.launch {fileTransferFileUseCase(file)}
 
             }
