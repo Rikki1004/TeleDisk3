@@ -37,13 +37,20 @@ class BottomFileActionsFragment : Fragment() {
             textViewBottomPanelCopy.setOnClickListener {
                 viewModel.refresh()
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.bottom_view_container,BottomFileActionTransferFragment.newInstance())
+                    .replace(R.id.bottom_view_container,BottomFileActionTransferFragment.newInstance(true))
                     .commit()
             }
-            textViewBottomPanelCat.setOnClickListener {  }
-            textViewBottomPanelDelete.setOnClickListener {  }
-            textViewBottomPanelRename.setOnClickListener {  }
-            textViewBottomPanelShare.setOnClickListener {  }
+            textViewBottomPanelMove.setOnClickListener {
+                viewModel.refresh()
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.bottom_view_container,BottomFileActionTransferFragment.newInstance(false))
+                    .commit()
+            }
+            textViewBottomPanelDelete.setOnClickListener { viewModel.deleteItem() }
+            textViewBottomPanelRename.setOnClickListener { viewModel.renameItem("newFolder")}//"newName.txt"
+            textViewBottomPanelShare.setOnClickListener {
+                requireActivity().startActivity(viewModel.shareLocalFile())
+            }
         }
     }
 

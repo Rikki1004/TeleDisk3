@@ -28,9 +28,16 @@ class BottomFileActionTransferFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
 
         with(binding){
-            textViewBottomPanelPaste.setOnClickListener { viewModel.copyFile(); close() }
+            textViewBottomPanelPaste.setOnClickListener {
+                val isCopy = requireArguments().getBoolean(EXTRA_COPY)
+                if (isCopy)
+                    viewModel.copyFile()
+                else
+                    viewModel.moveFile()
+                close()
+            }
             textViewBottomPanelCancel.setOnClickListener { viewModel.refresh() ; close() }
-            textViewBottomPanelCreate .setOnClickListener {  }
+            textViewBottomPanelCreate .setOnClickListener { viewModel.createFolder("my folder"); viewModel.refresh()}
         }
     }
     private fun close(){
@@ -45,6 +52,11 @@ class BottomFileActionTransferFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance() = BottomFileActionTransferFragment()
+        private const val EXTRA_COPY = "COPY"
+        fun newInstance(is_copy:Boolean) = BottomFileActionTransferFragment().apply {
+            arguments = Bundle().apply {
+                putBoolean(EXTRA_COPY,is_copy)
+            }
+        }
     }
 }

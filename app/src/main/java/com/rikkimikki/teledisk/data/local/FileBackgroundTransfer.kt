@@ -42,16 +42,18 @@ class FileBackgroundTransfer: Service() {
         private lateinit var mNotificationManager :NotificationManager
 
         private const val EXTRA_FILE = "FILE"
+        private const val EXTRA_COPY = "COPY"
         private const val EXTRA_FOLDER_DESTINATION = "FOLDER"
         private const val EXTRA_IS_DOWNLOAD = "IS_DOWNLOAD"
 
         private const val byteBufferSize = 1024 * 1024 * 50
 
 
-        fun getIntent(context: Context, file:TdObject,folderDestination : TdObject) :Intent{
+        fun getIntent(context: Context, file:TdObject,folderDestination : TdObject,is_copy:Boolean) :Intent{
             val intent = Intent(context,
                 FileBackgroundTransfer::class.java)
             intent.putExtra(EXTRA_FILE, file)
+            intent.putExtra(EXTRA_COPY, is_copy)
             intent.putExtra(EXTRA_FOLDER_DESTINATION, folderDestination)
             intent.putExtra(EXTRA_IS_DOWNLOAD, file.placeType != PlaceType.Local && folderDestination.placeType == PlaceType.Local)
             return intent
@@ -191,7 +193,7 @@ class FileBackgroundTransfer: Service() {
 
                     stopSelf()
                 }
-                scope.launch {transferFileDownloadUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) } }
+                val a = scope.launch {transferFileDownloadUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) } }
                 //scope.launch {fileTransferFileUseCase(file)}
 
             }

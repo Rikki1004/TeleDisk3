@@ -105,7 +105,7 @@ class ListFilesFragment : Fragment() {
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
                     if(tdObject.placeType == PlaceType.Local){
-                        openLocalFile(tdObject.path)
+                        startActivity(viewModel.openLocalFile(tdObject.path))
                         /*val startIntent = FileBackgroundTransfer.getIntent(
                             requireActivity(),
                             tdObject,
@@ -131,7 +131,7 @@ class ListFilesFragment : Fragment() {
         viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
             Toast.makeText(requireContext(), "операция успешно завершена: "+it.first, Toast.LENGTH_SHORT).show()
             if (it.second)
-                openLocalFile(it.first)
+                startActivity(viewModel.openLocalFile(it.first))
             else
                 viewModel.refresh()
         })
@@ -160,8 +160,8 @@ class ListFilesFragment : Fragment() {
                     /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
                         viewModel.getRemoteFiles(-567578282,"/")
                     })*/
-                    viewModel.getRemoteFiles(-567578282,"/")
-                    //viewModel.getChats()
+                    //viewModel.getRemoteFiles(-567578282,"/")
+                    viewModel.getRemoteFiles(-650777369,"/")
                 }
                 ScopeType.Local -> {
                     viewModel.refreshFileScope()
@@ -221,7 +221,7 @@ class ListFilesFragment : Fragment() {
         }
     }
 
-    private fun openLocalFile(path:String){
+    /*private fun openLocalFile(path:String){
         val uri = FileProvider.getUriForFile(requireActivity(),
             BuildConfig.APPLICATION_ID + ".provider", File(path))
         val intent = Intent(Intent.ACTION_VIEW)
@@ -230,5 +230,5 @@ class ListFilesFragment : Fragment() {
         intent.flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         ContextCompat.startActivity(requireActivity(),intent,null)
-    }
+    }*/
 }
