@@ -1,13 +1,16 @@
 package com.rikkimikki.teledisk.presentation.main
 
+import android.app.Application
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
+import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
 import com.rikkimikki.teledisk.domain.*
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
 
-class ListFileViewModel:ViewModel() {
+class ListFileViewModel(application: Application):AndroidViewModel(application) {
     var currentLocalPath = "/"
     var currentRemotePath = "/"
 
@@ -20,16 +23,43 @@ class ListFileViewModel:ViewModel() {
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
+    val selectedItems = mutableListOf<TdObject>()
+    private lateinit var currentDirectory : TdObject
+
 init {
-    repository.reload()
+    //repository.reload()
 }
     val isRemoteDownloadComplete = MutableLiveData<String>()
 
+    fun refresh(){
+        changeDirectory(currentDirectory)
+    }
+    fun refreshFileScope(){
+        fileScope.value = listOf()
+    }
+    fun refreshSelectedItems(){
+        selectedItems.clear()
+    }
+
+    fun copyFile(){
+        val startIntent = FileBackgroundTransfer.getIntent(
+            getApplication(),
+            selectedItems[0],
+            currentDirectory
+            )
+        ContextCompat.startForegroundService(getApplication(), startIntent)
+        refreshSelectedItems()
+    }
+
     fun getRemoteFiles(id:Long,path:String){
+        currentDirectory = TdObject("currentDir",PlaceType.TeleDisk,FileType.Folder,path, groupID = id)
+        //if (path == "/") fileScope.value = listOf()
         var a = viewModelScope.launch { getRemoteFilesUseCase(id,path) }
     }
 
     fun getLocalFiles(path:String){
+        currentDirectory = TdObject("currentDir",PlaceType.Local,FileType.Folder,path)
+        //if (path == "/storage/emulated/0") fileScope.value = listOf()
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
 

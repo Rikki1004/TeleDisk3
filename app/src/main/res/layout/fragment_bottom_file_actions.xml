@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".presentation.main.BottomFileActionsFragment">
+
+    <TextView
+        android:id="@+id/textViewBottomPanelCopy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Copy"
+        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+
+
+    <TextView
+        android:id="@+id/textViewBottomPanelCat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Cat"
+        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+
+
+    <TextView
+        android:id="@+id/textViewBottomPanelDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Delete"
+        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+
+
+    <TextView
+        android:id="@+id/textViewBottomPanelRename"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Rename"
+        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+
+
+    <TextView
+        android:id="@+id/textViewBottomPanelShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Share"
+        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+
+</LinearLayout>

@@ -56,6 +56,12 @@ class FileBackgroundTransfer: Service() {
             intent.putExtra(EXTRA_IS_DOWNLOAD, file.placeType != PlaceType.Local && folderDestination.placeType == PlaceType.Local)
             return intent
         }
+        fun getIntent(context: Context, file:TdObject) :Intent{
+            val intent = Intent(context,
+                FileBackgroundTransfer::class.java)
+            intent.putExtra(EXTRA_FILE, file)
+            return intent
+        }
 
     }
 
@@ -129,7 +135,7 @@ class FileBackgroundTransfer: Service() {
                     val groupId = folder.groupID
                     val remotePath = folder.path
                     val inputFileLocal = TdApi.InputFileLocal(file.path)
-                    val formattedText = TdApi.FormattedText(remotePath+file.name, arrayOf())
+                    val formattedText = TdApi.FormattedText(remotePath+"/"+file.name, arrayOf())
                     val doc = TdApi.InputMessageDocument(inputFileLocal,TdApi.InputThumbnail(), formattedText)
 
                     scope.launch {
@@ -146,10 +152,13 @@ class FileBackgroundTransfer: Service() {
 
                 val groupId = folder.groupID
                 val remotePath = folder.path
-                val inputFileLocal = TdApi.InputFileRemote(file.fileID.toString())
-                val formattedText = TdApi.FormattedText(remotePath+file.name, arrayOf())
+                val inputFileLocal = TdApi.InputFileId(file.fileID)
+                val formattedText = TdApi.FormattedText(remotePath+"/"+file.name, arrayOf())
                 val doc = TdApi.InputMessageDocument(inputFileLocal,TdApi.InputThumbnail(), formattedText)
-                scope.launch { sendUploadedFileUseCase(groupId,doc) ; stopSelf()}
+                scope.launch {
+                    val a = sendUploadedFileUseCase(groupId,doc)
+                    fileOperationComplete().postValue(Pair(formattedText.text,false))
+                    stopSelf()}
 
             }
             !file.is_local() && folder.is_local() -> {

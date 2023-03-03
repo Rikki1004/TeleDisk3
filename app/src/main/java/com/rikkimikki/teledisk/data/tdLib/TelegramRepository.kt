@@ -92,6 +92,18 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
                     messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
                 }
+                TdApi.MessageAudio.CONSTRUCTOR -> {
+                    val audio = message.content as TdApi.MessageAudio
+                    val (name,path) = prepareFileName(audio.caption.text.ifBlank { audio.audio.fileName.ifBlank { "noNameFile"+ counter } },requiredPath,chatId)
+
+                    if (name.isBlank())
+                        continue
+                    val thumbnail = audio.audio.albumCoverThumbnail?.photo?.id// ?.local?.path
+                    val id = audio.audio.audio.id
+                    val size = audio.audio.audio.size.toLong()
+                    val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
+                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id))
+                }
                 TdApi.MessagePhoto.CONSTRUCTOR -> {
                     val photo = message.content as TdApi.MessagePhoto
                     //val thumbnail = photo.photo.sizes.map { it.photo.local.path }
@@ -274,7 +286,8 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         //api.sendMessage(from.fileID,31,0,0,false)
     }
     override suspend fun sendUploadedFile(chatId:Long,doc: TdApi.InputMessageContent):TdApi.File{
-        val result = api.sendMessage(chatId,0, null,null, doc).content as TdApi.MessageDocument
+        val options = TdApi.SendMessageOptions(true,false,null)
+        val result = api.sendMessage(chatId,0, options,null, doc).content as TdApi.MessageDocument
         return result.document.document
     }
 

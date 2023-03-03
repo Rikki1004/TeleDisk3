@@ -13,7 +13,8 @@ data class TdObject (
     val unixTimeDate:Long=0,
     val previewFile: Int? = null, //String? = null,
     val groupID:Long=0L,
-    val fileID:Int=-1
+    val fileID:Int=-1,
+    var isChecked:Boolean = false
 ): Parcelable{
     fun is_file():Boolean{
         return fileType == FileType.File
