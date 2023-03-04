@@ -10,7 +10,10 @@ interface TdRepository {
     suspend fun createFile(folder:TdObject,name:String)
     suspend fun createFolder(folder:TdObject,name:String)
     fun getLocalFiles(path: String) : LiveData<List<TdObject>>
+    fun getLocalFilesNoLD(path: String) : List<TdObject>
+    fun tempPathsForSend() : MutableLiveData<List<TdObject>>
     suspend fun getRemoteFiles(id: Long,path: String) : LiveData<List<TdObject>>
+    suspend fun getRemoteFilesNoLD(id: Long,path: String) : List<TdObject>
     fun getStorages() : LiveData<List<ScopeType>>
 
     suspend fun renameFile(file: TdObject,newName:String)

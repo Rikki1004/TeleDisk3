@@ -105,7 +105,10 @@ class ListFilesFragment : Fragment() {
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
                     if(tdObject.placeType == PlaceType.Local){
-                        startActivity(viewModel.openLocalFile(tdObject.path))
+                        //startActivity(viewModel.openLocalFile(tdObject.path))
+                        viewModel.openLocalFile(tdObject.path)
+
+
                         /*val startIntent = FileBackgroundTransfer.getIntent(
                             requireActivity(),
                             tdObject,
@@ -127,11 +130,15 @@ class ListFilesFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
 
+        viewModel.needLaunchIntent.observe(viewLifecycleOwner, Observer {
+            startActivity(it)
+        })
 
         viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
             Toast.makeText(requireContext(), "операция успешно завершена: "+it.first, Toast.LENGTH_SHORT).show()
             if (it.second)
-                startActivity(viewModel.openLocalFile(it.first))
+                //startActivity(viewModel.openLocalFile(it.first))
+                viewModel.openLocalFile(it.first)
             else
                 viewModel.refresh()
         })

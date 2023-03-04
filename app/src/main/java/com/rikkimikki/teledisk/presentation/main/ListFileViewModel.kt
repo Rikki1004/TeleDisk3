@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -35,8 +34,11 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val renameFolderUseCase = RenameFolderUseCase(repository)
     private val deleteFileUseCase = DeleteFileUseCase(repository)
     private val deleteFolderUseCase = DeleteFolderUseCase(repository)
+    private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
+
+    var needLaunchIntent = MutableLiveData<Intent>()
 
     val selectedItems = mutableListOf<TdObject>()
     private lateinit var currentDirectory : TdObject
@@ -47,6 +49,9 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
 
 init {
     //repository.reload()
+    tempPathsForSendUseCase().observeForever {
+        shareItems(it)
+    }
 }
     val isRemoteDownloadComplete = MutableLiveData<String>()
 
@@ -63,7 +68,7 @@ init {
     fun copyFile(){
         val startIntent = FileBackgroundTransfer.getIntent(
             getApplication(),
-            selectedItems[0],
+            selectedItems.toTypedArray(),
             currentDirectory,
             true
             )
@@ -73,7 +78,7 @@ init {
     fun moveFile() {
         val startIntent = FileBackgroundTransfer.getIntent(
             getApplication(),
-            selectedItems[0],
+            selectedItems.toTypedArray(),
             currentDirectory,
             false
         )
@@ -110,12 +115,13 @@ init {
     }
 
     fun deleteItem() {
-        val file = selectedItems[0]
         viewModelScope.launch{
-            if (file.is_file())
-                deleteFileUseCase(file)
-            else
-                deleteFolderUseCase(file)
+            for (i in selectedItems.toList()){
+                if (i.is_file())
+                    deleteFileUseCase(i)
+                else
+                    deleteFolderUseCase(i)
+            }
             refreshSelectedItems()
             refresh()
         }
@@ -155,7 +161,7 @@ init {
     //getDataFromLocal("/storage/emulated/0/Download")
 
 
-    fun openLocalFile(path:String):Intent{
+    fun openLocalFile(path:String){
         val uri = FileProvider.getUriForFile(getApplication(),
             BuildConfig.APPLICATION_ID + ".provider", File(path)
         )
@@ -164,28 +170,74 @@ init {
         intent.setDataAndType(uri,type)
         intent.flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        return intent
+        //return intent
+        needLaunchIntent.value = intent
     }
-    fun shareLocalFile():Intent{
+
+    fun shareItems(listSelected: List<TdObject> = selectedItems){
+        if (listSelected.isEmpty())
+            return
+        if (!listSelected[0].is_local()){
+            val startIntent = FileBackgroundTransfer.getIntent(
+                getApplication(),
+                listSelected.toTypedArray()
+            )
+            ContextCompat.startForegroundService(getApplication(), startIntent)
+            return
+        }
+
+        val urisList = arrayListOf<Uri>()
+
+        for (i in listSelected){
+            if (i.is_file()){
+                urisList.add(FileProvider.getUriForFile(getApplication(),
+                    BuildConfig.APPLICATION_ID + ".provider", File(i.path)
+                ))
+            } else{
+                File(i.path).walk().filter{ it.isFile }.forEach {
+                    urisList.add(FileProvider.getUriForFile(getApplication(),
+                        BuildConfig.APPLICATION_ID + ".provider", it
+                    ))
+                }
+            }
+        }
+
+        if (urisList.size == 1){
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "*/*"//contentResolver.getType(urisList[0])
+            intent.putExtra(Intent.EXTRA_STREAM, urisList[0])
+            needLaunchIntent.value = intent
+        }
+        if (urisList.size > 1){
+            val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
+            intent.type = "*/*"
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisList);
+            needLaunchIntent.value = intent
+        }
+    }
+    fun shareLocalFile(items:List<TdObject> = selectedItems){
+
         if (selectedItems.size > 1){
             val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
             val urisList = arrayListOf<Uri>()
             for (i in selectedItems){
-                urisList.add(FileProvider.getUriForFile(getApplication(),
-                    BuildConfig.APPLICATION_ID + ".provider", File(i.path)
-                ))
+                if (i.is_file() && i.is_local()){
+                    urisList.add(FileProvider.getUriForFile(getApplication(),
+                        BuildConfig.APPLICATION_ID + ".provider", File(i.path)
+                    ))
+                }
             }
             intent.type = "*/*"
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisList);
-            return intent
+            needLaunchIntent.value = intent
         }else{
             val intent = Intent(Intent.ACTION_SEND)
             val uri = FileProvider.getUriForFile(getApplication(),
                 BuildConfig.APPLICATION_ID + ".provider", File(selectedItems[0].path)
             )
-            intent.type = contentResolver.getType(uri)
+            intent.type = "*/*"//contentResolver.getType(uri)
             intent.putExtra(Intent.EXTRA_STREAM, uri)
-            return intent
+            needLaunchIntent.value = intent
         }
     }
 
