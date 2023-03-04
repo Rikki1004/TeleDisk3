@@ -87,7 +87,7 @@ class ListFilesAdapter (
             }
             root.setOnLongClickListener {
                 onFileLongClickListener?.onFileLongClick(item)
-                return@setOnLongClickListener false
+                return@setOnLongClickListener true//false
             }
 
         }

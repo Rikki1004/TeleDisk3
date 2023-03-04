@@ -49,7 +49,8 @@ class BottomFileActionsFragment : Fragment() {
             textViewBottomPanelDelete.setOnClickListener { viewModel.deleteItem() }
             textViewBottomPanelRename.setOnClickListener { viewModel.renameItem("newFolder")}//"newName.txt"
             textViewBottomPanelShare.setOnClickListener {
-                requireActivity().startActivity(viewModel.shareLocalFile())
+                //requireActivity().startActivity(viewModel.shareLocalFile())
+                viewModel.shareItems()
             }
         }
     }

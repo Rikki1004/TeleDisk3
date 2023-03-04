@@ -1,8 +1,15 @@
 package com.rikkimikki.teledisk.presentation.login
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.ActivityLoginBinding
@@ -83,7 +90,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    /*fun requestPermissions(activity: Activity, requestCode:Int) {
+    fun requestPermissions(activity: Activity, requestCode:Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -101,6 +108,6 @@ class LoginActivity : AppCompatActivity() {
                 requestCode)
 
         }
-    }*/
+    }
 
 }

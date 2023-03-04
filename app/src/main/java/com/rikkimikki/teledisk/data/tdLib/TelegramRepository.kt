@@ -26,14 +26,15 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
-
-
     val dataFromStore = MutableLiveData<List<TdObject>>()
 
+    val shareRemoteFiles = MutableLiveData<List<TdObject>>()
+    override fun tempPathsForSend(): MutableLiveData<List<TdObject>> {
+        return shareRemoteFiles
+    }
 
     val is_ready = MutableLiveData<Boolean>()
     var counter = 0
-
 
     override val api: TelegramFlow = TelegramFlow()
 
@@ -340,9 +341,27 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         return dataFromStore
     }
 
+    override suspend fun getRemoteFilesNoLD(id: Long, path: String): List<TdObject> {
+        loadFolder(id,path, needShow = false)
+        return messagesResult.toList()
+    }
+
     override fun getLocalFiles(path: String): LiveData<List<TdObject>> {
         thread { getDataFromDisk(path) }
         return dataFromStore
+    }
+
+    override fun getLocalFilesNoLD(path: String): List<TdObject> {
+        val tempList = mutableListOf<TdObject>()
+
+        File(path).listFiles()?.forEach {
+            if (it.isFile)
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))
+            else
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.Folder,it.absolutePath, 0L,it.lastModified()))
+        }
+        val a = tempList
+        return a//tempList
     }
 
     override fun getChatFolder(id: Int) {
@@ -361,7 +380,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             val groupId = folder.groupID
             val tempFileDir = File("/data/user/0/com.rikkimikki.teledisk/files/","FOLDER")//File(createTempFile("FOLDER").pathString)
             //val tempFile = File(Environment.getDownloadCacheDirectory(),tempFileDir)
-            tempFileDir.writeText("abc")
+            tempFileDir.writeText("FOLDER")
             //tempFileDir.renameTo(File("FOLDER"))
             val inputFileLocal = TdApi.InputFileLocal(tempFileDir.absolutePath)
             val formattedText = TdApi.FormattedText(remotePath+"/"+name+"/", arrayOf())
