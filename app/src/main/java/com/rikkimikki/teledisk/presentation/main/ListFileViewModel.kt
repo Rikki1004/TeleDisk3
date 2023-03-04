@@ -1,8 +1,14 @@
 package com.rikkimikki.teledisk.presentation.main
 
 import android.app.Application
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.view.LayoutInflater
+import android.view.View
+import android.view.Window
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
@@ -10,9 +16,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.rikkimikki.teledisk.BuildConfig
+import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
+import com.rikkimikki.teledisk.databinding.DialogInputTextBinding
 import com.rikkimikki.teledisk.domain.*
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
@@ -46,6 +54,9 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val contentResolver by lazy {
         application.contentResolver
     }
+    /*private val application by lazy {
+        application
+    }*/
 
 init {
     //repository.reload()
@@ -240,5 +251,4 @@ init {
             needLaunchIntent.value = intent
         }
     }
-
 }

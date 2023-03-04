@@ -1,12 +1,19 @@
 package com.rikkimikki.teledisk.presentation.main
 
+import android.app.Dialog
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -19,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
+import com.rikkimikki.teledisk.databinding.DialogInputTextBinding
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
 import com.rikkimikki.teledisk.domain.*
 import java.io.File
@@ -228,14 +236,15 @@ class ListFilesFragment : Fragment() {
         }
     }
 
-    /*private fun openLocalFile(path:String){
-        val uri = FileProvider.getUriForFile(requireActivity(),
-            BuildConfig.APPLICATION_ID + ".provider", File(path))
-        val intent = Intent(Intent.ACTION_VIEW)
-        val type = requireActivity().contentResolver.getType(uri)
-        intent.setDataAndType(uri,type)
-        intent.flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        ContextCompat.startActivity(requireActivity(),intent,null)
-    }*/
+
+    /*requireContext().showDialog(
+    title = "Your Title",
+    inputField = "Your Description",
+    titleOfPositiveButton = "yes",
+    titleOfNegativeButton = "No",
+    positiveButtonFunction = { },
+    negativeButtonFunction = { }
+    )*/
+
+
 }
