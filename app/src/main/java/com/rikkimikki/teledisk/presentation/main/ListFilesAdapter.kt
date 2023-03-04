@@ -3,6 +3,8 @@ package com.rikkimikki.teledisk.presentation.main
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -23,7 +25,7 @@ import java.io.File
 
 class ListFilesAdapter (
     private val context: Context
-) : ListAdapter<TdObject, ListFilesAdapter.ListFilesViewHolder>(ListFileDiffCallback) {
+) : ListAdapter<TdObject, ListFilesAdapter.ListFilesViewHolder>(ListFileDiffCallback){
 
     private val scope:CoroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -38,6 +40,40 @@ class ListFilesAdapter (
     var onFileClickListener: OnFileClickListener? = null
     var onFileLongClickListener: OnFileLongClickListener? = null
 
+    private var notFilteredList =  listOf<TdObject>()
+
+    override fun submitList(list: MutableList<TdObject>?) {
+        super.submitList(list)
+        notFilteredList = list?.toList()?: listOf()
+    }
+
+
+    fun filter1(filter: String?){
+        if (filter == null){
+            super.submitList(notFilteredList)
+            return
+        }
+        val char = filter.trim()
+        if (char.isBlank()){
+            super.submitList(notFilteredList)
+            return
+        }
+
+        super.submitList(notFilteredList.filter {
+            if (it.name == "..")
+                true
+            else
+                it.name.lowercase().contains(char.lowercase())
+        }.toMutableList())
+    }
+    fun filter2(vararg extensions:String){
+        if (extensions.isEmpty())
+            return
+        super.submitList(notFilteredList.filter {item -> extensions.any { suffix -> item.name.lowercase().endsWith(suffix.lowercase()) }
+        }.toMutableList())
+    }
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListFilesViewHolder {
         val binding = FileItemBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -48,6 +84,7 @@ class ListFilesAdapter (
     }
 
     override fun onBindViewHolder(holder: ListFilesViewHolder, position: Int) {
+
         val item = getItem(position)
         with(holder.binding) {
             if (item.isChecked)

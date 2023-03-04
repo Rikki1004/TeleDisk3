@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.Button
+import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -133,6 +134,17 @@ class ListFilesFragment : Fragment() {
         //binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireContext(),4)
         binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.VERTICAL }
 
+        binding.searchViewListFiles.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(p0: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(p0: String?): Boolean {
+                adapter.filter1(p0)
+                return false
+            }
+        })
+
         binding.recycleViewListFiles.adapter = adapter
         //adapter.submitList(null)
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
@@ -153,8 +165,11 @@ class ListFilesFragment : Fragment() {
 
         viewModel.fileScope.observe(viewLifecycleOwner, Observer {
             //adapter.submitList(null)
-            if (it.isNotEmpty())
+            if (it.isNotEmpty()){
+                binding.searchViewListFiles.setQuery("",false)
+                binding.searchViewListFiles.setFocusable(false)
                 adapter.submitList(it.toMutableList())
+            }
         })
 
         /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
@@ -227,10 +242,12 @@ class ListFilesFragment : Fragment() {
 
     companion object {
         const val EXTRA_SCOPE_TYPE = "scopeType"
-        fun newInstance(scopeType: ScopeType): Fragment {
+        const val EXTRA_FILTER = "filter"
+        fun newInstance(scopeType: ScopeType,filter:FiltersFromType? = null): Fragment {
             return ListFilesFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(EXTRA_SCOPE_TYPE, scopeType)
+                    putSerializable(EXTRA_FILTER,filter)
                 }
             }
         }
