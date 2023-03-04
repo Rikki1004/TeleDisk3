@@ -90,6 +90,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
+
     fun requestPermissions(activity: Activity, requestCode:Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {

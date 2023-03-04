@@ -1,11 +1,18 @@
 package com.rikkimikki.teledisk.presentation.main
 
+import android.app.Application
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.Window
 import com.rikkimikki.teledisk.R
+import com.rikkimikki.teledisk.databinding.DialogInputTextBinding
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,5 +29,6 @@ class MainActivity : AppCompatActivity() {
             return Intent(context,MainActivity::class.java)
         }
     }
+
 
 }
