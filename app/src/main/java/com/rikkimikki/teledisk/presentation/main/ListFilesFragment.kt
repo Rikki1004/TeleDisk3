@@ -5,10 +5,9 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.forEach
 import androidx.core.view.get
@@ -17,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -240,6 +240,7 @@ class ListFilesFragment : Fragment() {
         val toolbar = binding.toolbar
         val infoToolbar = binding.infoToolbar
         val pathToolbar = binding.pathToolbar
+        val searchBar = toolbar.menu.findItem(R.id.action_search).actionView as SearchView
         //toolbar.inflateMenu(R.menu.files_action_menu)
         //toolbar.inflateMenu(R.menu.files_action_hidden_menu)
         infoToolbar.overflowIcon = requireActivity().getDrawable(R.drawable.arrow_down_drop_circle_outline_custom)
@@ -248,6 +249,31 @@ class ListFilesFragment : Fragment() {
         toolbar.setNavigationOnClickListener { view ->
             viewModel.clickArrow()
         }
+
+
+        searchBar.setOnCloseListener {
+            if (adapter.layoutManagerType == adapter.MANAGER_GRID)
+                toolbar.menu.findItem(R.id.action_layout_linear).isVisible = true
+            else
+                toolbar.menu.findItem(R.id.action_layout_grid).isVisible = true
+            return@setOnCloseListener false
+        }
+        searchBar.setOnSearchClickListener {
+            toolbar.menu.findItem(R.id.action_layout_grid).isVisible = false
+            toolbar.menu.findItem(R.id.action_layout_linear).isVisible = false
+        }
+
+        searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(p0: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(p0: String?): Boolean {
+                adapter.filter1(p0)
+                return false
+            }
+        })
+
 
         infoToolbar.setOnMenuItemClickListener {
             when (lastFilter){
@@ -391,13 +417,17 @@ class ListFilesFragment : Fragment() {
             }
             lastFilter = it.itemId
             viewModel.refresh()
-            false
+            true
         }
 
         toolbar.setOnMenuItemClickListener {
             when(it.itemId){
                 R.id.action_settings -> {}
-                R.id.action_search -> {}
+                R.id.action_search -> {
+                    /*findNavController()
+                        .navigate(MainFragmentDirections
+                            .actionMainFragmentToSearchFragment ())*/
+                }
                 R.id.action_layout_grid -> {
                     adapter.layoutManagerType = adapter.MANAGER_GRID
                     binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireActivity(),4)
@@ -445,6 +475,7 @@ class ListFilesFragment : Fragment() {
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
         super.onDestroyView()
     }
+
 
 
     private fun getType(): ScopeType {
