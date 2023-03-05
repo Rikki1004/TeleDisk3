@@ -6,11 +6,19 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!--<item name="android:actionOverflowButtonStyle">@style/MyActionButtonOverflow</item>-->
     </style>
 
     <style name="Theme_Dialog" parent="android:Theme.Holo.Dialog">
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
     </style>
+
+    <!--<style name="MyActionButtonOverflow" parent="android:style/Widget.Holo.Light.ActionButton.Overflow">
+        <item name="android:src">@drawable/arrow_down_drop_circle_outline_custom</item>
+        &lt;!&ndash;<item name="android:scaleType">fitXY</item>&ndash;&gt;
+        <item name="android:adjustViewBounds">true</item>
+    </style>-->
+
 
 </resources>

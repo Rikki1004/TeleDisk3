@@ -46,17 +46,10 @@ class ListFilesAdapter (
         field = value
     }
 
-    class ListFilesViewHolder( val binding: FileItemBinding) : RecyclerView.ViewHolder(binding.root)
-
-
     var onFileClickListener: OnFileClickListener? = null
     var onFileLongClickListener: OnFileLongClickListener? = null
 
 
-    /*var RecyclerView.ViewHolder.type: String
-        get() = this.type
-        set(value1:String) = value = value1
-*/
     private inner class View1ViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
 
@@ -264,8 +257,4 @@ class ListFilesAdapter (
         }.toMutableList())
     }
 
-    /*companion object{
-        const val MANAGER_LINEAR = "linear"
-        const val MANAGER_GRID = "grig"
-    }*/
 }

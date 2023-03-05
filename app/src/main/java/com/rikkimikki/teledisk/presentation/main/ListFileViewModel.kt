@@ -52,7 +52,7 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     var needPressBackButton = MutableLiveData<Unit>()
 
     val selectedItems = mutableListOf<TdObject>()
-    private lateinit var currentDirectory : TdObject
+    lateinit var currentDirectory : TdObject
 
     private val contentResolver by lazy {
         application.contentResolver
@@ -112,11 +112,9 @@ init {
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
     fun clickArrow(){
-        val a = currentDirectory
-        val b = currentDirectory.path.substringBeforeLast("/")
-        if (currentDirectory.is_local() && currentDirectory.path != "/storage/emulated/0")
+        if (currentDirectory.is_local() && currentDirectory.path != "/storage/emulated/0" && currentDirectory.name.isNotBlank())
             getLocalFiles(currentDirectory.path.substringBeforeLast("/"))
-        else if (!currentDirectory.is_local() && currentDirectory.path != "/"){
+        else if (!currentDirectory.is_local() && currentDirectory.path != "/" && currentDirectory.name.isNotBlank()){
             var tempPath = currentDirectory.path.substringBeforeLast("/")
             if (tempPath.isBlank()) tempPath = "/"
             getRemoteFiles(currentDirectory.groupID, tempPath)
@@ -124,13 +122,14 @@ init {
 
         else
             needPressBackButton.value = Unit
-        println(""+a+b)
     }
 
     fun getLocalFilesFiltered(filter:FiltersFromType){
+        currentDirectory = TdObject("",PlaceType.Local,FileType.Folder,filter.name)
         viewModelScope.launch { getAllFilteredLocalFilesUseCase(filter) }
     }
     fun getRemoteFilesFiltered(chatId:Long,filter:FiltersFromType){
+        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,filter.name, groupID = chatId)
         viewModelScope.launch { getRemoteFilesFiltered(chatId,filter) }
     }
 

@@ -2,13 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_settings"
-        android:icon="@drawable/ic_folder_vector"
-        android:title="abc1"
+        android:id="@+id/action_filter_time"
+        android:title="@string/filter_menu_time"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/action_done"
-        android:icon="@drawable/ic_folder_vector"
-        android:title="abc2"
+        android:id="@+id/action_filter_size"
+        android:title="@string/filter_menu_size"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_filter_name"
+        android:title="@string/filter_menu_name"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_filter_type"
+        android:title="@string/filter_menu_type"
         app:showAsAction="never"/>
 </menu>

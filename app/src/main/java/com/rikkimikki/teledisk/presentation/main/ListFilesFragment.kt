@@ -173,7 +173,10 @@ class ListFilesFragment : Fragment() {
 
         viewModel.fileScope.observe(viewLifecycleOwner, Observer {
             //adapter.submitList(null)
+            binding.pathTextView.setText(viewModel.currentDirectory.path)
             if (it.isNotEmpty()){
+                val count = it.size + if (it.any { it.name == ".."}) -1 else 0
+                binding.toolBarTextViewCount.setText(requireActivity().getString(R.string.filter_menu_count_items,count.toString()))
                 //binding.searchViewListFiles.setQuery("",false)
                 //binding.searchViewListFiles.setFocusable(false)
                 adapter.submitList(it.toMutableList())
@@ -238,8 +241,11 @@ class ListFilesFragment : Fragment() {
 
     private fun toolBarSettings() {
         val toolbar = binding.toolbar
-        toolbar.inflateMenu(R.menu.files_action_menu)
-        toolbar.inflateMenu(R.menu.files_action_hidden_menu)
+        val infoToolbar = binding.infoToolbar
+        //toolbar.inflateMenu(R.menu.files_action_menu)
+        //toolbar.inflateMenu(R.menu.files_action_hidden_menu)
+        infoToolbar.overflowIcon = requireActivity().getDrawable(R.drawable.arrow_down_drop_circle_outline_custom)
+        //infoToolbar.setOve
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_18dp)
         toolbar.setNavigationOnClickListener { view ->
             viewModel.clickArrow()

@@ -16,8 +16,75 @@
         android:background="@android:color/holo_blue_dark"
         android:navigationIcon="@drawable/ic_arrow_back_black_18dp"
         android:orientation="horizontal"
+        app:menu="@menu/files_action_menu"
         tools:title="downloads/">
 
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/pathToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:minHeight="0dp"
+        android:orientation="horizontal"
+        app:contentInsetStart="5dp"
+        app:contentInsetStartWithNavigation="0dp">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/pathTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="0dp"
+                    android:text="" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/infoToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:minHeight="0dp"
+        android:orientation="horizontal"
+        app:contentInsetStart="5dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:maxButtonHeight="20dp"
+        app:menu="@menu/files_action_hidden_menu">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="clip_horizontal"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/toolBarTextViewCount"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginTop="0dp"
+                android:layout_weight="1"
+                tools:text="@string/filter_menu_count_items" />
+
+            <TextView
+                android:id="@+id/toolBarTextViewFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                tools:text="↑ or ↓ TextView" />
+        </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
 
@@ -26,6 +93,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/searchViewListFiles"
         android:iconifiedByDefault="false"/>-->
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycleViewListFiles"

@@ -17,4 +17,12 @@
     <string name="documents_source">Documents</string>
     <string name="music_source">Music</string>
     <string name="apps_source">Apps</string>
+
+    <string name="filter_menu_time">Время изменения</string>
+    <string name="filter_menu_name">Имя файла</string>
+    <string name="filter_menu_type">Тип</string>
+    <string name="filter_menu_size">Размер</string>
+    <string name="filter_menu_count_items">Всего: %s</string>
+    <string name="filter_menu_arrow_down">↓</string>
+    <string name="filter_menu_arrow_up">↑</string>
 </resources>
