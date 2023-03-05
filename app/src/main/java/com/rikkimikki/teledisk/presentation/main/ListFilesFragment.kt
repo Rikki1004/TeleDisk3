@@ -1,24 +1,18 @@
 package com.rikkimikki.teledisk.presentation.main
 
-import android.app.Dialog
-import android.content.Context
-import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.os.Handler
-import android.os.Parcelable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
-import android.widget.Button
-import android.widget.SearchView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
+import androidx.core.view.forEach
 import androidx.core.view.get
+import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.Observer
@@ -26,13 +20,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
-import com.rikkimikki.teledisk.databinding.DialogInputTextBinding
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
-import com.rikkimikki.teledisk.domain.*
-import java.io.File
+import com.rikkimikki.teledisk.domain.FiltersFromType
+import com.rikkimikki.teledisk.domain.PlaceType
+import com.rikkimikki.teledisk.domain.ScopeType
+import com.rikkimikki.teledisk.domain.TdObject
 
 class ListFilesFragment : Fragment() {
     private var _binding: FragmentListFilesBinding? = null
@@ -43,6 +37,10 @@ class ListFilesFragment : Fragment() {
     private val args by navArgs<ListFilesFragmentArgs>()
     //private lateinit var actionsView = requireActivity().findViewById<FragmentContainerView>
     private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
+
+    private var filter: (list: List<TdObject>) -> List<TdObject> = {it}
+    private var filterReversed: Boolean = false
+    private var lastFilter: Int = -1
 
 
     /*override fun onPause() {
@@ -165,7 +163,6 @@ class ListFilesFragment : Fragment() {
         viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
             Toast.makeText(requireContext(), "операция успешно завершена: "+it.first, Toast.LENGTH_SHORT).show()
             if (it.second)
-                //startActivity(viewModel.openLocalFile(it.first))
                 viewModel.openLocalFile(it.first)
             else
                 viewModel.refresh()
@@ -179,7 +176,7 @@ class ListFilesFragment : Fragment() {
                 binding.toolBarTextViewCount.setText(requireActivity().getString(R.string.filter_menu_count_items,count.toString()))
                 //binding.searchViewListFiles.setQuery("",false)
                 //binding.searchViewListFiles.setFocusable(false)
-                adapter.submitList(it.toMutableList())
+                adapter.submitList(filter(it).toMutableList())
             }
         })
 
@@ -242,6 +239,7 @@ class ListFilesFragment : Fragment() {
     private fun toolBarSettings() {
         val toolbar = binding.toolbar
         val infoToolbar = binding.infoToolbar
+        val pathToolbar = binding.pathToolbar
         //toolbar.inflateMenu(R.menu.files_action_menu)
         //toolbar.inflateMenu(R.menu.files_action_hidden_menu)
         infoToolbar.overflowIcon = requireActivity().getDrawable(R.drawable.arrow_down_drop_circle_outline_custom)
@@ -249,6 +247,151 @@ class ListFilesFragment : Fragment() {
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_18dp)
         toolbar.setNavigationOnClickListener { view ->
             viewModel.clickArrow()
+        }
+
+        infoToolbar.setOnMenuItemClickListener {
+            when (lastFilter){
+                R.id.action_filter_size -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_size)}
+                R.id.action_filter_name -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_name)}
+                R.id.action_filter_type -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_type)}
+                R.id.action_filter_time -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_time)}
+            }
+            when(it.itemId){
+                R.id.action_filter_size -> {
+
+                    filterReversed = if (lastFilter == it.itemId) !filterReversed else false
+
+                    val newTitle = if (filterReversed)
+                        getString(R.string.filter_menu_arrow_up) + getString(R.string.filter_menu_size)
+                    else
+                        getString(R.string.filter_menu_arrow_down) + getString(R.string.filter_menu_size)
+
+                    val s = SpannableString(newTitle)
+                    s.setSpan(
+                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        0,
+                        s.length,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    )
+                    it.setTitle(s)
+
+                    filter =
+                        { items ->
+                            val files = items.filter { it.is_file() }
+                            val folders = items.filter { !it.is_file() }
+
+                            val filteredFolders = folders.sortedBy { item -> item.size}
+                            val filteredFiles = if (filterReversed)
+                                files.sortedByDescending { item -> item.size}
+                            else
+                                files.sortedBy { item -> item.size}
+
+                            filteredFolders+filteredFiles
+                        }
+                }
+
+                R.id.action_filter_name -> {
+
+                    filterReversed = if (lastFilter == it.itemId) !filterReversed else false
+
+                    val newTitle = if (filterReversed)
+                        getString(R.string.filter_menu_arrow_up) + getString(R.string.filter_menu_name)
+                    else
+                        getString(R.string.filter_menu_arrow_down) + getString(R.string.filter_menu_name)
+
+                    val s = SpannableString(newTitle)
+                    s.setSpan(
+                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        0,
+                        s.length,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    )
+                    it.setTitle(s)
+
+                    filter =
+                        { items ->
+                            val files = items.filter { it.is_file() }
+                            val folders = items.filter { !it.is_file() }
+
+                            val filteredFolders = folders.sortedBy { item -> item.name}
+                            val filteredFiles = if (filterReversed)
+                                files.sortedByDescending { item -> item.name}
+                            else
+                                files.sortedBy { item -> item.name}
+
+                            filteredFolders+filteredFiles
+                        }
+                }
+
+                R.id.action_filter_time -> {
+
+                    filterReversed = if (lastFilter == it.itemId) !filterReversed else false
+
+                    val newTitle = if (filterReversed)
+                        getString(R.string.filter_menu_arrow_up) + getString(R.string.filter_menu_time)
+                    else
+                        getString(R.string.filter_menu_arrow_down) + getString(R.string.filter_menu_time)
+
+                    val s = SpannableString(newTitle)
+                    s.setSpan(
+                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        0,
+                        s.length,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    )
+                    it.setTitle(s)
+
+                    filter =
+                        { items ->
+                            val files = items.filter { it.is_file() }
+                            val folders = items.filter { !it.is_file() }
+
+                            val filteredFolders = folders.sortedBy { item -> item.unixTimeDate}
+                            val filteredFiles = if (filterReversed)
+                                files.sortedByDescending { item -> item.unixTimeDate}
+                            else
+                                files.sortedBy { item -> item.unixTimeDate}
+
+                            filteredFolders+filteredFiles
+                        }
+                }
+
+                R.id.action_filter_type -> {
+
+                    filterReversed = if (lastFilter == it.itemId) !filterReversed else false
+
+                    val newTitle = if (filterReversed)
+                        getString(R.string.filter_menu_arrow_up) + getString(R.string.filter_menu_type)
+                    else
+                        getString(R.string.filter_menu_arrow_down) + getString(R.string.filter_menu_type)
+
+                    val s = SpannableString(newTitle)
+                    s.setSpan(
+                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        0,
+                        s.length,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    )
+                    it.setTitle(s)
+
+                    filter =
+                        { items ->
+                            val files = items.filter { it.is_file() }
+                            val folders = items.filter { !it.is_file() }
+
+                            val filteredFolders = folders.sortedBy { item -> item.name}
+                            val filteredFiles = if (filterReversed)
+                                files.sortedByDescending { item -> item.name.substringAfterLast(".")}
+                            else
+                                files.sortedBy { item -> item.name.substringAfterLast(".")}
+
+                            filteredFolders+filteredFiles
+                        }
+                }
+            }
+            lastFilter = it.itemId
+            viewModel.refresh()
+            false
         }
 
         toolbar.setOnMenuItemClickListener {
