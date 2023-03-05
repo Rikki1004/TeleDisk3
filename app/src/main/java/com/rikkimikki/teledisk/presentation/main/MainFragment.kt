@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FragmentMainBinding
+import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.presentation.login.LoginViewModel
 import com.rikkimikki.teledisk.presentation.login.MainLoginFragment
@@ -52,11 +53,36 @@ class MainFragment : Fragment() {
 
     fun initClickListeners(){
         with(binding){
-            textViewTopPanelApps.setOnClickListener {  }
-            textViewTopPanelDocs.setOnClickListener {  }
-            textViewTopPanelImages.setOnClickListener {  }
-            textViewTopPanelMusic.setOnClickListener {  }
-            textViewTopPanelVideo.setOnClickListener {  }
+            textViewTopPanelApps.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.APPS))
+            }
+            textViewTopPanelDocs.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.DOCUMENTS))
+            }
+            textViewTopPanelImages.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.PHOTO))
+            }
+            textViewTopPanelMusic.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.MUSIC))
+            }
+            textViewTopPanelVideo.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.VIDEO))
+            }
 
             //val navHostFragment = requireActivity().supportFragmentManager.primaryNavigationFragment //findFragmentById(R.id.main_view_container) as MainFragment
 
@@ -64,7 +90,7 @@ class MainFragment : Fragment() {
 
                 findNavController()
                     //.navigate(R.id.action_mainFragment_to_listFilesFragment)
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.Local))
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.Local,FiltersFromType.DEFAULT))
                 /*requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.Local))
                     .addToBackStack(null)
@@ -72,7 +98,7 @@ class MainFragment : Fragment() {
             }
             constraintLayoutStorageSd.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.VkMsg))
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.VkMsg,FiltersFromType.DEFAULT))
                 /*requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
                     .addToBackStack(null)
@@ -80,7 +106,7 @@ class MainFragment : Fragment() {
             }
             constraintLayoutStorageTd.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.TeleDisk))
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.TeleDisk,FiltersFromType.DEFAULT))
                 /*requireActivity().supportFragmentManager.beginTransaction()
                 .addToBackStack(null)
                 .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.TeleDisk))

@@ -182,14 +182,14 @@ class ListFilesFragment : Fragment() {
 
 
         //when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
-        if (savedInstanceState == null)
-            when(args.scopeType){
+        if (savedInstanceState == null){
+            /*when(args.scopeType){
                 //ScopeType.TeleDisk -> viewModel.getChats()
                 ScopeType.TeleDisk -> {
                     viewModel.refreshFileScope()
-                    /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
+                    *//*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
                         viewModel.getRemoteFiles(-567578282,"/")
-                    })*/
+                    })*//*
                     //viewModel.getRemoteFiles(-567578282,"/")
                     viewModel.getRemoteFiles(-650777369,"/")
                 }
@@ -198,7 +198,24 @@ class ListFilesFragment : Fragment() {
                     viewModel.getLocalFiles("/storage/emulated/0")
                 }
                 ScopeType.VkMsg -> {}
+            }*/
+
+            when(args.filter){
+                FiltersFromType.DEFAULT -> {
+                    when(args.scopeType){
+                        ScopeType.TeleDisk -> {viewModel.getRemoteFiles(-650777369,"/")}
+                        ScopeType.Local -> {viewModel.getLocalFiles("/storage/emulated/0")}
+                        ScopeType.VkMsg -> {}
+                    }
+                }
+                else -> viewModel.getLocalFilesFiltered(args.filter)
+                /*FiltersFromType.APPS -> FiltersFromType.APPS.ext
+                FiltersFromType.MUSIC -> FiltersFromType.MUSIC.ext
+                FiltersFromType.PHOTO -> FiltersFromType.PHOTO.ext
+                FiltersFromType.DOCUMENTS -> FiltersFromType.DOCUMENTS.ext*/
             }
+        }
+
         else{
             val li = savedInstanceState.getParcelableArray("list") as Array<TdObject>
             adapter.submitList(null)

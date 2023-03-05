@@ -22,5 +22,8 @@
         <argument
             android:name="scopeType"
             app:argType="com.rikkimikki.teledisk.domain.ScopeType" />
+        <argument
+            android:name="filter"
+            app:argType="com.rikkimikki.teledisk.domain.FiltersFromType" />
     </fragment>
 </navigation>

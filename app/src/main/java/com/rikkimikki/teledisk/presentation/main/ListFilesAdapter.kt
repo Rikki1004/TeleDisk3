@@ -66,10 +66,14 @@ class ListFilesAdapter (
                 it.name.lowercase().contains(char.lowercase())
         }.toMutableList())
     }
-    fun filter2(vararg extensions:String){
+    fun filter2(extensions:Array<out String>){
         if (extensions.isEmpty())
             return
-        super.submitList(notFilteredList.filter {item -> extensions.any { suffix -> item.name.lowercase().endsWith(suffix.lowercase()) }
+        super.submitList(notFilteredList.filter {item ->
+            if (item.name == "..")
+                true
+            else
+                extensions.any { suffix -> item.name.lowercase().endsWith(suffix) }
         }.toMutableList())
     }
 

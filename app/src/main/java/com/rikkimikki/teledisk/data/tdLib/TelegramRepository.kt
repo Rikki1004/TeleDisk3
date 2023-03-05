@@ -1,9 +1,11 @@
 package com.rikkimikki.teledisk.data.tdLib
 
 import android.os.Environment
+import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.domain.*
 import kotlinx.coroutines.flow.*
 import kotlinx.telegram.core.TelegramException
@@ -256,6 +258,28 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         }
         //dataFromStore.value = tempList
         dataFromStore.postValue(tempList)
+    }
+
+
+    override suspend fun getRemoteFilesFiltered(
+        id: Long,
+        filter: FiltersFromType
+    ): LiveData<List<TdObject>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLocalFilesFiltered(filter: FiltersFromType): LiveData<List<TdObject>> {
+        thread {
+            val tempList = mutableListOf<TdObject>()
+            val path = "/storage/emulated/0"
+
+            File(path).walk().filter{ it.isFile && filter.ext.any { suffix -> it.name.lowercase().endsWith(suffix) } }.forEach {
+                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))
+            }
+            dataFromStore.postValue(tempList)
+        }
+        return dataFromStore
+
     }
 
     suspend fun sendPhone(phone: String) {

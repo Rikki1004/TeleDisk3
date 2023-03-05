@@ -43,6 +43,8 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val deleteFileUseCase = DeleteFileUseCase(repository)
     private val deleteFolderUseCase = DeleteFolderUseCase(repository)
     private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
+    private val getAllFilteredLocalFilesUseCase = GetAllFilteredLocalFilesUseCase(repository)
+    private val getAllFilteredRemoteFilesUseCase = GetAllFilteredRemoteFilesUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
@@ -108,6 +110,14 @@ init {
         //if (path == "/storage/emulated/0") fileScope.value = listOf()
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
+
+    fun getLocalFilesFiltered(filter:FiltersFromType){
+        viewModelScope.launch { getAllFilteredLocalFilesUseCase(filter) }
+    }
+    fun getRemoteFilesFiltered(chatId:Long,filter:FiltersFromType){
+        viewModelScope.launch { getRemoteFilesFiltered(chatId,filter) }
+    }
+
 
     fun createFolder(name:String){
         viewModelScope.launch { createFolderUseCase(currentDirectory, name) }

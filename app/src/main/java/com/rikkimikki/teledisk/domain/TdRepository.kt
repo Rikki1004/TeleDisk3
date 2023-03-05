@@ -16,6 +16,10 @@ interface TdRepository {
     suspend fun getRemoteFilesNoLD(id: Long,path: String) : List<TdObject>
     fun getStorages() : LiveData<List<ScopeType>>
 
+
+    suspend fun getRemoteFilesFiltered(id: Long,filter:FiltersFromType) : LiveData<List<TdObject>>
+    fun getLocalFilesFiltered(filter:FiltersFromType) : LiveData<List<TdObject>>
+
     suspend fun renameFile(file: TdObject,newName:String)
     suspend fun renameFolder(folder: TdObject,newName:String)
     suspend fun deleteFolder(folder:TdObject)
