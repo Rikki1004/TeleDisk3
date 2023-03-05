@@ -8,11 +8,24 @@
     android:orientation="vertical"
     tools:listitem="@layout/file_item" >
 
-    <SearchView
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_blue_dark"
+        android:navigationIcon="@drawable/ic_arrow_back_black_18dp"
+        android:orientation="horizontal"
+        tools:title="downloads/">
+
+    </androidx.appcompat.widget.Toolbar>
+
+
+    <!--<SearchView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/searchViewListFiles"
-        android:iconifiedByDefault="false"/>
+        android:iconifiedByDefault="false"/>-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycleViewListFiles"

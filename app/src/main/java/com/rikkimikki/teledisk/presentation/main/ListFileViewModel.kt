@@ -49,6 +49,7 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     val chatScope = repository.allChats
 
     var needLaunchIntent = MutableLiveData<Intent>()
+    var needPressBackButton = MutableLiveData<Unit>()
 
     val selectedItems = mutableListOf<TdObject>()
     private lateinit var currentDirectory : TdObject
@@ -109,6 +110,21 @@ init {
         currentDirectory = TdObject("currentDir",PlaceType.Local,FileType.Folder,path)
         //if (path == "/storage/emulated/0") fileScope.value = listOf()
         viewModelScope.launch { getLocalFilesUseCase(path) }
+    }
+    fun clickArrow(){
+        val a = currentDirectory
+        val b = currentDirectory.path.substringBeforeLast("/")
+        if (currentDirectory.is_local() && currentDirectory.path != "/storage/emulated/0")
+            getLocalFiles(currentDirectory.path.substringBeforeLast("/"))
+        else if (!currentDirectory.is_local() && currentDirectory.path != "/"){
+            var tempPath = currentDirectory.path.substringBeforeLast("/")
+            if (tempPath.isBlank()) tempPath = "/"
+            getRemoteFiles(currentDirectory.groupID, tempPath)
+        }
+
+        else
+            needPressBackButton.value = Unit
+        println(""+a+b)
     }
 
     fun getLocalFilesFiltered(filter:FiltersFromType){

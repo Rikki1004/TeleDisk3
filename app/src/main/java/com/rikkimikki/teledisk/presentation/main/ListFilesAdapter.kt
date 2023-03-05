@@ -2,15 +2,14 @@ package com.rikkimikki.teledisk.presentation.main
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import android.widget.Filter
-import android.widget.Filterable
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FileItemBinding
+import com.rikkimikki.teledisk.databinding.FileItemGridBinding
 import com.rikkimikki.teledisk.domain.GetRemoteFilesUseCase
 import com.rikkimikki.teledisk.domain.LoadThumbnailUseCase
 import com.rikkimikki.teledisk.domain.PlaceType
@@ -27,15 +26,15 @@ class ListFilesAdapter (
     private val context: Context
 ) : ListAdapter<TdObject, ListFilesAdapter.ListFilesViewHolder>(ListFileDiffCallback){
 
+
     private val scope:CoroutineScope = CoroutineScope(Dispatchers.Main)
 
     private val repository = TelegramRepository
 
     private val loadThumbnailUseCase = LoadThumbnailUseCase(repository)
 
-    class ListFilesViewHolder(
-        val binding: FileItemBinding
-    ) : RecyclerView.ViewHolder(binding.root)
+    class ListFilesViewHolder( val binding: FileItemBinding) : RecyclerView.ViewHolder(binding.root)
+
 
     var onFileClickListener: OnFileClickListener? = null
     var onFileLongClickListener: OnFileLongClickListener? = null
@@ -66,16 +65,7 @@ class ListFilesAdapter (
                 it.name.lowercase().contains(char.lowercase())
         }.toMutableList())
     }
-    fun filter2(extensions:Array<out String>){
-        if (extensions.isEmpty())
-            return
-        super.submitList(notFilteredList.filter {item ->
-            if (item.name == "..")
-                true
-            else
-                extensions.any { suffix -> item.name.lowercase().endsWith(suffix) }
-        }.toMutableList())
-    }
+
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListFilesViewHolder {
@@ -90,6 +80,7 @@ class ListFilesAdapter (
     override fun onBindViewHolder(holder: ListFilesViewHolder, position: Int) {
 
         val item = getItem(position)
+        val a = holder.itemView.layoutDirection
         with(holder.binding) {
             if (item.isChecked)
                 root.setBackgroundColor(context.getColor(R.color.activated_item_foreground))
@@ -140,4 +131,5 @@ class ListFilesAdapter (
     interface OnFileLongClickListener {
         fun onFileLongClick(tdObject: TdObject)
     }
+
 }

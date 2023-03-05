@@ -18,11 +18,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
@@ -134,7 +136,7 @@ class ListFilesFragment : Fragment() {
         //binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireContext(),4)
         binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.VERTICAL }
 
-        binding.searchViewListFiles.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        /*binding.searchViewListFiles.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 return false
             }
@@ -143,7 +145,7 @@ class ListFilesFragment : Fragment() {
                 adapter.filter1(p0)
                 return false
             }
-        })
+        })*/
 
         binding.recycleViewListFiles.adapter = adapter
         //adapter.submitList(null)
@@ -153,6 +155,11 @@ class ListFilesFragment : Fragment() {
         viewModel.needLaunchIntent.observe(viewLifecycleOwner, Observer {
             startActivity(it)
         })
+
+        viewModel.needPressBackButton.observe(viewLifecycleOwner, Observer {
+            requireActivity().onBackPressed()
+        })
+
 
         viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
             Toast.makeText(requireContext(), "операция успешно завершена: "+it.first, Toast.LENGTH_SHORT).show()
@@ -166,11 +173,14 @@ class ListFilesFragment : Fragment() {
         viewModel.fileScope.observe(viewLifecycleOwner, Observer {
             //adapter.submitList(null)
             if (it.isNotEmpty()){
-                binding.searchViewListFiles.setQuery("",false)
-                binding.searchViewListFiles.setFocusable(false)
+                //binding.searchViewListFiles.setQuery("",false)
+                //binding.searchViewListFiles.setFocusable(false)
                 adapter.submitList(it.toMutableList())
             }
         })
+
+
+        toolBarSettings()
 
         /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
             println(it)
@@ -225,6 +235,36 @@ class ListFilesFragment : Fragment() {
         //viewModel.getChats()
     }
 
+    private fun toolBarSettings() {
+        val toolbar = binding.toolbar
+        toolbar.inflateMenu(R.menu.files_action_menu)
+        toolbar.inflateMenu(R.menu.files_action_hidden_menu)
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_18dp)
+        toolbar.setNavigationOnClickListener { view ->
+            viewModel.clickArrow()
+        }
+
+        toolbar.setOnMenuItemClickListener {
+            when(it.itemId){
+                R.id.action_settings -> {}
+                R.id.action_search -> {}
+                R.id.action_layout_grid -> {
+                    binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireActivity(),4)
+                    toolbar.menu.findItem(R.id.action_layout_linear).isVisible = true
+                    it.isVisible =false
+                }
+                R.id.action_layout_linear -> {
+                    binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity())
+                    toolbar.menu.findItem(R.id.action_layout_grid).isVisible = true
+                    it.isVisible =false
+                }
+                R.id.action_done -> {}
+            }
+            true
+        }
+
+    }
+
     private fun checkedItemsProcessing(adapter: ListFilesAdapter,tdObject: TdObject) {
         //tdObject.isChecked = !tdObject.isChecked
 
@@ -252,6 +292,7 @@ class ListFilesFragment : Fragment() {
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
         super.onDestroyView()
     }
+
 
     private fun getType(): ScopeType {
         return requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType
