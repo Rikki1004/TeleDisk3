@@ -134,6 +134,7 @@ class ListFilesFragment : Fragment() {
             }
         }
         //binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireContext(),4)
+
         binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.VERTICAL }
 
         /*binding.searchViewListFiles.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -249,11 +250,14 @@ class ListFilesFragment : Fragment() {
                 R.id.action_settings -> {}
                 R.id.action_search -> {}
                 R.id.action_layout_grid -> {
+                    adapter.layoutManagerType = adapter.MANAGER_GRID
                     binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireActivity(),4)
+                    //binding.recycleViewListFiles.invalidateItemDecorations()
                     toolbar.menu.findItem(R.id.action_layout_linear).isVisible = true
                     it.isVisible =false
                 }
                 R.id.action_layout_linear -> {
+                    adapter.layoutManagerType = adapter.MANAGER_LINEAR
                     binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity())
                     toolbar.menu.findItem(R.id.action_layout_grid).isVisible = true
                     it.isVisible =false
