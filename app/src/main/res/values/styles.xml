@@ -1,5 +1,6 @@
 <resources>
 
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
@@ -13,6 +14,37 @@
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
     </style>
+
+    <style name="SmallProgressBar" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:minHeight">10dip</item>
+        <item name="android:maxHeight">15dip</item>
+    </style>
+
+    <style name="cardFilterLinearLayout">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:orientation">vertical</item>
+        <item name="layout_columnWeight">1</item>
+        <item name="layout_gravity">fill_horizontal</item>
+        <item name="layout_rowWeight">1</item>
+        <item name="android:background">@drawable/rounded_corner_big</item>
+    </style>
+
+    <style name="cardFilterImageView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:paddingTop">50dp</item>
+        <item name="android:layout_weight">6</item>
+    </style>
+
+    <style name="cardFilterTextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+
 
     <!--<style name="MyActionButtonOverflow" parent="android:style/Widget.Holo.Light.ActionButton.Overflow">
         <item name="android:src">@drawable/arrow_down_drop_circle_outline_custom</item>

@@ -25,4 +25,15 @@
     <string name="filter_menu_count_items">Всего: %s</string>
     <string name="filter_menu_arrow_down">↓</string>
     <string name="filter_menu_arrow_up">↑</string>
+    <string name="filter_images">Изображения</string>
+    <string name="filter_zero">0</string>
+    <string name="filter_video">Видео</string>
+    <string name="filter_music">Аудио</string>
+    <string name="filter_archives">Архивы</string>
+    <string name="filter_docs">Документы</string>
+    <string name="filter_apks">Файлы APK</string>
+    <string name="name_scope_main">Память устройства</string>
+    <string name="name_scope_teledisk">ТелеДиск</string>
+    <string name="name_scope_sd">SD-карта</string>
+    <string name="name_scope_vk">ВкДиск (в разработке)</string>
 </resources>

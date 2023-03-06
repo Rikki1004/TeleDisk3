@@ -96,9 +96,17 @@ class MainFragment : Fragment() {
                     .addToBackStack(null)
                 .commit()*/
             }
-            constraintLayoutStorageSd.setOnClickListener {
+            constraintLayoutStorageVk.setOnClickListener {
                 findNavController()
                     .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.VkMsg,FiltersFromType.DEFAULT))
+                /*requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
+                    .addToBackStack(null)
+                    .commit()*/
+            }
+            constraintLayoutStorageSd.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.Sd,FiltersFromType.DEFAULT))
                 /*requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
                     .addToBackStack(null)
