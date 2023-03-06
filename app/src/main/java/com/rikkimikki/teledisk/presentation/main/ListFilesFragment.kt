@@ -194,6 +194,7 @@ class ListFilesFragment : Fragment() {
 
         //when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
         if (savedInstanceState == null){
+
             /*when(args.scopeType){
                 //ScopeType.TeleDisk -> viewModel.getChats()
                 ScopeType.TeleDisk -> {
@@ -211,20 +212,7 @@ class ListFilesFragment : Fragment() {
                 ScopeType.VkMsg -> {}
             }*/
 
-            when(args.filter){
-                FiltersFromType.DEFAULT -> {
-                    when(args.scopeType){
-                        ScopeType.TeleDisk -> {viewModel.getRemoteFiles(-650777369,"/")}
-                        ScopeType.Local -> {viewModel.getLocalFiles("/storage/emulated/0")}
-                        ScopeType.VkMsg -> {}
-                    }
-                }
-                else -> viewModel.getLocalFilesFiltered(args.filter)
-                /*FiltersFromType.APPS -> FiltersFromType.APPS.ext
-                FiltersFromType.MUSIC -> FiltersFromType.MUSIC.ext
-                FiltersFromType.PHOTO -> FiltersFromType.PHOTO.ext
-                FiltersFromType.DOCUMENTS -> FiltersFromType.DOCUMENTS.ext*/
-            }
+            init()
         }
 
         else{
@@ -235,6 +223,25 @@ class ListFilesFragment : Fragment() {
 
         //viewModel.getChats()
     }
+
+    private fun init(){
+        when(args.filter){
+            FiltersFromType.DEFAULT -> {
+                when(args.scopeType){
+                    //ScopeType.TeleDisk -> {viewModel.getRemoteFiles(-650777369,"/")}
+                    ScopeType.TeleDisk -> {viewModel.getRemoteFiles(viewModel.currentGroup,"/")}
+                    ScopeType.Local -> {viewModel.getLocalFiles("/storage/emulated/0")}
+                    ScopeType.VkMsg -> {}
+                }
+            }
+            else -> viewModel.getLocalFilesFiltered(args.filter)
+            /*FiltersFromType.APPS -> FiltersFromType.APPS.ext
+            FiltersFromType.MUSIC -> FiltersFromType.MUSIC.ext
+            FiltersFromType.PHOTO -> FiltersFromType.PHOTO.ext
+            FiltersFromType.DOCUMENTS -> FiltersFromType.DOCUMENTS.ext*/
+        }
+    }
+
 
     private fun toolBarSettings() {
         val toolbar = binding.toolbar
@@ -416,7 +423,11 @@ class ListFilesFragment : Fragment() {
                 }
             }
             lastFilter = it.itemId
-            viewModel.refresh()
+            if (args.filter == FiltersFromType.DEFAULT)
+                viewModel.refresh()
+            else
+                init()
+
             true
         }
 

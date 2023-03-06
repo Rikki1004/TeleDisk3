@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <item
-        android:id="@+id/nav_home"
+        android:id="@+id/dark_theme_switch"
+        android:title="Switch"
+        app:actionLayout="@layout/switch_item"/>
+    <!--<item
+        android:id="@+id/disk_store"
         android:icon="@drawable/ic_arrow_upward_black_18dp_down"
-        android:title="menu_home" />
-    <item
-        android:id="@+id/nav_gallery"
-        android:icon="@drawable/ic_menu_black_18dp"
-        android:title="menu_gallery" />
-    <item
-        android:id="@+id/nav_slideshow"
-        android:icon="@drawable/ic_arrow_back_black_18dp"
-        android:title="menu_slideshow" />
+        android:menuCategory="container"
+        android:title="Удаленные диски" />-->
+
+
+
 </menu>

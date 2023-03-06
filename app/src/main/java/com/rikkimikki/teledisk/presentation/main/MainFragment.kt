@@ -3,12 +3,15 @@ package com.rikkimikki.teledisk.presentation.main
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.navigation.NavigationView
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FragmentMainBinding
@@ -24,7 +27,9 @@ import kotlinx.coroutines.launch
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: LoginViewModel
+    private lateinit var viewModel: ListFileViewModel
+    private lateinit var navView : NavigationView
+    private var chatsList = mutableListOf<Long>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,14 +41,29 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
+        viewModel = ViewModelProvider(this)[ListFileViewModel::class.java]
         initClickListeners()
 
-        val scope = CoroutineScope(Dispatchers.Main)
-        scope.launch {
-            TelegramRepository.getAllChats()
+        val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
+        navView.setNavigationItemSelectedListener {
+            if (it.groupId == GROUP_ID){
+                viewModel.currentGroup = chatsList[it.itemId]
+            }
+            return@setNavigationItemSelectedListener true
         }
-        //view.findNavController().navigate(R.id.viewTransactionsAction)
+
+        viewModel.getChats().observe(viewLifecycleOwner) {
+            val menu = navView.menu
+            menu.clear()
+            val submenu: Menu = menu.addSubMenu("Удаленные диски")
+
+
+            for(i in 0 until it.size){
+                submenu.add(GROUP_ID,i,Menu.NONE,it[i].second)
+                chatsList.add(it[i].first)
+            }
+            navView.invalidate()
+        }
     }
 
     override fun onDestroyView() {
@@ -125,6 +145,7 @@ class MainFragment : Fragment() {
     }
 
     companion object {
+        const val GROUP_ID = 10
         fun newInstance() = MainFragment()
     }
 }

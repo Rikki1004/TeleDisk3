@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.utils.SingleLiveData
 import kotlinx.coroutines.flow.*
 import kotlinx.telegram.core.TelegramException
 import kotlinx.telegram.core.TelegramFlow
@@ -28,10 +29,10 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
-    val dataFromStore = MutableLiveData<List<TdObject>>()
+    val dataFromStore = SingleLiveData<List<TdObject>>()
 
-    val shareRemoteFiles = MutableLiveData<List<TdObject>>()
-    override fun tempPathsForSend(): MutableLiveData<List<TdObject>> {
+    val shareRemoteFiles = SingleLiveData<List<TdObject>>()
+    override fun tempPathsForSend(): SingleLiveData<List<TdObject>> {
         return shareRemoteFiles
     }
 
@@ -40,7 +41,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
     override val api: TelegramFlow = TelegramFlow()
 
-    val allChats = MutableLiveData<List<Chat>>()
+    val allChats = SingleLiveData<List<Chat>>()
 
     val authFlow = api.authorizationStateFlow()
         .onEach {
@@ -327,8 +328,8 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         }
     }.retryWhen { cause, _ -> cause is TelegramException }
 
-    val needOpenLD = MutableLiveData<Pair<String,Boolean>>()//MutableLiveData<TdApi.File>()
-    override fun fileOperationComplete(): MutableLiveData<Pair<String,Boolean>> {
+    val needOpenLD = SingleLiveData<Pair<String,Boolean>>()//MutableLiveData<TdApi.File>()
+    override fun fileOperationComplete(): SingleLiveData<Pair<String, Boolean>> {
         return needOpenLD
     }
 

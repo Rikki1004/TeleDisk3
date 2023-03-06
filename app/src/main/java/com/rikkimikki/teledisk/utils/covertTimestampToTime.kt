@@ -8,7 +8,7 @@ import java.text.StringCharacterIterator
 import java.util.*
 
 fun covertTimestampToTime(timestamp:Long?) : String{
-    if (timestamp == null) return ""
+    if (timestamp == null || timestamp == 0L) return ""
     val stamp = Timestamp(timestamp)
     val date = Date(stamp.time)
     val patern = "dd.MM.yyyy, HH:mm"
