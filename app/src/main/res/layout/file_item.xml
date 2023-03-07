@@ -4,7 +4,6 @@
     android:id="@+id/item_frame"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
 
@@ -14,6 +13,7 @@
     <RelativeLayout
         android:id="@+id/item_holder"
         android:layout_width="match_parent"
+        android:background="@color/colorMainBackground"
         android:layout_height="wrap_content"
         android:paddingStart="0dp"
         android:paddingEnd="@dimen/activity_margin">
@@ -37,10 +37,12 @@
             android:paddingStart="@dimen/tiny_margin"
             android:paddingEnd="0dp"
             android:paddingTop="@dimen/small_margin"
+            android:textColor="@color/colorMainText"
             tools:text="Directory" />
 
         <TextView
             android:id="@+id/item_details"
+            android:textColor="@color/colorMainText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/item_name"
@@ -55,6 +57,7 @@
             android:id="@+id/item_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/colorMainText"
             android:layout_alignTop="@+id/item_details"
             android:layout_alignBottom="@+id/item_details"
             android:layout_toEndOf="@+id/item_details"

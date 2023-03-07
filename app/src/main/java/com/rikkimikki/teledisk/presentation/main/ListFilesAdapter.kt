@@ -59,10 +59,13 @@ class ListFilesAdapter (
         var itemDate: TextView = itemView.findViewById(R.id.item_date)
         fun bind(position: Int) {
             val item = currentList[position]
-            if (item.isChecked)
+            if (item.isChecked){
                 itemView.setBackgroundColor(context.getColor(R.color.activated_item_foreground))
-            else
-                itemView.setBackgroundColor(context.getColor(R.color.just_item_foreground))
+            }
+            else{
+                itemView.setBackgroundColor(context.getColor(R.color.colorMainBackground))
+            }
+
             if (item.is_file()) {
                 val resId = R.drawable.file_asset
                 itemName.text = item.name
@@ -106,7 +109,7 @@ class ListFilesAdapter (
             if (item.isChecked)
                 itemView.setBackgroundColor(context.getColor(R.color.activated_item_foreground))
             else
-                itemView.setBackgroundColor(context.getColor(R.color.just_item_foreground))
+                itemView.setBackgroundColor(context.getColor(R.color.colorMainBackground))
             if (item.is_file()) {
                 val resId = R.drawable.file_asset
                 itemName.text = item.name

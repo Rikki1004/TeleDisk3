@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorMainBackground"
+    android:textColor="@color/colorMainText"
     tools:context="com.rikkimikki.teledisk.presentation.main.MainActivity">
 
 
@@ -12,8 +14,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:layout_marginTop="80dp"
+        android:textColor="@color/colorMainText"
         android:layout_marginEnd="30dp"
         android:text="TeleDisk"
+        android:textStyle="bold"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -35,9 +39,10 @@
             android:id="@+id/textView2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
+            android:background="@drawable/rounded_corner"
             android:layout_marginEnd="10dp"
             android:layout_weight="1"
-            android:background="@drawable/rounded_corner"
             android:gravity="start|center_vertical"
             android:text="Teledisk"
             android:textSize="20sp"
@@ -49,6 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_weight="1"
+            android:textColor="@color/colorPrimaryText"
             android:background="@drawable/rounded_corner"
             android:gravity="start|center_vertical"
             android:text="Phone"
@@ -82,6 +88,7 @@
                     android:id="@+id/mainScopeTextViewName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorStoreText"
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="20dp"
                     android:text="@string/name_scope_main"
@@ -92,6 +99,7 @@
                     android:id="@+id/mainScopeTextViewFreeSpace"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorStoreText"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
                     android:text="73,9 ГБ"
@@ -117,6 +125,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
+                    android:textColor="@color/colorPrimaryText"
                     android:text=" | 128 ГБ"
                     app:layout_constraintBottom_toTopOf="@+id/mainScopeProgressBarFreeSpace"
                     app:layout_constraintStart_toEndOf="@+id/mainScopeTextViewFreeSpace" />
@@ -126,7 +135,7 @@
                 android:layout_width="250dp"
                 android:layout_height="160dp"
                 android:layout_marginEnd="5dp"
-                android:background="@drawable/rounded_corner_big"
+                android:background="@drawable/rounded_primary_corner_big"
                 android:id="@+id/constraintLayoutStorageTd">
 
                 <TextView
@@ -135,6 +144,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="20dp"
+                    android:textColor="@color/colorStoreText"
                     android:text="@string/name_scope_teledisk"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -145,6 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
+                    android:textColor="@color/colorStoreText"
                     android:text="73,9 ГБ"
                     android:textSize="30sp"
                     app:layout_constraintBottom_toTopOf="@+id/teleDiskScopeProgressBarFreeSpace"
@@ -166,6 +177,7 @@
                     android:id="@+id/teleDiskScopeTextViewTotalSpace"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorPrimaryText"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
                     android:text=" | ∞ ГБ"
@@ -179,12 +191,13 @@
                 android:layout_height="160dp"
                 android:layout_marginStart="5dp"
                 android:layout_marginEnd="5dp"
-                android:background="@drawable/rounded_corner_big">
+                android:background="@drawable/rounded_primary_corner_big">
 
                 <TextView
                     android:id="@+id/sdScopeTextViewName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorStoreText"
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="20dp"
                     android:text="@string/name_scope_sd"
@@ -197,6 +210,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
+                    android:textColor="@color/colorStoreText"
                     android:text="73,9 ГБ"
                     android:textSize="30sp"
                     app:layout_constraintBottom_toTopOf="@+id/sdScopeProgressBarFreeSpace"
@@ -219,6 +233,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
+                    android:textColor="@color/colorPrimaryText"
                     android:layout_marginBottom="10dp"
                     android:text=" | 128 ГБ"
                     app:layout_constraintBottom_toTopOf="@+id/sdScopeProgressBarFreeSpace"
@@ -230,12 +245,13 @@
                 android:layout_height="160dp"
                 android:layout_marginEnd="5dp"
                 android:id="@+id/constraintLayoutStorageVk"
-                android:background="@drawable/rounded_corner_big">
+                android:background="@drawable/rounded_primary_corner_big">
 
                 <TextView
                     android:id="@+id/vkScopeTextViewName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorStoreText"
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="20dp"
                     android:text="@string/name_scope_vk"
@@ -246,6 +262,7 @@
                     android:id="@+id/vkScopeTextViewFreeSpace"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorStoreText"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
                     tools:text="73,9 ГБ"
@@ -271,6 +288,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
                     android:layout_marginBottom="10dp"
+                    android:textColor="@color/colorPrimaryText"
                     android:text=" | 128 ГБ"
                     app:layout_constraintBottom_toTopOf="@+id/vkScopeProgressBarFreeSpace"
                     app:layout_constraintStart_toEndOf="@+id/vkScopeTextViewFreeSpace" />
@@ -304,11 +322,13 @@
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_images"/>
+                android:text="@string/filter_images"
+                android:textColor="@color/colorMainText"/>
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_zero"/>
+                android:text="@string/filter_zero"
+                android:textColor="@color/colorPrimaryText"/>
 
         </LinearLayout>
 
@@ -323,11 +343,13 @@
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_video"/>
+                android:text="@string/filter_video"
+                android:textColor="@color/colorMainText"/>
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_zero"/>
+                android:text="@string/filter_zero"
+                android:textColor="@color/colorPrimaryText"/>
 
         </LinearLayout>
 
@@ -342,11 +364,13 @@
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_music"/>
+                android:text="@string/filter_music"
+                android:textColor="@color/colorMainText"/>
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_zero"/>
+                android:text="@string/filter_zero"
+                android:textColor="@color/colorPrimaryText"/>
 
         </LinearLayout>
 
@@ -361,11 +385,13 @@
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_docs"/>
+                android:text="@string/filter_docs"
+                android:textColor="@color/colorMainText"/>
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_zero"/>
+                android:text="@string/filter_zero"
+                android:textColor="@color/colorPrimaryText"/>
 
         </LinearLayout>
 
@@ -380,11 +406,13 @@
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_apks"/>
+                android:text="@string/filter_apks"
+                android:textColor="@color/colorMainText"/>
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_zero"/>
+                android:text="@string/filter_zero"
+                android:textColor="@color/colorPrimaryText"/>
 
         </LinearLayout>
 
@@ -399,11 +427,13 @@
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_archives"/>
+                android:text="@string/filter_archives"
+                android:textColor="@color/colorMainText"/>
 
             <TextView
                 style="@style/cardFilterTextView"
-                android:text="@string/filter_zero"/>
+                android:text="@string/filter_zero"
+                android:textColor="@color/colorPrimaryText"/>
         </LinearLayout>
 
 

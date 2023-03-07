@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:textColor="@color/colorMainText"
+    android:background="@color/colorMainBackground"
     tools:context=".presentation.main.ListFilesFragment"
     android:orientation="vertical"
     tools:listitem="@layout/file_item" >
@@ -13,7 +15,8 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/holo_blue_dark"
+        app:titleTextColor="@color/colorMainText"
+        android:background="@color/colorMainBackground"
         android:navigationIcon="@drawable/ic_arrow_back_black_18dp"
         android:orientation="horizontal"
         app:menu="@menu/files_action_menu"
@@ -25,8 +28,9 @@
         android:id="@+id/pathToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
         android:minHeight="0dp"
+        app:titleTextColor="@color/colorMainText"
+        android:background="@color/colorMainBackground"
         android:orientation="horizontal"
         app:contentInsetStart="5dp"
         app:contentInsetStartWithNavigation="0dp">
@@ -55,7 +59,8 @@
         android:id="@+id/infoToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        app:titleTextColor="@color/colorMainText"
+        android:background="@color/colorMainBackground"
         android:minHeight="0dp"
         android:orientation="horizontal"
         app:contentInsetStart="5dp"
@@ -98,6 +103,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycleViewListFiles"
         android:layout_width="match_parent"
+        android:background="@color/colorMainBackground"
         android:layout_height="match_parent"
         tools:context=".presentation.main.ListFilesFragment"
         tools:listitem="@layout/file_item" />
