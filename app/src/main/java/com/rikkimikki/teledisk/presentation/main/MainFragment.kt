@@ -87,7 +87,6 @@ class MainFragment : Fragment() {
 
         viewModel.getChats().observe(viewLifecycleOwner) {
             val menu = navView.menu
-
             val submenu: Menu = menu.addSubMenu("Удаленные диски")
             submenu.clear()
 
@@ -115,6 +114,18 @@ class MainFragment : Fragment() {
 
     fun initClickListeners(){
         with(binding){
+            textViewPhoneSearch.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.ALL_LOCAL))
+            }
+            textViewTelediskSearch.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.Local,FiltersFromType.ALL_REMOTE))
+            }
             textViewTopPanelApps.setOnClickListener {
                 findNavController()
                     .navigate(MainFragmentDirections

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--androidx.appcompat.widget.SearchView-->
+    <!--<style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+        &lt;!&ndash;<item name="colorPrimary">@color/colorMainText</item>&ndash;&gt;
+        <item name="backgroundColor">#FFFFFF</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>-->
+    <style name="dwescsdc">
+
+    </style>
     <!--<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         &lt;!&ndash; Customize your theme here. &ndash;&gt;
         <item name="colorPrimary">#000000</item>

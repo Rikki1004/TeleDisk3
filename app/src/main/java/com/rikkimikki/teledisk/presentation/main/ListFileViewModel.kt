@@ -146,9 +146,9 @@ init {
         currentDirectory = TdObject("",PlaceType.Local,FileType.Folder,"/storage/emulated/0")
         viewModelScope.launch { getAllFilteredLocalFilesUseCase(filter) }
     }
-    fun getRemoteFilesFiltered(chatId:Long,filter:FiltersFromType){
-        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,"/", groupID = chatId)
-        viewModelScope.launch { getRemoteFilesFiltered(chatId,filter) }
+    fun getRemoteFilesFiltered(filter:FiltersFromType){
+        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,"/", groupID = currentGroup)
+        viewModelScope.launch { getAllFilteredRemoteFilesUseCase(currentGroup,filter) }
     }
 
 

@@ -47,9 +47,10 @@
                 <TextView
                     android:id="@+id/pathTextView"
                     android:layout_width="wrap_content"
+                    android:textColor="@color/colorMainText"
                     android:layout_height="match_parent"
                     android:layout_marginTop="0dp"
-                    android:text="" />
+                    tools:text="/Downloads" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -79,12 +80,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginTop="0dp"
+                android:textColor="@color/colorMainText"
                 android:layout_weight="1"
                 tools:text="@string/filter_menu_count_items" />
 
             <TextView
                 android:id="@+id/toolBarTextViewFilter"
                 android:layout_width="wrap_content"
+                android:textColor="@color/colorMainText"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="right"

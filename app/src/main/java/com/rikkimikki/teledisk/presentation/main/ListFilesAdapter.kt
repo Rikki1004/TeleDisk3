@@ -32,6 +32,7 @@ class ListFilesAdapter (
 ) : ListAdapter<TdObject, RecyclerView.ViewHolder>(ListFileDiffCallback){
 
 
+
     private val scope:CoroutineScope = CoroutineScope(Dispatchers.Main)
 
     private val repository = TelegramRepository

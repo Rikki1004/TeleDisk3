@@ -6,17 +6,15 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.*
+import android.widget.AutoCompleteTextView
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.view.forEach
-import androidx.core.view.get
-import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -63,7 +61,8 @@ class ListFilesFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         //val list : List<TdObject > = ArrayList<TdObject>()
-        outState.putParcelableArray("list", adapter.currentList.toTypedArray())
+        if (adapter.currentList.size < 1000)
+            outState.putParcelableArray("list", adapter.currentList.toTypedArray())
 
     }
 
@@ -183,6 +182,8 @@ class ListFilesFragment : Fragment() {
 
         toolBarSettings()
 
+
+
         /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
             println(it)
             //viewModel.getRemoteFiles(-571102575,"/[R.G. Mechanics] Worms Revolution/Redist")
@@ -193,7 +194,7 @@ class ListFilesFragment : Fragment() {
 
 
         //when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
-        if (savedInstanceState == null){
+        if (savedInstanceState == null || !savedInstanceState.containsKey("list")){
 
             /*when(args.scopeType){
                 //ScopeType.TeleDisk -> viewModel.getChats()
@@ -234,7 +235,10 @@ class ListFilesFragment : Fragment() {
                     ScopeType.VkMsg -> {}
                 }
             }
-            else -> viewModel.getLocalFilesFiltered(args.filter)
+            FiltersFromType.ALL_REMOTE -> {viewModel.getRemoteFilesFiltered(args.filter)}
+            FiltersFromType.ALL_LOCAL -> {viewModel.getLocalFilesFiltered(args.filter)}
+
+            else -> {viewModel.getLocalFilesFiltered(args.filter)}
             /*FiltersFromType.APPS -> FiltersFromType.APPS.ext
             FiltersFromType.MUSIC -> FiltersFromType.MUSIC.ext
             FiltersFromType.PHOTO -> FiltersFromType.PHOTO.ext
@@ -248,6 +252,11 @@ class ListFilesFragment : Fragment() {
         val infoToolbar = binding.infoToolbar
         val pathToolbar = binding.pathToolbar
         val searchBar = toolbar.menu.findItem(R.id.action_search).actionView as SearchView
+
+
+
+        //searchBar.res //setBackgroundColor(resources.getColor(R.color.colorMainText))
+        //searchBar.setTe (resources.getColor(R.color.colorMainText))
         //toolbar.inflateMenu(R.menu.files_action_menu)
         //toolbar.inflateMenu(R.menu.files_action_hidden_menu)
         infoToolbar.overflowIcon = requireActivity().getDrawable(R.drawable.arrow_down_drop_circle_outline_custom)
@@ -307,6 +316,7 @@ class ListFilesFragment : Fragment() {
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
                     it.setTitle(s)
+                    binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
@@ -340,6 +350,7 @@ class ListFilesFragment : Fragment() {
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
                     it.setTitle(s)
+                    binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
@@ -373,6 +384,7 @@ class ListFilesFragment : Fragment() {
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
                     it.setTitle(s)
+                    binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
@@ -406,6 +418,7 @@ class ListFilesFragment : Fragment() {
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
                     it.setTitle(s)
+                    binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->

@@ -41,7 +41,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
     override val api: TelegramFlow = TelegramFlow()
 
-    val allChats = SingleLiveData<List<Chat>>()
+    val allChats = MutableLiveData<List<Chat>>()
 
     val authFlow = api.authorizationStateFlow()
         .onEach {
