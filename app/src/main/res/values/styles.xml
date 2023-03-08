@@ -21,6 +21,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#ABCABC</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
         <!--<item name="colorAccent">@color/md_grey_black_dark</item>-->
         <item name="colorAccent">#FFFFFF</item>
     </style>
@@ -48,10 +50,11 @@
 
     <style name="cardFilterLinearLayout">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
         <item name="android:orientation">vertical</item>
+        <item name="android:layout_height">100dp</item>
         <item name="layout_columnWeight">1</item>
-        <item name="layout_gravity">fill_horizontal</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">3dp</item>
         <item name="layout_rowWeight">1</item>
         <item name="android:background">@drawable/rounded_corner_tile</item>
     </style>
@@ -59,7 +62,7 @@
     <style name="cardFilterImageView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">0dp</item>
-        <item name="android:paddingTop">50dp</item>
+        <item name="android:paddingTop">25dp</item>
         <item name="android:layout_weight">6</item>
     </style>
 

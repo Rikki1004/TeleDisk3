@@ -1,12 +1,30 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorMainBackground"
-    android:textColor="@color/colorMainText"
+    android:textColor="@color/colorMainText">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
     tools:context="com.rikkimikki.teledisk.presentation.main.MainActivity">
 
+    <ImageView
+        android:id="@+id/imageViewOpenDrawer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="30dp"
+        android:src="@drawable/ic_menu_black_18dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </ImageView>
 
     <TextView
         android:id="@+id/textViewSuperTitle"
@@ -14,11 +32,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:layout_marginTop="80dp"
-        android:textColor="@color/colorMainText"
         android:layout_marginEnd="30dp"
         android:text="TeleDisk"
-        android:textStyle="bold"
+        android:textColor="@color/colorMainText"
         android:textSize="30sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -39,13 +57,13 @@
             android:id="@+id/textViewTelediskSearch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryText"
-            android:background="@drawable/rounded_corner"
             android:layout_marginEnd="10dp"
             android:layout_weight="1"
-            android:padding="5dp"
+            android:background="@drawable/rounded_corner"
             android:gravity="start|center_vertical"
+            android:padding="5dp"
             android:text="Teledisk"
+            android:textColor="@color/colorPrimaryText"
             android:textSize="20sp"
             app:drawableStartCompat="@drawable/magnify_custom" />
 
@@ -53,13 +71,13 @@
             android:id="@+id/textViewPhoneSearch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="5dp"
             android:layout_marginStart="10dp"
             android:layout_weight="1"
-            android:textColor="@color/colorPrimaryText"
             android:background="@drawable/rounded_corner"
             android:gravity="start|center_vertical"
+            android:padding="5dp"
             android:text="Phone"
+            android:textColor="@color/colorPrimaryText"
             android:textSize="20sp"
             app:drawableStartCompat="@drawable/magnify_custom" />
     </LinearLayout>
@@ -68,13 +86,15 @@
         android:id="@+id/horizontalRecycleView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal"
         android:layout_marginStart="5dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="5dp"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/store_item">
 
         <!--<LinearLayout
             android:layout_width="wrap_content"
@@ -301,20 +321,17 @@
         </LinearLayout>-->
     </androidx.recyclerview.widget.RecyclerView>
 
-    <androidx.gridlayout.widget.GridLayout
+    <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="10dp"
-        android:layout_centerHorizontal="true"
-        app:alignmentMode="alignBounds"
-        app:columnCount="3"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/horizontalRecycleView"
-        app:rowCount="1"
-        app:rowOrderPreserved="false">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
         <LinearLayout
             android:id="@+id/textViewTopPanelImages"
@@ -322,18 +339,18 @@
 
             <ImageView
                 style="@style/cardFilterImageView"
-                app:srcCompat="@drawable/image_custom__3_"
-                android:contentDescription="@string/filter_archives"/>
+                android:contentDescription="@string/filter_archives"
+                app:srcCompat="@drawable/image_custom__3_" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_images"
-                android:textColor="@color/colorMainText"/>
+                android:textColor="@color/colorMainText" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
-                android:textColor="@color/colorPrimaryText"/>
+                android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
 
@@ -343,18 +360,18 @@
 
             <ImageView
                 style="@style/cardFilterImageView"
-                app:srcCompat="@drawable/video_custom"
-                android:contentDescription="@string/filter_video"/>
+                android:contentDescription="@string/filter_video"
+                app:srcCompat="@drawable/video_custom" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_video"
-                android:textColor="@color/colorMainText"/>
+                android:textColor="@color/colorMainText" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
-                android:textColor="@color/colorPrimaryText"/>
+                android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
 
@@ -364,20 +381,38 @@
 
             <ImageView
                 style="@style/cardFilterImageView"
-                app:srcCompat="@drawable/music_note_custom"
-                android:contentDescription="@string/filter_music"/>
+                android:contentDescription="@string/filter_music"
+                app:srcCompat="@drawable/music_note_custom" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_music"
-                android:textColor="@color/colorMainText"/>
+                android:textColor="@color/colorMainText" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
-                android:textColor="@color/colorPrimaryText"/>
+                android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="6dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/horizontalRecycleView"
+        app:layout_constraintVertical_chainStyle="packed">
 
         <LinearLayout
             android:id="@+id/textViewTopPanelDocs"
@@ -385,18 +420,18 @@
 
             <ImageView
                 style="@style/cardFilterImageView"
-                app:srcCompat="@drawable/file_document_custom__1_"
-                android:contentDescription="@string/filter_docs"/>
+                android:contentDescription="@string/filter_docs"
+                app:srcCompat="@drawable/file_document_custom__1_" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_docs"
-                android:textColor="@color/colorMainText"/>
+                android:textColor="@color/colorMainText" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
-                android:textColor="@color/colorPrimaryText"/>
+                android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
 
@@ -406,18 +441,18 @@
 
             <ImageView
                 style="@style/cardFilterImageView"
-                app:srcCompat="@drawable/android_custom"
-                android:contentDescription="@string/filter_apks"/>
+                android:contentDescription="@string/filter_apks"
+                app:srcCompat="@drawable/android_custom" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_apks"
-                android:textColor="@color/colorMainText"/>
+                android:textColor="@color/colorMainText" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
-                android:textColor="@color/colorPrimaryText"/>
+                android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
 
@@ -427,21 +462,20 @@
 
             <ImageView
                 style="@style/cardFilterImageView"
-                app:srcCompat="@drawable/archive_custom1"
-                android:contentDescription="@string/filter_archives"/>
+                android:contentDescription="@string/filter_archives"
+                app:srcCompat="@drawable/archive_custom1" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_archives"
-                android:textColor="@color/colorMainText"/>
+                android:textColor="@color/colorMainText" />
 
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
-                android:textColor="@color/colorPrimaryText"/>
+                android:textColor="@color/colorPrimaryText" />
         </LinearLayout>
 
-
-
-    </androidx.gridlayout.widget.GridLayout>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

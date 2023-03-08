@@ -10,6 +10,8 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -59,6 +61,7 @@ class MainFragment : Fragment() {
                 requireActivity().recreate()
             }
         }
+
 
         navView.setNavigationItemSelectedListener {
             if (it.groupId == GROUP_ID) {
@@ -115,6 +118,11 @@ class MainFragment : Fragment() {
 
     private fun initClickListeners() {
         with(binding) {
+
+            imageViewOpenDrawer.setOnClickListener {
+                requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout).openDrawer(
+                    GravityCompat.START)
+            }
             textViewPhoneSearch.setOnClickListener {
                 findNavController()
                     .navigate(
