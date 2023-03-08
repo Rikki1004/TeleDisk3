@@ -22,6 +22,8 @@ import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.PlaceItem
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
+import com.rikkimikki.teledisk.utils.GLOBAL_REMOTE_STORAGE_PATH
 import com.rikkimikki.teledisk.utils.isNightModeEnabled
 import com.rikkimikki.teledisk.utils.setIsNightModeEnabled
 
@@ -91,7 +93,13 @@ class MainFragment : Fragment() {
 
         adapter.onPlaceClickListener = object : PlaceAdapter.OnPlaceClickListener{
             override fun onPlaceClick(placeItem: PlaceItem) {
-                TODO("Not yet implemented")
+                findNavController()
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                placeItem.scopeType, FiltersFromType.DEFAULT,placeItem.path
+                            )
+                    )
             }
         }
         binding.horizontalRecycleView.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.HORIZONTAL }
@@ -112,7 +120,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.ALL_LOCAL
+                                ScopeType.Local, FiltersFromType.ALL_LOCAL,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }
@@ -121,7 +129,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.ALL_REMOTE
+                                ScopeType.TeleDisk, FiltersFromType.ALL_REMOTE, GLOBAL_REMOTE_STORAGE_PATH
                             )
                     )
             }
@@ -130,7 +138,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.APPS
+                                ScopeType.Local, FiltersFromType.APPS,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }
@@ -139,7 +147,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.DOCUMENTS
+                                ScopeType.Local, FiltersFromType.DOCUMENTS,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }
@@ -148,7 +156,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.PHOTO
+                                ScopeType.Local, FiltersFromType.PHOTO,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }
@@ -157,7 +165,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.MUSIC
+                                ScopeType.Local, FiltersFromType.MUSIC,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }
@@ -166,7 +174,7 @@ class MainFragment : Fragment() {
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.VIDEO
+                                ScopeType.Local, FiltersFromType.VIDEO,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }

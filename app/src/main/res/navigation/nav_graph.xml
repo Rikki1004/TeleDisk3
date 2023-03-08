@@ -32,6 +32,9 @@
         <action
             android:id="@+id/action_listFilesFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
+        <argument
+            android:name="path"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"

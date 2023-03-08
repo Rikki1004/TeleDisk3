@@ -177,7 +177,8 @@ class ListFilesFragment : Fragment() {
                 binding.toolBarTextViewCount.setText(requireActivity().getString(R.string.filter_menu_count_items,count.toString()))
                 //binding.searchViewListFiles.setQuery("",false)
                 //binding.searchViewListFiles.setFocusable(false)
-                adapter.submitList(filter(it).toMutableList())
+                val a = filter(it).toMutableList()
+                adapter.submitList(a)
             }
         })
 
@@ -229,21 +230,21 @@ class ListFilesFragment : Fragment() {
     }
 
     private fun init(){
-
+        viewModel.setLocalPath(args.path)
         when(args.filter){
             FiltersFromType.DEFAULT -> {
                 when(args.scopeType){
                     //ScopeType.TeleDisk -> {viewModel.getRemoteFiles(-650777369,"/")}
-                    ScopeType.TeleDisk -> {viewModel.getRemoteFiles(viewModel.currentGroup,"/")}
-                    ScopeType.Local -> {viewModel.getLocalFiles("/storage/emulated/0")}
-                    ScopeType.Sd -> {}
+                    ScopeType.TeleDisk -> {viewModel.getRemoteFiles(viewModel.currentGroup,args.path)}
+                    ScopeType.Local -> {viewModel.getLocalFiles(args.path)}
+                    ScopeType.Sd -> {viewModel.getLocalFiles(args.path)}
                     ScopeType.VkMsg -> {}
                 }
             }
-            FiltersFromType.ALL_REMOTE -> {viewModel.getRemoteFilesFiltered(args.filter)}
-            FiltersFromType.ALL_LOCAL -> {viewModel.getLocalFilesFiltered(args.filter)}
+            FiltersFromType.ALL_REMOTE -> {viewModel.getRemoteFilesFiltered(args.filter,args.path)}
+            FiltersFromType.ALL_LOCAL -> {viewModel.getLocalFilesFiltered(args.filter,args.path)}
 
-            else -> {viewModel.getLocalFilesFiltered(args.filter)}
+            else -> {viewModel.getLocalFilesFiltered(args.filter,args.path)}
             /*FiltersFromType.APPS -> FiltersFromType.APPS.ext
             FiltersFromType.MUSIC -> FiltersFromType.MUSIC.ext
             FiltersFromType.PHOTO -> FiltersFromType.PHOTO.ext
@@ -268,7 +269,7 @@ class ListFilesFragment : Fragment() {
         //infoToolbar.setOve
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_18dp)
         toolbar.setNavigationOnClickListener { view ->
-            viewModel.clickArrow()
+            viewModel.clickArrow(args.path)
         }
 
 

@@ -16,6 +16,8 @@ import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
 import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.utils.GLOBAL_CACHE_DIRS_PATH_OFFSET
+import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
 import com.rikkimikki.teledisk.utils.SingleLiveData
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
@@ -127,6 +129,10 @@ init {
         refreshSelectedItems()
     }
 
+    fun setLocalPath(path: String) {
+        TelegramRepository.currentLocalFolderPath = path
+    }
+
     fun getRemoteFiles(id:Long,path:String){
         currentDirectory = TdObject("currentDir",PlaceType.TeleDisk,FileType.Folder,path, groupID = id)
         //if (path == "/") fileScope.value = listOf()
@@ -134,14 +140,15 @@ init {
     }
 
     fun getLocalFiles(path:String){
+
         currentDirectory = TdObject("currentDir",PlaceType.Local,FileType.Folder,path)
         //if (path == "/storage/emulated/0") fileScope.value = listOf()
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
-    fun clickArrow(){
-        if (currentDirectory.is_local() && currentDirectory.path != "/storage/emulated/0" && currentDirectory.name.isNotBlank())
+    fun clickArrow(startPath: String){
+        if (currentDirectory.is_local() && currentDirectory.path != startPath && currentDirectory.name.isNotBlank())
             getLocalFiles(currentDirectory.path.substringBeforeLast("/"))
-        else if (!currentDirectory.is_local() && currentDirectory.path != "/" && currentDirectory.name.isNotBlank()){
+        else if (!currentDirectory.is_local() && currentDirectory.path != startPath && currentDirectory.name.isNotBlank()){
             var tempPath = currentDirectory.path.substringBeforeLast("/")
             if (tempPath.isBlank()) tempPath = "/"
             getRemoteFiles(currentDirectory.groupID, tempPath)
@@ -151,12 +158,12 @@ init {
             needPressBackButton.value = Unit
     }
 
-    fun getLocalFilesFiltered(filter:FiltersFromType){
-        currentDirectory = TdObject("",PlaceType.Local,FileType.Folder,"/storage/emulated/0")
+    fun getLocalFilesFiltered(filter:FiltersFromType,path:String){
+        currentDirectory = TdObject("",PlaceType.Local,FileType.Folder,path)
         viewModelScope.launch { getAllFilteredLocalFilesUseCase(filter) }
     }
-    fun getRemoteFilesFiltered(filter:FiltersFromType){
-        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,"/", groupID = currentGroup)
+    fun getRemoteFilesFiltered(filter:FiltersFromType,path:String){
+        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,path, groupID = currentGroup)
         viewModelScope.launch { getAllFilteredRemoteFilesUseCase(currentGroup,filter) }
     }
 
@@ -235,21 +242,21 @@ init {
 
         for(i in externalCacheDirs){
             val stat = StatFs(i.path)
-            if (i.absolutePath.startsWith("/storage/emulated/0")){
+            if (i.absolutePath.startsWith(GLOBAL_MAIN_STORAGE_PATH)){
                 placeItems.add(PlaceItem(
                     "Память устройства",
-                    i.path.substringBefore("/Android/data"),
+                    i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET),
                     stat.totalBytes,
                     stat.availableBytes,
                     ScopeType.Local
                 ))
             }else{
                 placeItems.add(PlaceItem(
-                    i.path.substringBefore("Android/data"),
-                    i.path.substringBefore("/Android/data"),
+                    i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET).let { it.substring(0,it.length-1) },
+                    i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET),
                     stat.totalBytes,
                     stat.availableBytes,
-                    ScopeType.Local
+                    ScopeType.Sd
                 ))
             }
 

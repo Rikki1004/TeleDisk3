@@ -7,6 +7,10 @@ import java.text.SimpleDateFormat
 import java.text.StringCharacterIterator
 import java.util.*
 
+
+const val GLOBAL_MAIN_STORAGE_PATH = "/storage/emulated/0"
+const val GLOBAL_CACHE_DIRS_PATH_OFFSET = "/Android/data"
+const val GLOBAL_REMOTE_STORAGE_PATH = "/"
 fun covertTimestampToTime(timestamp:Long?) : String{
     if (timestamp == null || timestamp == 0L) return ""
     val stamp = Timestamp(timestamp)

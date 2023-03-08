@@ -1,15 +1,11 @@
 package com.rikkimikki.teledisk.data.tdLib
 
-import android.app.Application
-import android.content.Context
-import android.os.Environment
-import androidx.core.content.ContextCompat.getExternalFilesDirs
-import androidx.core.content.FileProvider
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
-import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
 import com.rikkimikki.teledisk.utils.SingleLiveData
 import kotlinx.coroutines.flow.*
 import kotlinx.telegram.core.TelegramException
@@ -23,13 +19,9 @@ import kotlinx.telegram.flows.userFlow
 import kotlinx.telegram.flows.userStatusFlow
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.Chat
-import org.drinkless.td.libcore.telegram.TdApi.InputMessageContent
 import java.io.File
-import kotlin.io.path.createTempFile
 import kotlin.concurrent.thread
-import kotlin.io.path.inputStream
-import kotlin.io.path.pathString
-import kotlin.io.path.writeText
+
 
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
@@ -40,6 +32,8 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     override fun tempPathsForSend(): SingleLiveData<List<TdObject>> {
         return shareRemoteFiles
     }
+
+    var currentLocalFolderPath = GLOBAL_MAIN_STORAGE_PATH
 
     val is_ready = MutableLiveData<Boolean>()
     var counter = 0
@@ -272,7 +266,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                 val currentFolderPath = clearName.substring(0,secondSlashPosition)
                 if (currentFolderPath !in folderList){
                     folderList.add(currentFolderPath)
-                    messagesResult.add(TdObject(currentFolderPath.substring(currentFolderPath.lastIndexOf("/")+1),PlaceType.TeleDisk,FileType.Folder,"/"+currentFolderPath, groupID = chatId))
+                    messagesResult.add(TdObject(currentFolderPath.substring(currentFolderPath.lastIndexOf("/")+1),PlaceType.TeleDisk,FileType.Folder,"/"+currentFolderPath, groupID = chatId, fileID = (1..Int.MAX_VALUE).random()))
                 }
             }else
                 return Pair(clearName.substring(clearName.lastIndexOf("/")+1),"/"+clearName)
@@ -327,8 +321,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
     fun getDataFromDisk(path:String){
         val tempList = mutableListOf<TdObject>()
-
-        if (path != "/storage/emulated/0"){
+        if (path != currentLocalFolderPath){
             val backFolder = path.substring(0,path.lastIndexOf("/")).ifBlank { "/" }
             tempList.add(TdObject("..",PlaceType.Local,FileType.Folder,backFolder))
         }
@@ -356,7 +349,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     override fun getLocalFilesFiltered(filter: FiltersFromType): LiveData<List<TdObject>> {
         thread {
             val tempList = mutableListOf<TdObject>()
-            val path = "/storage/emulated/0"
+            val path = currentLocalFolderPath
 
             File(path).walk().filter{ it.isFile && filter.ext.any { suffix -> it.name.lowercase().endsWith(suffix) } }.forEach {
                 tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))

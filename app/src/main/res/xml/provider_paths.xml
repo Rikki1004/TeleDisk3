@@ -2,7 +2,7 @@
 <paths>
     <external-path
         name="external"
-        path="." />
+        path="../../" />
     <external-files-path
         name="external_files"
         path="." />
@@ -14,5 +14,8 @@
         path="." />
     <files-path
         name="files"
+        path="." />
+    <external-media-path
+        name="external_media"
         path="." />
 </paths>

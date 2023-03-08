@@ -7,6 +7,7 @@ import com.rikkimikki.teledisk.domain.TdObject
 object ListFileDiffCallback : DiffUtil.ItemCallback<TdObject>() {
 
     override fun areItemsTheSame(oldItem: TdObject, newItem: TdObject): Boolean {
+        //return false
         return oldItem.fileID == newItem.fileID
         //return (oldItem as Tfile).fileID == (newItem as Tfile).fileID
         //return true
