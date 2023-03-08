@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorMainText">#FFFFFF</color>
-    <color name="colorSearchBackground">#ACACAC</color>
+    <color name="colorSearchBackground">#262626</color>
     <color name="colorMainBackground">#000000</color>
     <color name="colorTineBackground">#272727</color>
 </resources>

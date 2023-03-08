@@ -36,9 +36,9 @@ class PlaceAdapter(private val context: Context) : RecyclerView.Adapter<PlaceAda
             tvOccupatedSpace.text = humanReadableByteCountSI(place.occupatedSpace)
             pbFreeSpace.max = 100
             if (place.totalSpase == 0L)
-                pbFreeSpace.progress = 5
+                pbFreeSpace.progress = 100
             else{
-                pbFreeSpace.progress = (place.occupatedSpace/place.totalSpase*100).toInt()
+                pbFreeSpace.progress = (place.occupatedSpace/place.totalSpase.toFloat()*100).toInt()
                 tvTotalSpace.text = "| "+humanReadableByteCountSI(place.totalSpase)
             }
 

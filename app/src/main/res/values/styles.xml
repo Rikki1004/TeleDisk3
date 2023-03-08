@@ -42,6 +42,7 @@
         <item name="android:maxHeight">15dip</item>
         <item name="colorAccent">@color/colorStoreProgressBar</item>
         <item name="android:indeterminateTint">@color/colorStoreProgressBar</item>
+        <item name="android:progressTint">@color/colorStoreProgressBar</item>
 
     </style>
 

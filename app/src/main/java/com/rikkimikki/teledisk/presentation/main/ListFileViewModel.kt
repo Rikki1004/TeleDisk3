@@ -231,14 +231,6 @@ init {
 
         val placeItems = mutableListOf<PlaceItem>()
 
-        placeItems.add(PlaceItem(
-            "Teledisk",
-            "/",
-            0,
-            Long.MAX_VALUE,
-            ScopeType.TeleDisk,
-            true
-        ))
 
         for(i in externalCacheDirs){
             val stat = StatFs(i.path)
@@ -248,7 +240,8 @@ init {
                     i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET),
                     stat.totalBytes,
                     stat.availableBytes,
-                    ScopeType.Local
+                    ScopeType.Local,
+                    true
                 ))
             }else{
                 placeItems.add(PlaceItem(
@@ -259,8 +252,15 @@ init {
                     ScopeType.Sd
                 ))
             }
-
         }
+
+        placeItems.add(1,PlaceItem(
+            "Teledisk",
+            "/",
+            0,
+            Long.MAX_VALUE,
+            ScopeType.TeleDisk
+        ))
 
         placeItems.add(PlaceItem(
             "VkDisk (В разработке)",
