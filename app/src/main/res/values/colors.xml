@@ -9,10 +9,10 @@
     <color name="colorMainText">#000000</color>
     <color name="colorPrimaryText">#CFCFCF</color>
     <color name="colorSearchBackground">#E4E4E4</color>
-    <color name="colorMainBackground">#E1E1E1</color>
+    <color name="colorMainBackground">#F6F6F6</color>
     <color name="colorTineBackground">#FFFFFF</color>
     <color name="colorElementInfo">#656565</color>
-    <color name="colorFolderPath">#002AA8</color>
+    <color name="colorFolderPath">#2e40ea</color>
 
     <color name="colorStoreText">#FFFFFF</color>
     <color name="colorStoreProgressBar">#FFFFFF</color>

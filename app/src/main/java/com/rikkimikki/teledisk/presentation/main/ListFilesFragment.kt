@@ -99,8 +99,10 @@ class ListFilesFragment : Fragment() {
 
         adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener{
             override fun onFileClick(tdObject: TdObject) {
-                if (tdObject.is_folder())
+                if (tdObject.is_folder()){
                     viewModel.changeDirectory(tdObject)
+                }
+
                 if(tdObject.is_file()){
                     if (tdObject.placeType == PlaceType.TeleDisk){
                         val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject)
@@ -170,6 +172,7 @@ class ListFilesFragment : Fragment() {
         viewModel.fileScope.observe(viewLifecycleOwner, Observer {
             //adapter.submitList(null)
             binding.pathTextView.setText(viewModel.currentDirectory.path)
+            binding.loadDataProgressBar.visibility = View.GONE
             if (it.isNotEmpty()){
                 val count = it.size + if (it.any { it.name == ".."}) -1 else 0
                 binding.toolBarTextViewCount.setText(requireActivity().getString(R.string.filter_menu_count_items,count.toString()))

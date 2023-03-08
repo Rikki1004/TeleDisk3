@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
+    android:background="@color/colorMainBackground"
 
     android:paddingTop="@dimen/tiny_margin"
     android:paddingBottom="@dimen/tiny_margin">
@@ -13,7 +14,6 @@
     <RelativeLayout
         android:id="@+id/item_holder"
         android:layout_width="match_parent"
-        android:background="@color/colorMainBackground"
         android:layout_height="wrap_content"
         android:paddingStart="0dp"
         android:paddingEnd="@dimen/activity_margin">

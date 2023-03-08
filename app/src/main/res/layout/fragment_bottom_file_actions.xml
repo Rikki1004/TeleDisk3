@@ -14,7 +14,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Copy"
-        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+        app:drawableTopCompat="@drawable/ic_content_copy_black_18dp" />
 
 
     <TextView
@@ -24,7 +24,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Move"
-        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+        app:drawableTopCompat="@drawable/ic_forward_black_18dp" />
 
 
     <TextView
@@ -34,7 +34,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Delete"
-        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+        app:drawableTopCompat="@drawable/ic_delete_sweep_black_18dp" />
 
 
     <TextView
@@ -44,7 +44,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Rename"
-        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+        app:drawableTopCompat="@drawable/ic_create_black_18dp" />
 
 
     <TextView
@@ -54,6 +54,6 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Share"
-        app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+        app:drawableTopCompat="@drawable/ic_share_black_18dp" />
 
 </LinearLayout>
