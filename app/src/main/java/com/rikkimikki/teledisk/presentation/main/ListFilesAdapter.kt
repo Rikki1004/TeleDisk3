@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.databinding.FileItemBinding
@@ -75,21 +76,23 @@ class ListFilesAdapter (
                 if (item.previewFile != null){
                     scope.launch {
                         val preview = loadThumbnailUseCase(item.previewFile)
-                        Picasso.get().load(File(preview.local.path)).into(itemIcon)
+                        Glide.with(context).load(preview.local.path).into(itemIcon)
+                        //Picasso.get().load(File(preview.local.path)).into(itemIcon)
                     }
                 }
                 else{
                     if (item.placeType == PlaceType.Local)
-                        Picasso.get().load(File(item.path)).placeholder(resId).fit().into(itemIcon)
+                        Glide.with(context).load(File(item.path)).placeholder(resId).fitCenter().into(itemIcon)
                     else
-                        Picasso.get().load(resId).into(itemIcon)
+                        Glide.with(context).load(resId).into(itemIcon)
+
                 }
 
             } else {
                 val resId = R.drawable.folder_asset
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
-                Picasso.get().load(resId).into(itemIcon)
+                Glide.with(context).load(resId).into(itemIcon)
             }
             itemView.setOnClickListener {
                 onFileClickListener?.onFileClick(item)
@@ -122,15 +125,15 @@ class ListFilesAdapter (
                 }
                 else{
                     if (item.placeType == PlaceType.Local)
-                        Picasso.get().load(File(item.path)).placeholder(resId).fit().into(itemIcon)
+                        Glide.with(context).load(File(item.path)).placeholder(resId).fitCenter().into(itemIcon)
                     else
-                        Picasso.get().load(resId).into(itemIcon)
+                        Glide.with(context).load(resId).into(itemIcon)
                 }
 
             } else {
                 val resId = R.drawable.folder_asset
                 itemName.text = item.name
-                Picasso.get().load(resId).into(itemIcon)
+                Glide.with(context).load(resId).into(itemIcon)
             }
             itemView.setOnClickListener {
                 onFileClickListener?.onFileClick(item)

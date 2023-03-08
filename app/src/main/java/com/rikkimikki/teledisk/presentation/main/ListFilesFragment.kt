@@ -223,6 +223,7 @@ class ListFilesFragment : Fragment() {
             val li = savedInstanceState.getParcelableArray("list") as Array<TdObject>
             adapter.submitList(null)
             adapter.submitList(li.toMutableList())
+            binding.loadDataProgressBar.visibility = View.GONE
         }
 
         //viewModel.getChats()

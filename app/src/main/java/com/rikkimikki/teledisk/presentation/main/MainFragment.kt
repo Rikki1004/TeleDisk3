@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -69,6 +70,8 @@ class MainFragment : Fragment() {
 
         val drawerSwitch : SwitchMaterial = navView.getMenu().findItem(R.id.dark_theme_switch).getActionView() as SwitchMaterial
 
+        //drawerSwitch.solidColor(resources.getColor(R.color.md_red))
+
         drawerSwitch.isChecked = isNightModeEnabled(requireActivity().application)
 
         drawerSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -87,11 +90,12 @@ class MainFragment : Fragment() {
 
         viewModel.getChats().observe(viewLifecycleOwner) {
             val menu = navView.menu
-            val submenu: Menu = menu.addSubMenu("Удаленные диски")
+            val submenu: Menu = menu.findItem (R.id.disk_container).subMenu //menu.addSubMenu("Удаленные диски")
             submenu.clear()
 
             for(i in 0 until it.size){
                 val a = submenu.add(GROUP_ID,i,Menu.NONE,"")
+                chatsList.add(it[i].first)
 
                 val s = SpannableString(it[i].second)
                 s.setSpan(
