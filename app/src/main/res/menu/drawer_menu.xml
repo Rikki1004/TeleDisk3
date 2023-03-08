@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/dark_theme_switch"
+        android:title="Темная тема"
+        app:actionLayout="@layout/switch_item"
+        app:actionViewClass="com.google.android.material.switchmaterial.SwitchMaterial"/>
+    <item
+        android:id="@+id/disk_container"
+        android:title="Ваши диски">
+        <menu />
+    </item>
+</menu>

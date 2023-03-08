@@ -1,27 +1,20 @@
 package com.rikkimikki.teledisk.presentation.main
 
 import android.app.Application
-import android.app.Dialog
+import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.content.SharedPreferences
 import android.net.Uri
-import android.view.LayoutInflater
-import android.view.View
-import android.view.Window
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.rikkimikki.teledisk.BuildConfig
-import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
-import com.rikkimikki.teledisk.databinding.DialogInputTextBinding
 import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.utils.SingleLiveData
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
@@ -43,13 +36,33 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val deleteFileUseCase = DeleteFileUseCase(repository)
     private val deleteFolderUseCase = DeleteFolderUseCase(repository)
     private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
+    private val getAllFilteredLocalFilesUseCase = GetAllFilteredLocalFilesUseCase(repository)
+    private val getAllFilteredRemoteFilesUseCase = GetAllFilteredRemoteFilesUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
-    var needLaunchIntent = MutableLiveData<Intent>()
+
+
+    var needLaunchIntent = SingleLiveData<Intent>()
+    var needPressBackButton = SingleLiveData<Unit>()
 
     val selectedItems = mutableListOf<TdObject>()
-    private lateinit var currentDirectory : TdObject
+    lateinit var currentDirectory : TdObject
+    var currentGroup : Long = NO_GROUP
+    set(value) {
+        sharedpreferences.edit().putLong(PREF_GROUP_IG,value).apply()
+        field = value
+        Toast.makeText(getApplication(), "Группа выбрана", Toast.LENGTH_SHORT).show()
+    }
+    get() {
+        if (sharedpreferences.contains(PREF_GROUP_IG))
+            return sharedpreferences.getLong(PREF_GROUP_IG,NO_GROUP)
+        else
+            Toast.makeText(getApplication(), "Группа не выбрана", Toast.LENGTH_SHORT).show()
+        return NO_GROUP
+    }
+
+    private lateinit var sharedpreferences: SharedPreferences
 
     private val contentResolver by lazy {
         application.contentResolver
@@ -58,13 +71,21 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
         application
     }*/
 
+    companion object{
+        const val PREF_GROUP_IG = "group"
+        const val APP_PREFERENCES = "pref"
+        const val NO_GROUP = -1L
+    }
 init {
+    sharedpreferences =
+        application.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE)
+
     //repository.reload()
     tempPathsForSendUseCase().observeForever {
         shareItems(it)
     }
 }
-    val isRemoteDownloadComplete = MutableLiveData<String>()
+    val isRemoteDownloadComplete = SingleLiveData<String>()
 
     fun refresh(){
         changeDirectory(currentDirectory)
@@ -108,6 +129,28 @@ init {
         //if (path == "/storage/emulated/0") fileScope.value = listOf()
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
+    fun clickArrow(){
+        if (currentDirectory.is_local() && currentDirectory.path != "/storage/emulated/0" && currentDirectory.name.isNotBlank())
+            getLocalFiles(currentDirectory.path.substringBeforeLast("/"))
+        else if (!currentDirectory.is_local() && currentDirectory.path != "/" && currentDirectory.name.isNotBlank()){
+            var tempPath = currentDirectory.path.substringBeforeLast("/")
+            if (tempPath.isBlank()) tempPath = "/"
+            getRemoteFiles(currentDirectory.groupID, tempPath)
+        }
+
+        else
+            needPressBackButton.value = Unit
+    }
+
+    fun getLocalFilesFiltered(filter:FiltersFromType){
+        currentDirectory = TdObject("",PlaceType.Local,FileType.Folder,"/storage/emulated/0")
+        viewModelScope.launch { getAllFilteredLocalFilesUseCase(filter) }
+    }
+    fun getRemoteFilesFiltered(filter:FiltersFromType){
+        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,"/", groupID = currentGroup)
+        viewModelScope.launch { getAllFilteredRemoteFilesUseCase(currentGroup,filter) }
+    }
+
 
     fun createFolder(name:String){
         viewModelScope.launch { createFolderUseCase(currentDirectory, name) }
@@ -138,8 +181,9 @@ init {
         }
     }
 
-    fun getChats(){
+    fun getChats() : LiveData<List<Pair<Long,String>>> {
         viewModelScope.launch { getAllChatsUseCase() }
+        return repository.allChats.map { it.map { it.id to it.title.substring(1,it.title.length-1) } }
     }
 
     fun changeDirectory(directory:TdObject) {

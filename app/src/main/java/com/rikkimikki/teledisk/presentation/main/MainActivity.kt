@@ -1,34 +1,29 @@
 package com.rikkimikki.teledisk.presentation.main
 
-import android.app.Application
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.Window
-import com.rikkimikki.teledisk.R
-import com.rikkimikki.teledisk.databinding.DialogInputTextBinding
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import com.rikkimikki.teledisk.databinding.ActivityMainBinding
+import com.rikkimikki.teledisk.utils.isNightModeEnabled
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (isNightModeEnabled(applicationContext)) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        /*supportFragmentManager.beginTransaction()
-            .replace(R.id.main_view_container,MainFragment.newInstance())
-            .commit()*/
-
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
     }
     companion object {
         fun getInstance(context:Context): Intent {
             return Intent(context,MainActivity::class.java)
         }
     }
-
-
 }

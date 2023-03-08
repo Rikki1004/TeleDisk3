@@ -1,8 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimary">#fff</color>
     <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorAccent">#03DAC6</color>
+
+
+    <color name="colorNeon">#03DAC5</color>
+    <color name="colorMainText">#000000</color>
+    <color name="colorPrimaryText">#CFCFCF</color>
+    <color name="colorSearchBackground">#E4E4E4</color>
+    <color name="colorMainBackground">#F6F6F6</color>
+    <color name="colorTineBackground">#FFFFFF</color>
+    <color name="colorElementInfo">#656565</color>
+    <color name="colorFolderPath">#2e40ea</color>
+
+    <color name="colorStoreText">#FFFFFF</color>
+    <color name="colorStoreProgressBar">#FFFFFF</color>
+    <color name="colorStoreBackgroundMain">#002AC1</color>
+    <color name="colorStoreBackgroundOther">#606060</color>
+
 
 
 

@@ -9,10 +9,15 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.ActivityLoginBinding
+import com.rikkimikki.teledisk.utils.isDarkMode
+import com.rikkimikki.teledisk.utils.isNightModeEnabled
+import com.rikkimikki.teledisk.utils.isToogleEnabled
+import com.rikkimikki.teledisk.utils.setIsNightModeEnabled
 
 
 class LoginActivity : AppCompatActivity() {
@@ -21,6 +26,9 @@ class LoginActivity : AppCompatActivity() {
     private val vm: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 

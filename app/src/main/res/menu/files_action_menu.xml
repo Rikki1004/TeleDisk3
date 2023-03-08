@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_layout_grid"
+        android:icon="@drawable/ic_apps_black_18dp"
+        android:title="@android:string/search_go"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_layout_linear"
+        android:title="@android:string/search_go"
+        android:icon="@drawable/ic_menu_black_18dp"
+        android:visible="false"
+        app:showAsAction="always"/>
+
+    <!--<item
+        android:id="@+id/action_search"
+        android:title="@android:string/search_go"
+        android:icon="@drawable/magnify_custom"
+        app:showAsAction="always"/>-->
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/magnify_custom"
+        app:showAsAction="always"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        android:title="Search"/>
+
+
+
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_folder_vector"
+        android:title="abc1"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_done"
+        android:icon="@drawable/ic_folder_vector"
+        android:title="abc2"
+        app:showAsAction="never"/>
+
+
+</menu>

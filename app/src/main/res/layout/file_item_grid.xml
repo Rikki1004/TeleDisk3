@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_frame"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/colorMainBackground"
+    android:clickable="true"
+    android:focusable="true"
+
+    android:paddingTop="@dimen/tiny_margin"
+    android:paddingBottom="@dimen/tiny_margin">
+
+    <LinearLayout
+        android:id="@+id/item_holder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="0dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/item_icon_grid"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="center"
+            android:padding="@dimen/medium_margin"
+            android:src="@drawable/ic_folder_vector" />
+
+        <TextView
+            android:id="@+id/item_name_grid"
+            android:layout_width="match_parent"
+            android:textColor="@color/colorMainText"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxLines="2"
+            android:paddingStart="@dimen/tiny_margin"
+            android:paddingTop="@dimen/small_margin"
+            android:paddingEnd="0dp"
+            tools:text="Directory" />
+
+    </LinearLayout>
+</FrameLayout>

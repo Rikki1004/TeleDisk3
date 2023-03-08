@@ -21,4 +21,5 @@ object ListFileDiffCallback : DiffUtil.ItemCallback<TdObject>() {
         return oldItem == newItem
         //return (oldItem as Tfile).fileID == (newItem as Tfile).fileID
     }
+
 }

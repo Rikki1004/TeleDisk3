@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.internal.LockFreeLinkedListNode
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.drinkless.td.libcore.telegram.TdApi
@@ -131,12 +132,15 @@ class FileBackgroundTransfer: Service() {
         startObservers(isDownload)
 
         scope.launch {
+            lock.tryLock()
+            val a = files
+            println(a)
             for (i in files)
                 transfer(i,folderDestination)
 
             if (filesNeedSend.isNotEmpty())
                 tempPathsForSendUseCase().postValue(filesNeedSend)
-            stopSelf()
+            //stopSelf()
         }
         return START_NOT_STICKY
     }
@@ -195,6 +199,8 @@ class FileBackgroundTransfer: Service() {
             }
             file.is_local() && !folder.is_local() -> {
                 if (file.is_file()){
+                    var a = file
+                    println(a)
 
                     lambda = {
 
@@ -210,7 +216,13 @@ class FileBackgroundTransfer: Service() {
                         if(lock.isLocked) lock.unlock()
 
                     }
-                    transferFileUploadUseCase(file).let { currentFileId = it.id;if (it.remote.isUploadingCompleted) lambda(it) else lock.lock()}
+                    transferFileUploadUseCase(file).let {
+                        currentFileId = it.id
+                        if (it.remote.isUploadingCompleted)
+                            lambda(it)
+                        else
+                            lock.lock()
+                    }
 
                 }else{
                     for (i in getLocalFilesNoLDUseCase(file.path)){
@@ -266,7 +278,7 @@ class FileBackgroundTransfer: Service() {
                         if(lock.isLocked) lock.unlock()
 
                     }
-                    transferFileDownloadUseCase(file).let { if (it.local.isDownloadingCompleted) lambda(it) else lock.lock()}
+                    transferFileDownloadUseCase(file).let { currentFileId = it.id; if (it.local.isDownloadingCompleted) lambda(it) else lock.lock()}
 
                 }else{
                     for (i in getRemoteFilesNoLDUseCase(file.groupID,file.path)){
@@ -284,7 +296,7 @@ class FileBackgroundTransfer: Service() {
                 //mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
                 //if ((isDownload && it.local.isDownloadingCompleted) || (!isDownload && it.remote.isUploadingCompleted)){
-                if ((isDownload && it.local.isDownloadingCompleted) || (!isDownload && it.local.downloadedSize == it.remote.uploadedSize)){
+                if ((isDownload && it.local.isDownloadingCompleted) || (!isDownload && it.local.downloadedSize == it.remote.uploadedSize && it.remote.isUploadingActive == false)){
                     val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                         .setContentTitle(if (isDownload) "Успешно загружен" else "Успешно выгружен")
                         .setContentText("Файл")

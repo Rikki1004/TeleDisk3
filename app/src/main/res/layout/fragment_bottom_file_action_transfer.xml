@@ -7,33 +7,33 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 tools:context=".presentation.main.BottomFileActionTransferFragment">
 
-<TextView
-    android:id="@+id/textViewBottomPanelPaste"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:gravity="center"
-    android:text="Paste"
-    app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+    <TextView
+        android:id="@+id/textViewBottomPanelPaste"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Paste"
+        app:drawableTopCompat="@drawable/ic_content_paste_black_18dp" />
 
 
-<TextView
-    android:id="@+id/textViewBottomPanelCreate"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:gravity="center"
-    android:text="Create"
-    app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+    <TextView
+        android:id="@+id/textViewBottomPanelCreate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Create"
+        app:drawableTopCompat="@drawable/ic_add_circle_outline_black_18dp" />
 
 
-<TextView
-    android:id="@+id/textViewBottomPanelCancel"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:gravity="center"
-    android:text="Cancel"
-    app:drawableTopCompat="@android:drawable/btn_star_big_on" />
+    <TextView
+        android:id="@+id/textViewBottomPanelCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Cancel"
+        app:drawableTopCompat="@drawable/ic_remove_circle_black_18dp" />
 
 </LinearLayout>
