@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.Environment
+import android.os.StatFs
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -42,6 +44,9 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     val chatScope = repository.allChats
 
 
+    //private val context = getApplication<Application>().applicationContext
+    //var context: Context? = getApplication<Application>().getApplicationContext()
+
 
     var needLaunchIntent = SingleLiveData<Intent>()
     var needPressBackButton = SingleLiveData<Unit>()
@@ -66,6 +71,10 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
 
     private val contentResolver by lazy {
         application.contentResolver
+    }
+
+    private val externalCacheDirs by lazy {
+        application.externalCacheDirs
     }
     /*private val application by lazy {
         application
@@ -209,6 +218,51 @@ init {
         //medLD.addSource(downloadLD, Observer { if (it.local.isDownloadingCompleted) isRemoteDownloadComplete.value = "" })
         //return medLD
         return downloadLD
+    }
+
+    fun getStorages():List<PlaceItem>{
+
+        val placeItems = mutableListOf<PlaceItem>()
+
+        placeItems.add(PlaceItem(
+            "Teledisk",
+            "/",
+            0,
+            Long.MAX_VALUE,
+            ScopeType.TeleDisk,
+            true
+        ))
+
+        for(i in externalCacheDirs){
+            val stat = StatFs(i.path)
+            if (i.absolutePath.startsWith("/storage/emulated/0")){
+                placeItems.add(PlaceItem(
+                    "Память устройства",
+                    i.path.substringBefore("/Android/data"),
+                    stat.totalBytes,
+                    stat.availableBytes,
+                    ScopeType.Local
+                ))
+            }else{
+                placeItems.add(PlaceItem(
+                    i.path.substringBefore("Android/data"),
+                    i.path.substringBefore("/Android/data"),
+                    stat.totalBytes,
+                    stat.availableBytes,
+                    ScopeType.Local
+                ))
+            }
+
+        }
+
+        placeItems.add(PlaceItem(
+            "VkDisk (В разработке)",
+            "/",
+            0,
+            Long.MAX_VALUE,
+            ScopeType.VkMsg
+        ))
+        return placeItems
     }
     fun getNeedOpenLD(): LiveData<Pair<String, Boolean>> {
         return fileOperationComplete()

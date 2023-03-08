@@ -6,8 +6,6 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.*
-import android.widget.AutoCompleteTextView
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
@@ -25,6 +23,7 @@ import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.PlaceType
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.domain.TdObject
+import java.io.File
 
 class ListFilesFragment : Fragment() {
     private var _binding: FragmentListFilesBinding? = null
@@ -230,12 +229,14 @@ class ListFilesFragment : Fragment() {
     }
 
     private fun init(){
+
         when(args.filter){
             FiltersFromType.DEFAULT -> {
                 when(args.scopeType){
                     //ScopeType.TeleDisk -> {viewModel.getRemoteFiles(-650777369,"/")}
                     ScopeType.TeleDisk -> {viewModel.getRemoteFiles(viewModel.currentGroup,"/")}
                     ScopeType.Local -> {viewModel.getLocalFiles("/storage/emulated/0")}
+                    ScopeType.Sd -> {}
                     ScopeType.VkMsg -> {}
                 }
             }

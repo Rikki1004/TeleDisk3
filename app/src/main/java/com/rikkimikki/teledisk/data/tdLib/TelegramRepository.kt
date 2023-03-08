@@ -1,6 +1,9 @@
 package com.rikkimikki.teledisk.data.tdLib
 
+import android.app.Application
+import android.content.Context
 import android.os.Environment
+import androidx.core.content.ContextCompat.getExternalFilesDirs
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -29,6 +32,8 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
+
+
     val dataFromStore = SingleLiveData<List<TdObject>>()
 
     val shareRemoteFiles = SingleLiveData<List<TdObject>>()

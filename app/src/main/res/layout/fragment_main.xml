@@ -62,16 +62,19 @@
             app:drawableStartCompat="@drawable/magnify_custom" />
     </LinearLayout>
 
-    <HorizontalScrollView
-        android:id="@+id/horizontalScrollView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/horizontalRecycleView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
-        <LinearLayout
+        <!--<LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal">
@@ -293,8 +296,8 @@
                     app:layout_constraintBottom_toTopOf="@+id/vkScopeProgressBarFreeSpace"
                     app:layout_constraintStart_toEndOf="@+id/vkScopeTextViewFreeSpace" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </LinearLayout>
-    </HorizontalScrollView>
+        </LinearLayout>-->
+    </androidx.recyclerview.widget.RecyclerView>
 
     <androidx.gridlayout.widget.GridLayout
         android:layout_width="match_parent"
@@ -307,7 +310,7 @@
 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/horizontalScrollView"
+        app:layout_constraintTop_toBottomOf="@+id/horizontalRecycleView"
         app:rowCount="1"
         app:rowOrderPreserved="false">
 

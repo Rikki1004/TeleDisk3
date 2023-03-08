@@ -18,6 +18,10 @@ fun covertTimestampToTime(timestamp:Long?) : String{
 }
 
 fun humanReadableByteCountSI(bytesCount: Long): String {
+    if (bytesCount == Long.MAX_VALUE)
+        return "∞"
+    if (bytesCount == 0L)
+        return ""
     var bytes = bytesCount
     if (-1000 < bytes && bytes < 1000) {
         return "$bytes B"
