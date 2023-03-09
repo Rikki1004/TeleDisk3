@@ -72,11 +72,6 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         if (offset == -1)
             messagesResult.clear()
 
-        if (offset == -1 && requiredPath != "/" && needShow){
-            val backFolder = requiredPath.substring(0,requiredPath.lastIndexOf("/")).ifBlank { "/" }
-            messagesResult.add(TdObject("..",PlaceType.TeleDisk,FileType.Folder,backFolder, groupID = chatId))
-        }
-
         if (messages.isEmpty()) {
             if (needShow)
                 dataFromStore.value = messagesResult
@@ -321,10 +316,6 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
     fun getDataFromDisk(path:String){
         val tempList = mutableListOf<TdObject>()
-        if (path != currentLocalFolderPath){
-            val backFolder = path.substring(0,path.lastIndexOf("/")).ifBlank { "/" }
-            tempList.add(TdObject("..",PlaceType.Local,FileType.Folder,backFolder))
-        }
 
         File(path).listFiles()?.forEach {
             if (it.isFile)

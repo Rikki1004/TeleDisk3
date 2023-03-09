@@ -27,6 +27,7 @@
 
         </androidx.appcompat.widget.Toolbar>
 
+
         <androidx.appcompat.widget.Toolbar
             android:visibility="gone"
             tools:visibility="visible"
@@ -50,8 +51,8 @@
                     android:id="@+id/buttomDeselect"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_marginStart="20dp"
-                    android:src="@drawable/ic_add_circle_outline_black_18dp"/>
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/ic_close"/>
 
                 <TextView
                     android:id="@+id/toolBarTextViewCountChecked"
@@ -64,10 +65,11 @@
                     tools:text="@string/filter_menu_count_items" />
 
                 <ImageView
+                    android:id="@+id/toolBarAllChecked"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_marginEnd="20dp"
-                    android:src="@drawable/ic_add_circle_outline_black_18dp"/>
+                    android:src="@drawable/ic_list"/>
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 

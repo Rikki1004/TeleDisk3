@@ -17,6 +17,22 @@ data class TdObject (
     val messageID:Long=-1L,
     var isChecked:Boolean = false
 ): Parcelable{
+
+    fun equals2(other: Any?): Boolean {
+        if (other !is TdObject)
+            return false
+        return (
+                name == other.name &&
+                placeType == other.placeType &&
+                fileType == other.fileType &&
+                path == other.path &&
+                size == other.size &&
+                unixTimeDate == other.unixTimeDate &&
+                fileID == other.fileID &&
+                groupID == other.groupID
+                )
+    }
+
     fun is_file():Boolean{
         return fileType == FileType.File
     }

@@ -61,6 +61,8 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
         Toast.makeText(getApplication(), "Группа выбрана", Toast.LENGTH_SHORT).show()
     }
     get() {
+        if (field != NO_GROUP)
+            return field
         if (sharedpreferences.contains(PREF_GROUP_IG))
             return sharedpreferences.getLong(PREF_GROUP_IG,NO_GROUP)
         else
@@ -132,16 +134,14 @@ init {
         TelegramRepository.currentLocalFolderPath = path
     }
 
-    fun getRemoteFiles(id:Long,path:String){
-        currentDirectory = TdObject("currentDir",PlaceType.TeleDisk,FileType.Folder,path, groupID = id)
-        //if (path == "/") fileScope.value = listOf()
-        var a = viewModelScope.launch { getRemoteFilesUseCase(id,path) }
+    fun getRemoteFiles(path:String){
+        currentDirectory = TdObject("currentDir",PlaceType.TeleDisk,FileType.Folder,path, groupID = currentGroup)
+        viewModelScope.launch { getRemoteFilesUseCase(currentGroup,path) }
     }
 
     fun getLocalFiles(path:String){
 
         currentDirectory = TdObject("currentDir",PlaceType.Local,FileType.Folder,path)
-        //if (path == "/storage/emulated/0") fileScope.value = listOf()
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
     fun clickArrow(startPath: String){
@@ -150,7 +150,7 @@ init {
         else if (!currentDirectory.is_local() && currentDirectory.path != startPath && currentDirectory.name.isNotBlank()){
             var tempPath = currentDirectory.path.substringBeforeLast("/")
             if (tempPath.isBlank()) tempPath = "/"
-            getRemoteFiles(currentDirectory.groupID, tempPath)
+            getRemoteFiles(tempPath)
         }
 
         else
@@ -207,7 +207,7 @@ init {
 
     fun changeDirectory(directory:TdObject) {
         if (directory.is_folder() && directory.placeType == PlaceType.TeleDisk)
-            getRemoteFiles(directory.groupID,directory.path)
+            getRemoteFiles(directory.path)
         if (directory.is_folder() && directory.placeType == PlaceType.Local)
             getLocalFiles(directory.path)
     }
