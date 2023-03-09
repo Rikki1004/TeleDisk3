@@ -74,21 +74,6 @@ class BottomFileActionTransferFragment : Fragment() {
         }
     }
 
-    /*private fun createDialog(et:String? = null ) {
-        editText = EditText(requireContext())
-        editText?.let { if (et != null) it.setText(et.toString()) }
-        dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Создание папки")
-            .setMessage("Введите имя новой папки")
-            .setView(editText)
-            .setPositiveButton("Создать") { _, _ ->
-                viewModel.createFolder(editText?.text.toString())
-                viewModel.refresh()
-            }
-            .setNegativeButton("Отмена", null)
-            .create()
-        dialog?.show()
-    }*/
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

@@ -43,7 +43,6 @@ class ListFilesFragment : Fragment() {
     private lateinit var viewModel: ListFileViewModel
     private val args by navArgs<ListFilesFragmentArgs>()
 
-    //private lateinit var actionsView = requireActivity().findViewById<FragmentContainerView>
     private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
 
     private var filter: (list: List<TdObject>) -> List<TdObject> = { it }
@@ -58,30 +57,11 @@ class ListFilesFragment : Fragment() {
     private val bp5 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMore)}
 
 
-    /*override fun onPause() {
-        super.onPause()
-        val mListState = binding.recycleViewListFiles.layoutManager?.onSaveInstanceState()
-        mBundleRecyclerViewState.putParcelable("key", mListState)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (mBundleRecyclerViewState != null) {
-            Handler().postDelayed(Runnable {
-                val mListState = mBundleRecyclerViewState.getParcelable<Parcelable>("key")
-                binding.recycleViewListFiles.layoutManager?.onRestoreInstanceState(mListState)
-            }, 50)
-        }
-        //binding.recycleViewListFiles.setLayoutManager(staggeredGridLayoutManager)
-    }*/
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        //val list : List<TdObject > = ArrayList<TdObject>()
         outState.putBoolean(SELECT_MODE, selectMode)
         if (adapter.currentList.size < 1000)
             outState.putParcelableArray(SAVE_LIST, adapter.currentList.toTypedArray())
-
     }
 
     override fun onCreateView(
@@ -95,26 +75,19 @@ class ListFilesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /*requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,object :OnBackPressedCallback(true){
-            override fun handleOnBackPressed() {
-                *//*requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_view_container,MainFragment.newInstance())
-                    .commit()*//*
-                //requireActivity().startActivity(MainActivity.getInstance(requireContext()))
-                requireActivity().supportFragmentManager.popBackStackImmediate()
-            }
-        })*/
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object :
             OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 this.isEnabled = false
                 //changeToolbarSelectMode(false)
-                if (selectMode)
+                if (selectMode){
                     actionsView.visibility = View.GONE
+                    viewModel.selectedItems.clear()
+                }
+
                 requireActivity().onBackPressed()
             }
         })
-
 
         adapter = ListFilesAdapter(requireContext())
 
@@ -135,28 +108,14 @@ class ListFilesFragment : Fragment() {
             for (i in li) {
                 li2.add(i.copy(isChecked = true))
             }
+
             adapter.submitList(li2)
 
             viewModel.selectedItems.removeAll { true }
             viewModel.selectedItems.addAll(li2)
 
-            notifyCounter()
-
-            //checkedItemsProcessing(li[0])
-            //checkedItemsProcessing(li[1])
-            //checkedItemsProcessing(li[2])
-            //checkedItemsProcessing(li[3])
-            //checkedItemsProcessing(li[4])
-            //adapter.notifyDataSetChanged()
-            /*val li = adapter.currentList
-            val li2 = li.map { it.copy(isChecked = true) }// copy(isChecked = !tdObject.isChecked)
-            val lastItem = li2.last()//.copy(isChecked = false)
-            adapter.submitList(li2.toMutableList())
-            viewModel.selectedItems.removeAll { true }
-            viewModel.selectedItems.addAll(li2.subList(0,li2.size-1))
-            checkedItemsProcessing(lastItem)*/
+            configureBottomNavigation(li2)
         }
-
 
         adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener {
             override fun onFileLongClick(tdObject: TdObject) {
@@ -179,48 +138,20 @@ class ListFilesFragment : Fragment() {
                     if (tdObject.placeType == PlaceType.TeleDisk) {
                         val startIntent =
                             FileBackgroundTransfer.getIntent(requireActivity(), tdObject)
-                        /*val startIntent = FileBackgroundTransfer.getIntent(
-                            requireActivity(),
-                            tdObject,
-                            TdObject("Downloads",PlaceType.Local,FileType.Folder,"/storage/emulated/0/Download/1"),
 
-                        )*/
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
                     if (tdObject.placeType == PlaceType.Local) {
                         //startActivity(viewModel.openLocalFile(tdObject.path))
                         viewModel.openLocalFile(tdObject.path)
-
-
-                        /*val startIntent = FileBackgroundTransfer.getIntent(
-                            requireActivity(),
-                            tdObject,
-                            TdObject("Downloads",PlaceType.TeleDisk,FileType.Folder,"/", groupID = -567578282L),
-
-                            )
-                        ContextCompat.startForegroundService(requireActivity(), startIntent)*/
                     }
-
                 }
-
             }
         }
-        //binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireContext(),4)
 
         binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply {
             orientation = LinearLayoutManager.VERTICAL
         }
-
-        /*binding.searchViewListFiles.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(p0: String?): Boolean {
-                adapter.filter1(p0)
-                return false
-            }
-        })*/
 
         binding.recycleViewListFiles.adapter = adapter
         //adapter.submitList(null)
@@ -254,16 +185,8 @@ class ListFilesFragment : Fragment() {
 
         viewModel.fileScope.observe(viewLifecycleOwner, Observer {
             //adapter.submitList(null)
-            binding.pathTextView.setText(viewModel.currentDirectory.path)
+            initTopToolbar(it)
             binding.loadDataProgressBar.visibility = View.GONE
-            //if (it.isNotEmpty()){
-            val count = it.size
-            binding.toolBarTextViewCount.setText(
-                requireActivity().getString(
-                    R.string.filter_menu_count_items,
-                    count.toString()
-                )
-            )
             val a = filter(it).toMutableList()
             adapter.submitList(a)
             //}
@@ -279,9 +202,31 @@ class ListFilesFragment : Fragment() {
             adapter.submitList(li.toMutableList())
             binding.loadDataProgressBar.visibility = View.GONE
 
-            if (savedInstanceState.getBoolean(SELECT_MODE))
+            if (savedInstanceState.getBoolean(SELECT_MODE)){
                 changeToolbarSelectMode(true)
+                //configureBottomNavigation(li.toList())
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (selectMode) {
+            configureBottomNavigation()
+        }
+        notifyCounter()
+        initTopToolbar()
+    }
+
+    private fun initTopToolbar(list: List<TdObject> = adapter.currentList.toList()){
+        binding.pathTextView.setText(viewModel.currentDirectory.path)
+        val count = list.size
+        binding.toolBarTextViewCount.setText(
+            requireActivity().getString(
+                R.string.filter_menu_count_items,
+                count.toString()
+            )
+        )
     }
 
     private fun notifyCounter() {
@@ -570,7 +515,12 @@ class ListFilesFragment : Fragment() {
             adapter.submitList(li)
         }
 
+        configureBottomNavigation(li)
+
         //we adjust the upper and lower panels according to the choice
+
+    }
+    private fun configureBottomNavigation(li:List<TdObject> = adapter.currentList.toMutableList()){
         val oneChecked = li.filter { it.isChecked }.size == 1
         val zeroChecked = li.all { !it.isChecked }
         if (oneChecked || zeroChecked) {
@@ -604,9 +554,10 @@ class ListFilesFragment : Fragment() {
             binding.toolbar.visibility = View.GONE
         } else {
             actionsView.visibility = View.GONE
+            viewModel.selectedItems.clear()
             deselect()
         }
-        viewModel.selectedItems.clear()
+        //viewModel.selectedItems.clear()
     }
 
     private fun deselect() {
