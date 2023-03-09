@@ -9,7 +9,10 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.*
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -48,6 +51,7 @@ class ListFilesFragment : Fragment() {
     private var filter: (list: List<TdObject>) -> List<TdObject> = {it}
     private var filterReversed: Boolean = false
     private var lastFilter: Int = -1
+    private var selectMode : Boolean = false
 
 
     /*override fun onPause() {
@@ -70,8 +74,9 @@ class ListFilesFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         //val list : List<TdObject > = ArrayList<TdObject>()
+        outState.putBoolean(SELECT_MODE,selectMode)
         if (adapter.currentList.size < 1000)
-            outState.putParcelableArray("list", adapter.currentList.toTypedArray())
+            outState.putParcelableArray(SAVE_LIST, adapter.currentList.toTypedArray())
 
     }
 
@@ -95,19 +100,38 @@ class ListFilesFragment : Fragment() {
                 requireActivity().supportFragmentManager.popBackStackImmediate()
             }
         })*/
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,object :
+            OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                this.isEnabled = false
+                //changeToolbarSelectMode(false)
+                if (selectMode)
+                    actionsView.visibility = View.GONE
+                requireActivity().onBackPressed()
+            }
+        })
+
 
         adapter = ListFilesAdapter(requireContext())
+
+        binding.buttomDeselect.setOnClickListener {
+            changeToolbarSelectMode(false)
+        }
 
 
         adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener{
             override fun onFileLongClick(tdObject: TdObject) {
 
-                checkedItemsProcessing(adapter,tdObject)
+                checkedItemsProcessing(tdObject)
             }
         }
 
         adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener{
             override fun onFileClick(tdObject: TdObject) {
+                if (selectMode){
+                    checkedItemsProcessing(tdObject)
+                    return
+                }
                 if (tdObject.is_folder()){
                     viewModel.changeDirectory(tdObject)
                 }
@@ -161,6 +185,10 @@ class ListFilesFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
 
+        viewModel.needCancelSelect.observe(viewLifecycleOwner, Observer {
+            deselect()
+        })
+
         viewModel.needLaunchIntent.observe(viewLifecycleOwner, Observer {
             startActivity(it)
         })
@@ -207,7 +235,7 @@ class ListFilesFragment : Fragment() {
 
 
         //when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
-        if (savedInstanceState == null || !savedInstanceState.containsKey("list")){
+        if (savedInstanceState == null || !savedInstanceState.containsKey(SAVE_LIST)){
 
             /*when(args.scopeType){
                 //ScopeType.TeleDisk -> viewModel.getChats()
@@ -230,10 +258,13 @@ class ListFilesFragment : Fragment() {
         }
 
         else{
-            val li = savedInstanceState.getParcelableArray("list") as Array<TdObject>
+            val li = savedInstanceState.getParcelableArray(SAVE_LIST) as Array<TdObject>
             adapter.submitList(null)
             adapter.submitList(li.toMutableList())
             binding.loadDataProgressBar.visibility = View.GONE
+
+            if (savedInstanceState.getBoolean(SELECT_MODE))
+                changeToolbarSelectMode(true)
         }
 
         //viewModel.getChats()
@@ -462,7 +493,7 @@ class ListFilesFragment : Fragment() {
 
         toolbar.setOnMenuItemClickListener {
             when(it.itemId){
-                R.id.action_share -> {viewModel.shareItems()}
+                //R.id.action_share -> {}//{viewModel.shareItems()}
                 R.id.action_search -> {
                     /*findNavController()
                         .navigate(MainFragmentDirections
@@ -488,26 +519,79 @@ class ListFilesFragment : Fragment() {
 
     }
 
-    private fun checkedItemsProcessing(adapter: ListFilesAdapter,tdObject: TdObject) {
+    private fun checkedItemsProcessing(tdObject: TdObject) {
         //tdObject.isChecked = !tdObject.isChecked
+        if (!selectMode)
+            changeToolbarSelectMode(true)
+
 
         val li = adapter.currentList.toMutableList()
         val el = li.indexOf(tdObject)
-        li[el] = tdObject.copy(isChecked = !tdObject.isChecked)
+        val el2 = tdObject.copy(isChecked = !tdObject.isChecked)
+        li[el] = el2
 
         adapter.submitList(li)
         //adapter.notifyItemChanged(adapter.currentList.indexOf(tdObject))
 
         if (!tdObject.isChecked)
-            viewModel.selectedItems.add(tdObject)
-        else
-            viewModel.selectedItems.remove(tdObject)
-
-        if (li.any { it.isChecked })
-            actionsView.visibility = View.VISIBLE
+            viewModel.selectedItems.add(el2)
         else{
-            actionsView.visibility = View.GONE
+            viewModel.selectedItems.remove(tdObject)
         }
+
+        val oneChecked = li.filter { it.isChecked }.size == 1
+        val zeroChecked = li.all { !it.isChecked }
+        if (oneChecked || zeroChecked){
+            val color = AppCompatResources.getDrawable(
+                requireContext(),
+                if (oneChecked) R.color.colorMainBackground
+                else R.color.colorStoreBackgroundOther
+            )
+            val bp1 = actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelCopy)
+            val bp2 = actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMove)
+            val bp3 = actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelDelete)
+            val bp4 = actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelRename)
+            val bp5 = actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMore)
+
+            bp1.isClickable = oneChecked; bp1.background = color
+            bp2.isClickable = oneChecked; bp2.background = color
+            bp3.isClickable = oneChecked; bp3.background = color
+            bp4.isClickable = oneChecked; bp4.background = color
+            bp5.isClickable = oneChecked; bp5.background = color
+
+            }else{
+            actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelRename).isClickable = false
+            actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelRename).background = AppCompatResources.getDrawable(requireContext(),R.color.colorStoreBackgroundOther)
+        }
+
+        binding.toolBarTextViewCountChecked.text = if (viewModel.selectedItems.isEmpty()){
+            "Элементы не выбраны"
+        }else{
+            "Выбрано: " + viewModel.selectedItems.size
+        }
+    }
+
+    private fun changeToolbarSelectMode(selectModeOn:Boolean){
+        if(selectModeOn){
+            selectMode = true
+            actionsView.visibility = View.VISIBLE
+            binding.selectToolbar.visibility = View.VISIBLE
+            binding.toolbar.visibility = View.GONE
+        } else{
+            actionsView.visibility = View.GONE
+            deselect()
+
+        }
+        viewModel.selectedItems.clear()
+    }
+    private fun deselect(){
+        selectMode = false
+        binding.selectToolbar.visibility = View.GONE
+        binding.toolbar.visibility = View.VISIBLE
+
+        val li = adapter.currentList
+        val li2 = li.map { it.copy(isChecked = false) }// copy(isChecked = !tdObject.isChecked)
+        adapter.submitList(li2.toMutableList())
     }
 
     override fun onDestroyView() {
@@ -533,6 +617,9 @@ class ListFilesFragment : Fragment() {
     companion object {
         const val EXTRA_SCOPE_TYPE = "scopeType"
         const val EXTRA_FILTER = "filter"
+
+        const val SELECT_MODE = "selectMode"
+        const val SAVE_LIST = "list"
         fun newInstance(scopeType: ScopeType,filter:FiltersFromType? = null): Fragment {
             return ListFilesFragment().apply {
                 arguments = Bundle().apply {

@@ -37,6 +37,8 @@ class BottomFileActionTransferFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
 
+        viewModel.prepareToCopy()
+
         //if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_TEXT_VIEW))
         //    createDialog(savedInstanceState.getString(EXTRA_TEXT_VIEW))
 

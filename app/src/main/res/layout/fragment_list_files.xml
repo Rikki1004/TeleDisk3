@@ -27,6 +27,51 @@
 
         </androidx.appcompat.widget.Toolbar>
 
+        <androidx.appcompat.widget.Toolbar
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:id="@+id/selectToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="0dp"
+            android:orientation="horizontal"
+            app:contentInsetStart="5dp"
+            app:contentInsetStartWithNavigation="0dp"
+            app:maxButtonHeight="40dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="clip_horizontal"
+                android:orientation="horizontal"
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:id="@+id/buttomDeselect"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="20dp"
+                    android:src="@drawable/ic_add_circle_outline_black_18dp"/>
+
+                <TextView
+                    android:id="@+id/toolBarTextViewCountChecked"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:gravity="center|start"
+                    android:layout_weight="1"
+                    android:textColor="@color/colorMainText"
+                    tools:text="@string/filter_menu_count_items" />
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginEnd="20dp"
+                    android:src="@drawable/ic_add_circle_outline_black_18dp"/>
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/pathToolbar"

@@ -50,6 +50,7 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
 
     var needLaunchIntent = SingleLiveData<Intent>()
     var needPressBackButton = SingleLiveData<Unit>()
+    var needCancelSelect = SingleLiveData<Unit>()
 
     val selectedItems = mutableListOf<TdObject>()
     lateinit var currentDirectory : TdObject
@@ -379,5 +380,9 @@ init {
                 single = false
             )
         }
+    }
+
+    fun prepareToCopy() {
+        needCancelSelect.value = Unit
     }
 }

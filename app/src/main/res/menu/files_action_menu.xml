@@ -25,16 +25,16 @@
 
 
 
-    <item
+    <!--<item
         android:id="@+id/action_share"
         android:icon="@drawable/ic_share_black_18dp"
         android:title="Share"
-        app:showAsAction="never"/>
+        app:showAsAction="never"/>-->
     <item
         android:id="@+id/action_new_folder"
         android:icon="@drawable/ic_add_circle_outline_black_18dp"
         android:title="New folder"
-        app:showAsAction="never"/>
+        app:showAsAction="always"/>
 
 
 </menu>
