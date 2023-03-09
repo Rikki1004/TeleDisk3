@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.afollestad.materialdialogs.LayoutMode
 import com.afollestad.materialdialogs.MaterialDialog
@@ -44,17 +45,28 @@ class BottomFileActionTransferFragment : Fragment() {
 
         with(binding){
             textViewBottomPanelPaste.setOnClickListener {
-                viewModel.is_copy_mode = false
-                val isCopy = requireArguments().getBoolean(EXTRA_COPY)
-                if (isCopy)
-                    viewModel.copyFile()
-                else
-                    viewModel.moveFile()
-                close()
+                if (end()){
+                    viewModel.is_copy_mode = false
+                    val isCopy = requireArguments().getBoolean(EXTRA_COPY)
+                    if (isCopy)
+                        viewModel.copyFile()
+                    else
+                        viewModel.moveFile()
+                    close()
+                }
+
             }
             textViewBottomPanelCancel.setOnClickListener { viewModel.cancelCopy();viewModel.refresh(); close() }
-            textViewBottomPanelCreate .setOnClickListener {createFolderDialog()}
+            textViewBottomPanelCreate .setOnClickListener {if (end()) createFolderDialog()}
         }
+    }
+
+    fun end():Boolean{
+        if (viewModel.currentDirectory.path == "*"){
+            Toast.makeText(requireContext(), "Здесь это сделать нельзя", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        return true
     }
     private fun close(){
         requireActivity().supportFragmentManager.beginTransaction()

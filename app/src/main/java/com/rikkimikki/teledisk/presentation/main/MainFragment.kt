@@ -51,8 +51,10 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
         initClickListeners()
-        if (viewModel.is_copy_mode)
+        if (viewModel.is_copy_mode){
             actionsView.visibility = View.VISIBLE
+        }
+
 
         val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val drawerSwitch: SwitchMaterial =

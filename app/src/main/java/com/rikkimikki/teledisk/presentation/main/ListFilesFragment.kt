@@ -29,10 +29,7 @@ import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
-import com.rikkimikki.teledisk.domain.FiltersFromType
-import com.rikkimikki.teledisk.domain.PlaceType
-import com.rikkimikki.teledisk.domain.ScopeType
-import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.utils.findIndex
 
 class ListFilesFragment : Fragment() {
@@ -80,6 +77,9 @@ class ListFilesFragment : Fragment() {
             override fun handleOnBackPressed() {
                 this.isEnabled = false
                 //changeToolbarSelectMode(false)
+
+                viewModel.currentDirectory = TdObject("noDir",PlaceType.Local,
+                    FileType.Folder,"*")
 
                 if (selectMode){
                     actionsView.visibility = View.GONE
