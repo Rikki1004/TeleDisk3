@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,6 +37,7 @@ class MainFragment : Fragment() {
     private lateinit var adapter : PlaceAdapter
     private lateinit var viewModel: ListFileViewModel
     private var chatsList = mutableListOf<Long>()
+    private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,8 +49,10 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this)[ListFileViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
         initClickListeners()
+        if (viewModel.is_copy_mode)
+            actionsView.visibility = View.VISIBLE
 
         val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val drawerSwitch: SwitchMaterial =

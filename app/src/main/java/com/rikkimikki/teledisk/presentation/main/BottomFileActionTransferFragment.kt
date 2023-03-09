@@ -40,10 +40,11 @@ class BottomFileActionTransferFragment : Fragment() {
         viewModel.prepareToCopy()
 
         //if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_TEXT_VIEW))
-        //    createDialog(savedInstanceState.getString(EXTRA_TEXT_VIEW))
+        //    createDialog(savedInstanceState.getString(EXTRA_TEXT_VIEW)) t3e4
 
         with(binding){
             textViewBottomPanelPaste.setOnClickListener {
+                viewModel.is_copy_mode = false
                 val isCopy = requireArguments().getBoolean(EXTRA_COPY)
                 if (isCopy)
                     viewModel.copyFile()
@@ -51,7 +52,7 @@ class BottomFileActionTransferFragment : Fragment() {
                     viewModel.moveFile()
                 close()
             }
-            textViewBottomPanelCancel.setOnClickListener { viewModel.refresh(); close() }
+            textViewBottomPanelCancel.setOnClickListener { viewModel.cancelCopy();viewModel.refresh(); close() }
             textViewBottomPanelCreate .setOnClickListener {createFolderDialog()}
         }
     }

@@ -80,6 +80,7 @@ class ListFilesFragment : Fragment() {
             override fun handleOnBackPressed() {
                 this.isEnabled = false
                 //changeToolbarSelectMode(false)
+
                 if (selectMode){
                     actionsView.visibility = View.GONE
                     viewModel.selectedItems.clear()
@@ -119,8 +120,8 @@ class ListFilesFragment : Fragment() {
 
         adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener {
             override fun onFileLongClick(tdObject: TdObject) {
-
-                checkedItemsProcessing(tdObject)
+                if (!viewModel.is_copy_mode)
+                    checkedItemsProcessing(tdObject)
             }
         }
 
@@ -158,8 +159,11 @@ class ListFilesFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
 
-        viewModel.needCancelSelect.observe(viewLifecycleOwner, Observer {
+        viewModel.needHideSelect.observe(viewLifecycleOwner, Observer {
             deselect()
+        })
+        viewModel.needCancelSelect.observe(viewLifecycleOwner, Observer {
+            changeToolbarSelectMode(false)
         })
 
         viewModel.needLaunchIntent.observe(viewLifecycleOwner, Observer {
@@ -213,6 +217,9 @@ class ListFilesFragment : Fragment() {
         super.onResume()
         if (selectMode) {
             configureBottomNavigation()
+        }
+        if (viewModel.is_copy_mode){
+            actionsView.visibility = View.VISIBLE
         }
         notifyCounter()
         initTopToolbar()
