@@ -45,4 +45,10 @@
     <string name="rename">Переименовать</string>
     <string name="create">Создать</string>
     <string name="cancel">Отмена</string>
+    <string name="upload_success">Успешно загружен</string>
+    <string name="download_success">Успешно выгружен</string>
+    <string name="is_downloading">Загружается</string>
+    <string name="is_uploading">Выгружается</string>
+    <string name="is_moving">Перемещается</string>
+    <string name="is_processing">Подготавливается</string>
 </resources>
