@@ -36,4 +36,19 @@
     <string name="name_scope_teledisk">ТелеДиск</string>
     <string name="name_scope_sd">SD-карта</string>
     <string name="name_scope_vk">ВкДиск (в разработке)</string>
+
+    <string name="information">Сведения</string>
+    <string name="new_folder">Новая папка</string>
+    <string name="new_folder_hint">Новая папка</string>
+    <string name="rename_file">Переименование файла</string>
+    <string name="rename_folder">Переименование папки</string>
+    <string name="rename">Переименовать</string>
+    <string name="create">Создать</string>
+    <string name="cancel">Отмена</string>
+    <string name="upload_success">Успешно загружен</string>
+    <string name="download_success">Успешно выгружен</string>
+    <string name="is_downloading">Загружается</string>
+    <string name="is_uploading">Выгружается</string>
+    <string name="is_moving">Перемещается</string>
+    <string name="is_processing">Подготавливается</string>
 </resources>

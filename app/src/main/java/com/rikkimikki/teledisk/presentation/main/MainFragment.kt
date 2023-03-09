@@ -1,6 +1,5 @@
 package com.rikkimikki.teledisk.presentation.main
 
-import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
@@ -10,30 +9,32 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.view.get
+import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.mlkit.common.sdkinternal.CommonUtils
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentMainBinding
 import com.rikkimikki.teledisk.domain.FiltersFromType
+import com.rikkimikki.teledisk.domain.PlaceItem
 import com.rikkimikki.teledisk.domain.ScopeType
+import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
+import com.rikkimikki.teledisk.utils.GLOBAL_REMOTE_STORAGE_PATH
 import com.rikkimikki.teledisk.utils.isNightModeEnabled
-import com.rikkimikki.teledisk.utils.isToogleEnabled
 import com.rikkimikki.teledisk.utils.setIsNightModeEnabled
-import com.rikkimikki.teledisk.utils.setIsToogleEnabled
-import java.lang.ref.WeakReference
 
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
+    private lateinit var adapter : PlaceAdapter
     private lateinit var viewModel: ListFileViewModel
-    private lateinit var navView : NavigationView
     private var chatsList = mutableListOf<Long>()
 
     override fun onCreateView(
@@ -50,39 +51,20 @@ class MainFragment : Fragment() {
         initClickListeners()
 
         val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
-
-
-        /*mySwitch.setOnCheckedChangeListener(object : CompoundButton.OnCheckedChangeListener{
-            override fun onCheckedChanged(p0: CompoundButton?, isChecked: Boolean) {
-                Toast.makeText(requireContext(), "onCheck", Toast.LENGTH_SHORT).show()
-            }
-        })*/
-
-        /*switch_btn.setOnClickListener(View.OnClickListener {
-            if(isNightModeOn){
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                switch_btn.text = "Enable Dark Mode"
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                switch_btn.text = "Disable Dark Mode"
-            }
-        })*/
-
-        val drawerSwitch : SwitchMaterial = navView.getMenu().findItem(R.id.dark_theme_switch).getActionView() as SwitchMaterial
-
-        //drawerSwitch.solidColor(resources.getColor(R.color.md_red))
+        val drawerSwitch: SwitchMaterial =
+            navView.menu.findItem(R.id.dark_theme_switch).actionView as SwitchMaterial
 
         drawerSwitch.isChecked = isNightModeEnabled(requireActivity().application)
-
         drawerSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (buttonView.isPressed){
+            if (buttonView.isPressed) {
                 setIsNightModeEnabled(requireActivity().application, isChecked)
                 requireActivity().recreate()
             }
         }
 
+
         navView.setNavigationItemSelectedListener {
-            if (it.groupId == GROUP_ID){
+            if (it.groupId == GROUP_ID) {
                 viewModel.currentGroup = chatsList[it.itemId]
             }
             return@setNavigationItemSelectedListener true
@@ -90,16 +72,16 @@ class MainFragment : Fragment() {
 
         viewModel.getChats().observe(viewLifecycleOwner) {
             val menu = navView.menu
-            val submenu: Menu = menu.findItem (R.id.disk_container).subMenu //menu.addSubMenu("Удаленные диски")
+            val submenu: Menu = menu.findItem(R.id.disk_container).subMenu
             submenu.clear()
 
-            for(i in 0 until it.size){
-                val a = submenu.add(GROUP_ID,i,Menu.NONE,"")
+            for (i in it.indices) {
+                val a = submenu.add(GROUP_ID, i, Menu.NONE, "")
                 chatsList.add(it[i].first)
 
                 val s = SpannableString(it[i].second)
                 s.setSpan(
-                    ForegroundColorSpan(Color.parseColor("#03DAC5")),
+                    ForegroundColorSpan(Color.parseColor(NEON_COLOR)),
                     0,
                     s.length,
                     Spannable.SPAN_INCLUSIVE_INCLUSIVE
@@ -109,6 +91,24 @@ class MainFragment : Fragment() {
             }
             navView.invalidate()
         }
+
+        adapter = PlaceAdapter(requireContext())
+
+        adapter.onPlaceClickListener = object : PlaceAdapter.OnPlaceClickListener{
+            override fun onPlaceClick(placeItem: PlaceItem) {
+                findNavController()
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                placeItem.scopeType, FiltersFromType.DEFAULT,placeItem.path
+                            )
+                    )
+            }
+        }
+        binding.horizontalRecycleView.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.HORIZONTAL }
+        binding.horizontalRecycleView.adapter = adapter
+
+        adapter.placeItemList = viewModel.getStorages()
     }
 
     override fun onDestroyView() {
@@ -116,93 +116,116 @@ class MainFragment : Fragment() {
         super.onDestroyView()
     }
 
-    fun initClickListeners(){
-        with(binding){
+    private fun initClickListeners() {
+        with(binding) {
+
+            imageViewOpenDrawer.setOnClickListener {
+                requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout).openDrawer(
+                    GravityCompat.START)
+            }
             textViewPhoneSearch.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.ALL_LOCAL))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.ALL_LOCAL,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
             }
             textViewTelediskSearch.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.ALL_REMOTE))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.TeleDisk, FiltersFromType.ALL_REMOTE, GLOBAL_REMOTE_STORAGE_PATH
+                            )
+                    )
             }
             textViewTopPanelApps.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.APPS))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.APPS,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
             }
             textViewTopPanelDocs.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.DOCUMENTS))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.DOCUMENTS,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
             }
             textViewTopPanelImages.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.PHOTO))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.PHOTO,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
             }
             textViewTopPanelMusic.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.MUSIC))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.MUSIC,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
             }
             textViewTopPanelVideo.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.Local,FiltersFromType.VIDEO))
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.VIDEO,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
             }
 
-            //val navHostFragment = requireActivity().supportFragmentManager.primaryNavigationFragment //findFragmentById(R.id.main_view_container) as MainFragment
 
-            constraintLayoutStorageMain.setOnClickListener {
-
+            /*constraintLayoutStorageMain.setOnClickListener {
                 findNavController()
-                    //.navigate(R.id.action_mainFragment_to_listFilesFragment)
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.Local,FiltersFromType.DEFAULT))
-                /*requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.Local))
-                    .addToBackStack(null)
-                .commit()*/
-            }
-            constraintLayoutStorageVk.setOnClickListener {
-                findNavController()
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.VkMsg,FiltersFromType.DEFAULT))
-                /*requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
-                    .addToBackStack(null)
-                    .commit()*/
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.DEFAULT
+                            )
+                    )
             }
             constraintLayoutStorageSd.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.Sd,FiltersFromType.DEFAULT))
-                /*requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.VkMsg))
-                    .addToBackStack(null)
-                    .commit()*/
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Sd, FiltersFromType.DEFAULT
+                            )
+                    )
             }
             constraintLayoutStorageTd.setOnClickListener {
                 findNavController()
-                    .navigate(MainFragmentDirections.actionMainFragmentToListFilesFragment(ScopeType.TeleDisk,FiltersFromType.DEFAULT))
-                /*requireActivity().supportFragmentManager.beginTransaction()
-                .addToBackStack(null)
-                .replace(R.id.main_view_container,ListFilesFragment.newInstance(ScopeType.TeleDisk))
-                .commit()*/
-            }
-
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.TeleDisk, FiltersFromType.DEFAULT
+                            )
+                    )
+            }*/
+            /*constraintLayoutStorageVk.setOnClickListener {
+                findNavController()
+                    .navigate(MainFragmentDirections
+                        .actionMainFragmentToListFilesFragment(
+                            ScopeType.VkMsg,FiltersFromType.DEFAULT))
+            }*/
         }
     }
 
     companion object {
         const val GROUP_ID = 10
-        fun newInstance() = MainFragment()
+        const val NEON_COLOR = "#03DAC5"
     }
 }

@@ -2,13 +2,17 @@ package com.rikkimikki.teledisk.presentation.main
 
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.view.*
-import android.widget.AutoCompleteTextView
-import android.widget.ImageView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -18,6 +22,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afollestad.materialdialogs.LayoutMode
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
@@ -25,20 +33,29 @@ import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.PlaceType
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.utils.findIndex
 
 class ListFilesFragment : Fragment() {
     private var _binding: FragmentListFilesBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter : ListFilesAdapter
+    private lateinit var adapter: ListFilesAdapter
     private lateinit var viewModel: ListFileViewModel
     private val args by navArgs<ListFilesFragmentArgs>()
+
     //private lateinit var actionsView = requireActivity().findViewById<FragmentContainerView>
     private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
 
-    private var filter: (list: List<TdObject>) -> List<TdObject> = {it}
+    private var filter: (list: List<TdObject>) -> List<TdObject> = { it }
     private var filterReversed: Boolean = false
     private var lastFilter: Int = -1
+    private var selectMode: Boolean = false
+
+    private val bp1 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelCopy)}
+    private val bp2 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMove)}
+    private val bp3 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelDelete)}
+    private val bp4 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelRename)}
+    private val bp5 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMore)}
 
 
     /*override fun onPause() {
@@ -61,8 +78,9 @@ class ListFilesFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         //val list : List<TdObject > = ArrayList<TdObject>()
+        outState.putBoolean(SELECT_MODE, selectMode)
         if (adapter.currentList.size < 1000)
-            outState.putParcelableArray("list", adapter.currentList.toTypedArray())
+            outState.putParcelableArray(SAVE_LIST, adapter.currentList.toTypedArray())
 
     }
 
@@ -86,26 +104,81 @@ class ListFilesFragment : Fragment() {
                 requireActivity().supportFragmentManager.popBackStackImmediate()
             }
         })*/
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object :
+            OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                this.isEnabled = false
+                //changeToolbarSelectMode(false)
+                if (selectMode)
+                    actionsView.visibility = View.GONE
+                requireActivity().onBackPressed()
+            }
+        })
+
 
         adapter = ListFilesAdapter(requireContext())
 
+        binding.buttomDeselect.setOnClickListener {
+            changeToolbarSelectMode(false)
+        }
 
-        adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener{
+        binding.toolBarAllChecked.setOnClickListener {
+            val li = adapter.currentList.toList()
+
+            if (li.size == 1) {
+                if (!li[0].isChecked)
+                    checkedItemsProcessing(li[0])
+                return@setOnClickListener
+            }
+
+            val li2 = mutableListOf<TdObject>()
+            for (i in li) {
+                li2.add(i.copy(isChecked = true))
+            }
+            adapter.submitList(li2)
+
+            viewModel.selectedItems.removeAll { true }
+            viewModel.selectedItems.addAll(li2)
+
+            notifyCounter()
+
+            //checkedItemsProcessing(li[0])
+            //checkedItemsProcessing(li[1])
+            //checkedItemsProcessing(li[2])
+            //checkedItemsProcessing(li[3])
+            //checkedItemsProcessing(li[4])
+            //adapter.notifyDataSetChanged()
+            /*val li = adapter.currentList
+            val li2 = li.map { it.copy(isChecked = true) }// copy(isChecked = !tdObject.isChecked)
+            val lastItem = li2.last()//.copy(isChecked = false)
+            adapter.submitList(li2.toMutableList())
+            viewModel.selectedItems.removeAll { true }
+            viewModel.selectedItems.addAll(li2.subList(0,li2.size-1))
+            checkedItemsProcessing(lastItem)*/
+        }
+
+
+        adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener {
             override fun onFileLongClick(tdObject: TdObject) {
 
-                checkedItemsProcessing(adapter,tdObject)
+                checkedItemsProcessing(tdObject)
             }
         }
 
-        adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener{
+        adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener {
             override fun onFileClick(tdObject: TdObject) {
-                if (tdObject.is_folder()){
+                if (selectMode) {
+                    checkedItemsProcessing(tdObject)
+                    return
+                }
+                if (tdObject.is_folder()) {
                     viewModel.changeDirectory(tdObject)
                 }
 
-                if(tdObject.is_file()){
-                    if (tdObject.placeType == PlaceType.TeleDisk){
-                        val startIntent = FileBackgroundTransfer.getIntent(requireActivity(),tdObject)
+                if (tdObject.is_file()) {
+                    if (tdObject.placeType == PlaceType.TeleDisk) {
+                        val startIntent =
+                            FileBackgroundTransfer.getIntent(requireActivity(), tdObject)
                         /*val startIntent = FileBackgroundTransfer.getIntent(
                             requireActivity(),
                             tdObject,
@@ -114,7 +187,7 @@ class ListFilesFragment : Fragment() {
                         )*/
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
-                    if(tdObject.placeType == PlaceType.Local){
+                    if (tdObject.placeType == PlaceType.Local) {
                         //startActivity(viewModel.openLocalFile(tdObject.path))
                         viewModel.openLocalFile(tdObject.path)
 
@@ -134,7 +207,9 @@ class ListFilesFragment : Fragment() {
         }
         //binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireContext(),4)
 
-        binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.VERTICAL }
+        binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply {
+            orientation = LinearLayoutManager.VERTICAL
+        }
 
         /*binding.searchViewListFiles.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
@@ -152,6 +227,10 @@ class ListFilesFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
         //viewModel.fileScope.removeObservers(viewLifecycleOwner)
 
+        viewModel.needCancelSelect.observe(viewLifecycleOwner, Observer {
+            deselect()
+        })
+
         viewModel.needLaunchIntent.observe(viewLifecycleOwner, Observer {
             startActivity(it)
         })
@@ -162,7 +241,11 @@ class ListFilesFragment : Fragment() {
 
 
         viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
-            Toast.makeText(requireContext(), "операция успешно завершена: "+it.first, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "операция успешно завершена: " + it.first,
+                Toast.LENGTH_SHORT
+            ).show()
             if (it.second)
                 viewModel.openLocalFile(it.first)
             else
@@ -173,80 +256,63 @@ class ListFilesFragment : Fragment() {
             //adapter.submitList(null)
             binding.pathTextView.setText(viewModel.currentDirectory.path)
             binding.loadDataProgressBar.visibility = View.GONE
-            if (it.isNotEmpty()){
-                val count = it.size + if (it.any { it.name == ".."}) -1 else 0
-                binding.toolBarTextViewCount.setText(requireActivity().getString(R.string.filter_menu_count_items,count.toString()))
-                //binding.searchViewListFiles.setQuery("",false)
-                //binding.searchViewListFiles.setFocusable(false)
-                adapter.submitList(filter(it).toMutableList())
-            }
+            //if (it.isNotEmpty()){
+            val count = it.size
+            binding.toolBarTextViewCount.setText(
+                requireActivity().getString(
+                    R.string.filter_menu_count_items,
+                    count.toString()
+                )
+            )
+            val a = filter(it).toMutableList()
+            adapter.submitList(a)
+            //}
         })
-
 
         toolBarSettings()
 
-
-
-        /*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
-            println(it)
-            //viewModel.getRemoteFiles(-571102575,"/[R.G. Mechanics] Worms Revolution/Redist")
-            //viewModel.getRemoteFiles(-571102575,"/[R.G. Mechanics] Worms Revolution")
-            //viewModel.getRemoteFiles(-567578282,"/")
-            //viewModel.getLocalFiles("/storage/emulated/0")
-        })*/
-
-
-        //when(requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType){
-        if (savedInstanceState == null || !savedInstanceState.containsKey("list")){
-
-            /*when(args.scopeType){
-                //ScopeType.TeleDisk -> viewModel.getChats()
-                ScopeType.TeleDisk -> {
-                    viewModel.refreshFileScope()
-                    *//*viewModel.chatScope.observe(viewLifecycleOwner, Observer {
-                        viewModel.getRemoteFiles(-567578282,"/")
-                    })*//*
-                    //viewModel.getRemoteFiles(-567578282,"/")
-                    viewModel.getRemoteFiles(-650777369,"/")
-                }
-                ScopeType.Local -> {
-                    viewModel.refreshFileScope()
-                    viewModel.getLocalFiles("/storage/emulated/0")
-                }
-                ScopeType.VkMsg -> {}
-            }*/
-
+        if (savedInstanceState == null || !savedInstanceState.containsKey(SAVE_LIST)) {
             init()
-        }
-
-        else{
-            val li = savedInstanceState.getParcelableArray("list") as Array<TdObject>
+        } else {
+            val li = savedInstanceState.getParcelableArray(SAVE_LIST) as Array<TdObject>
             adapter.submitList(null)
             adapter.submitList(li.toMutableList())
             binding.loadDataProgressBar.visibility = View.GONE
-        }
 
-        //viewModel.getChats()
+            if (savedInstanceState.getBoolean(SELECT_MODE))
+                changeToolbarSelectMode(true)
+        }
     }
 
-    private fun init(){
-        when(args.filter){
+    private fun notifyCounter() {
+        binding.toolBarTextViewCountChecked.text = if (viewModel.selectedItems.isEmpty()) {
+            "Элементы не выбраны"
+        } else {
+            "Выбрано: " + viewModel.selectedItems.size
+        }
+    }
+
+    private fun init() {
+        viewModel.setLocalPath(args.path)
+        when (args.filter) {
             FiltersFromType.DEFAULT -> {
-                when(args.scopeType){
-                    //ScopeType.TeleDisk -> {viewModel.getRemoteFiles(-650777369,"/")}
-                    ScopeType.TeleDisk -> {viewModel.getRemoteFiles(viewModel.currentGroup,"/")}
-                    ScopeType.Local -> {viewModel.getLocalFiles("/storage/emulated/0")}
+                when (args.scopeType) {
+                    ScopeType.TeleDisk -> viewModel.getRemoteFiles(args.path)
+                    ScopeType.Local -> viewModel.getLocalFiles(args.path)
+                    ScopeType.Sd -> viewModel.getLocalFiles(args.path)
                     ScopeType.VkMsg -> {}
                 }
             }
-            FiltersFromType.ALL_REMOTE -> {viewModel.getRemoteFilesFiltered(args.filter)}
-            FiltersFromType.ALL_LOCAL -> {viewModel.getLocalFilesFiltered(args.filter)}
+            FiltersFromType.ALL_REMOTE -> {
+                viewModel.getRemoteFilesFiltered(args.filter, args.path)
+            }
+            FiltersFromType.ALL_LOCAL -> {
+                viewModel.getLocalFilesFiltered(args.filter, args.path)
+            }
 
-            else -> {viewModel.getLocalFilesFiltered(args.filter)}
-            /*FiltersFromType.APPS -> FiltersFromType.APPS.ext
-            FiltersFromType.MUSIC -> FiltersFromType.MUSIC.ext
-            FiltersFromType.PHOTO -> FiltersFromType.PHOTO.ext
-            FiltersFromType.DOCUMENTS -> FiltersFromType.DOCUMENTS.ext*/
+            else -> {
+                viewModel.getLocalFilesFiltered(args.filter, args.path)
+            }
         }
     }
 
@@ -257,17 +323,12 @@ class ListFilesFragment : Fragment() {
         val pathToolbar = binding.pathToolbar
         val searchBar = toolbar.menu.findItem(R.id.action_search).actionView as SearchView
 
+        infoToolbar.overflowIcon =
+            AppCompatResources.getDrawable(requireContext(),R.drawable.arrow_down_drop_circle_outline_custom)
 
-
-        //searchBar.res //setBackgroundColor(resources.getColor(R.color.colorMainText))
-        //searchBar.setTe (resources.getColor(R.color.colorMainText))
-        //toolbar.inflateMenu(R.menu.files_action_menu)
-        //toolbar.inflateMenu(R.menu.files_action_hidden_menu)
-        infoToolbar.overflowIcon = requireActivity().getDrawable(R.drawable.arrow_down_drop_circle_outline_custom)
-        //infoToolbar.setOve
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_18dp)
         toolbar.setNavigationOnClickListener { view ->
-            viewModel.clickArrow()
+            viewModel.clickArrow(args.path)
         }
 
 
@@ -296,13 +357,26 @@ class ListFilesFragment : Fragment() {
 
 
         infoToolbar.setOnMenuItemClickListener {
-            when (lastFilter){
-                R.id.action_filter_size -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_size)}
-                R.id.action_filter_name -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_name)}
-                R.id.action_filter_type -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_type)}
-                R.id.action_filter_time -> {infoToolbar.menu.findItem(lastFilter).title = getString(R.string.filter_menu_time)}
+            //zeroing the name (it can be with an arrow)
+            when (lastFilter) {
+                R.id.action_filter_size -> {
+                    infoToolbar.menu.findItem(lastFilter).title =
+                        getString(R.string.filter_menu_size)
+                }
+                R.id.action_filter_name -> {
+                    infoToolbar.menu.findItem(lastFilter).title =
+                        getString(R.string.filter_menu_name)
+                }
+                R.id.action_filter_type -> {
+                    infoToolbar.menu.findItem(lastFilter).title =
+                        getString(R.string.filter_menu_type)
+                }
+                R.id.action_filter_time -> {
+                    infoToolbar.menu.findItem(lastFilter).title =
+                        getString(R.string.filter_menu_time)
+                }
             }
-            when(it.itemId){
+            when (it.itemId) {
                 R.id.action_filter_size -> {
 
                     filterReversed = if (lastFilter == it.itemId) !filterReversed else false
@@ -327,13 +401,13 @@ class ListFilesFragment : Fragment() {
                             val files = items.filter { it.is_file() }
                             val folders = items.filter { !it.is_file() }
 
-                            val filteredFolders = folders.sortedBy { item -> item.size}
+                            val filteredFolders = folders.sortedBy { item -> item.size }
                             val filteredFiles = if (filterReversed)
-                                files.sortedByDescending { item -> item.size}
+                                files.sortedByDescending { item -> item.size }
                             else
-                                files.sortedBy { item -> item.size}
+                                files.sortedBy { item -> item.size }
 
-                            filteredFolders+filteredFiles
+                            filteredFolders + filteredFiles
                         }
                 }
 
@@ -361,13 +435,13 @@ class ListFilesFragment : Fragment() {
                             val files = items.filter { it.is_file() }
                             val folders = items.filter { !it.is_file() }
 
-                            val filteredFolders = folders.sortedBy { item -> item.name}
+                            val filteredFolders = folders.sortedBy { item -> item.name }
                             val filteredFiles = if (filterReversed)
-                                files.sortedByDescending { item -> item.name}
+                                files.sortedByDescending { item -> item.name }
                             else
-                                files.sortedBy { item -> item.name}
+                                files.sortedBy { item -> item.name }
 
-                            filteredFolders+filteredFiles
+                            filteredFolders + filteredFiles
                         }
                 }
 
@@ -395,13 +469,13 @@ class ListFilesFragment : Fragment() {
                             val files = items.filter { it.is_file() }
                             val folders = items.filter { !it.is_file() }
 
-                            val filteredFolders = folders.sortedBy { item -> item.unixTimeDate}
+                            val filteredFolders = folders.sortedBy { item -> item.unixTimeDate }
                             val filteredFiles = if (filterReversed)
-                                files.sortedByDescending { item -> item.unixTimeDate}
+                                files.sortedByDescending { item -> item.unixTimeDate }
                             else
-                                files.sortedBy { item -> item.unixTimeDate}
+                                files.sortedBy { item -> item.unixTimeDate }
 
-                            filteredFolders+filteredFiles
+                            filteredFolders + filteredFiles
                         }
                 }
 
@@ -429,13 +503,13 @@ class ListFilesFragment : Fragment() {
                             val files = items.filter { it.is_file() }
                             val folders = items.filter { !it.is_file() }
 
-                            val filteredFolders = folders.sortedBy { item -> item.name}
+                            val filteredFolders = folders.sortedBy { item -> item.name }
                             val filteredFiles = if (filterReversed)
-                                files.sortedByDescending { item -> item.name.substringAfterLast(".")}
+                                files.sortedByDescending { item -> item.name.substringAfterLast(".") }
                             else
-                                files.sortedBy { item -> item.name.substringAfterLast(".")}
+                                files.sortedBy { item -> item.name.substringAfterLast(".") }
 
-                            filteredFolders+filteredFiles
+                            filteredFolders + filteredFiles
                         }
                 }
             }
@@ -448,90 +522,134 @@ class ListFilesFragment : Fragment() {
             true
         }
 
+        //changing the items display type
         toolbar.setOnMenuItemClickListener {
-            when(it.itemId){
-                R.id.action_settings -> {}
-                R.id.action_search -> {
-                    /*findNavController()
-                        .navigate(MainFragmentDirections
-                            .actionMainFragmentToSearchFragment ())*/
-                }
+            when (it.itemId) {
                 R.id.action_layout_grid -> {
                     adapter.layoutManagerType = adapter.MANAGER_GRID
-                    binding.recycleViewListFiles.layoutManager = GridLayoutManager(requireActivity(),4)
-                    //binding.recycleViewListFiles.invalidateItemDecorations()
+                    binding.recycleViewListFiles.layoutManager =
+                        GridLayoutManager(requireActivity(), 4)
                     toolbar.menu.findItem(R.id.action_layout_linear).isVisible = true
-                    it.isVisible =false
+                    it.isVisible = false
                 }
                 R.id.action_layout_linear -> {
                     adapter.layoutManagerType = adapter.MANAGER_LINEAR
-                    binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity())
+                    binding.recycleViewListFiles.layoutManager =
+                        LinearLayoutManager(requireActivity())
                     toolbar.menu.findItem(R.id.action_layout_grid).isVisible = true
-                    it.isVisible =false
+                    it.isVisible = false
                 }
-                R.id.action_done -> {}
+                R.id.action_new_folder -> {
+                    createFolderDialog()
+                }
             }
             true
         }
 
     }
 
-    private fun checkedItemsProcessing(adapter: ListFilesAdapter,tdObject: TdObject) {
-        //tdObject.isChecked = !tdObject.isChecked
 
-        val li = adapter.currentList.toMutableList()
-        val el = li.indexOf(tdObject)
-        li[el] = tdObject.copy(isChecked = !tdObject.isChecked)
+    private fun checkedItemsProcessing(tdObject: TdObject) {
+        //turn on the selection mode if it is not enabled and create a new reversible TdObject
+        if (!selectMode)
+            changeToolbarSelectMode(true)
+        val newObj = tdObject.copy(isChecked = !tdObject.isChecked)
 
-        adapter.submitList(li)
-        //adapter.notifyItemChanged(adapter.currentList.indexOf(tdObject))
-
-        if (!tdObject.isChecked)
-            viewModel.selectedItems.add(tdObject)
-        else
-            viewModel.selectedItems.remove(tdObject)
-
-        if (li.any { it.isChecked })
-            actionsView.visibility = View.VISIBLE
-        else{
-            actionsView.visibility = View.GONE
+        //add the selected elements to the ViewModel or delete them if they are already there
+        with(viewModel.selectedItems) {
+            if (!tdObject.isChecked && findIndex(tdObject, this) == null)
+                add(newObj)
+            else
+                findIndex(tdObject, this)?.let { removeAt(it) }
         }
+
+        //we replace them in the adapter
+        val li = adapter.currentList.toMutableList()
+        findIndex(tdObject, li)?.let {
+            li[it] = newObj
+            adapter.submitList(li)
+        }
+
+        //we adjust the upper and lower panels according to the choice
+        val oneChecked = li.filter { it.isChecked }.size == 1
+        val zeroChecked = li.all { !it.isChecked }
+        if (oneChecked || zeroChecked) {
+            val color = AppCompatResources.getDrawable(
+                requireContext(),
+                if (oneChecked) R.color.colorMainBackground
+                else R.color.colorStoreBackgroundOther
+            )
+            bp1.isClickable = oneChecked; bp1.background = color
+            bp2.isClickable = oneChecked; bp2.background = color
+            bp3.isClickable = oneChecked; bp3.background = color
+            bp4.isClickable = oneChecked; bp4.background = color
+            bp5.isClickable = oneChecked; bp5.background = color
+        } else {
+            bp4.isClickable =
+                false
+            bp4.background =
+                AppCompatResources.getDrawable(
+                    requireContext(),
+                    R.color.colorStoreBackgroundOther
+                )
+        }
+        notifyCounter()
+    }
+
+    private fun changeToolbarSelectMode(selectModeOn: Boolean) {
+        if (selectModeOn) {
+            selectMode = true
+            actionsView.visibility = View.VISIBLE
+            binding.selectToolbar.visibility = View.VISIBLE
+            binding.toolbar.visibility = View.GONE
+        } else {
+            actionsView.visibility = View.GONE
+            deselect()
+        }
+        viewModel.selectedItems.clear()
+    }
+
+    private fun deselect() {
+        selectMode = false
+        binding.selectToolbar.visibility = View.GONE
+        binding.toolbar.visibility = View.VISIBLE
+
+        val li = adapter.currentList
+        val li2 = li.map { it.copy(isChecked = false) }
+        adapter.submitList(li2.toMutableList())
     }
 
     override fun onDestroyView() {
         _binding = null
-        //viewModel.fileScope.removeObservers(viewLifecycleOwner)
         super.onDestroyView()
     }
 
 
-
-    private fun getType(): ScopeType {
-        return requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType
-    }
-
-    companion object {
-        const val EXTRA_SCOPE_TYPE = "scopeType"
-        const val EXTRA_FILTER = "filter"
-        fun newInstance(scopeType: ScopeType,filter:FiltersFromType? = null): Fragment {
-            return ListFilesFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(EXTRA_SCOPE_TYPE, scopeType)
-                    putSerializable(EXTRA_FILTER,filter)
-                }
-            }
+    private fun createFolderDialog() {
+        MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
+            title(R.string.new_folder)
+            positiveButton(R.string.create)
+            negativeButton(R.string.cancel)
+            input(
+                hint = getString(R.string.new_folder_hint),
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                waitForPositiveButton = true
+            ) { _, text -> viewModel.createFolder(text.toString()) }
         }
     }
 
-
-    /*requireContext().showDialog(
-    title = "Your Title",
-    inputField = "Your Description",
-    titleOfPositiveButton = "yes",
-    titleOfNegativeButton = "No",
-    positiveButtonFunction = { },
-    negativeButtonFunction = { }
-    )*/
-
-
+    companion object {
+        private const val EXTRA_SCOPE_TYPE = "scopeType"
+        private const val EXTRA_FILTER = "filter"
+        const val SELECT_MODE = "selectMode"
+        const val SAVE_LIST = "list"
+        /*fun newInstance(scopeType: ScopeType, filter: FiltersFromType? = null): Fragment {
+            return ListFilesFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(EXTRA_SCOPE_TYPE, scopeType)
+                    putSerializable(EXTRA_FILTER, filter)
+                }
+            }
+        }*/
+    }
 }

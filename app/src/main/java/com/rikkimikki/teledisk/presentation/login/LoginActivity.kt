@@ -3,6 +3,7 @@ package com.rikkimikki.teledisk.presentation.login
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,8 +27,6 @@ class LoginActivity : AppCompatActivity() {
     private val vm: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)

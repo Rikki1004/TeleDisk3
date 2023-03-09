@@ -28,13 +28,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
-class ListFilesAdapter (
+class ListFilesAdapter(
     private val context: Context
-) : ListAdapter<TdObject, RecyclerView.ViewHolder>(ListFileDiffCallback){
-
-
-
-    private val scope:CoroutineScope = CoroutineScope(Dispatchers.Main)
+) : ListAdapter<TdObject, RecyclerView.ViewHolder>(ListFileDiffCallback) {
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
     private val repository = TelegramRepository
 
@@ -44,9 +41,6 @@ class ListFilesAdapter (
     val MANAGER_GRID = "grid"
 
     var layoutManagerType = MANAGER_LINEAR
-    set(value) {
-        field = value
-    }
 
     var onFileClickListener: OnFileClickListener? = null
     var onFileLongClickListener: OnFileLongClickListener? = null
@@ -61,10 +55,9 @@ class ListFilesAdapter (
         var itemDate: TextView = itemView.findViewById(R.id.item_date)
         fun bind(position: Int) {
             val item = currentList[position]
-            if (item.isChecked){
+            if (item.isChecked) {
                 itemView.setBackgroundColor(context.getColor(R.color.activated_item_foreground))
-            }
-            else{
+            } else {
                 itemView.setBackgroundColor(context.getColor(R.color.colorMainBackground))
             }
 
@@ -73,16 +66,16 @@ class ListFilesAdapter (
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
                 itemDetails.text = humanReadableByteCountSI(item.size)
-                if (item.previewFile != null){
+                if (item.previewFile != null) {
                     scope.launch {
                         val preview = loadThumbnailUseCase(item.previewFile)
                         Glide.with(context).load(preview.local.path).into(itemIcon)
                         //Picasso.get().load(File(preview.local.path)).into(itemIcon)
                     }
-                }
-                else{
+                } else {
                     if (item.placeType == PlaceType.Local)
-                        Glide.with(context).load(File(item.path)).placeholder(resId).fitCenter().into(itemIcon)
+                        Glide.with(context).load(File(item.path)).placeholder(resId).fitCenter()
+                            .into(itemIcon)
                     else
                         Glide.with(context).load(resId).into(itemIcon)
 
@@ -117,15 +110,15 @@ class ListFilesAdapter (
             if (item.is_file()) {
                 val resId = R.drawable.file_asset
                 itemName.text = item.name
-                if (item.previewFile != null){
+                if (item.previewFile != null) {
                     scope.launch {
                         val preview = loadThumbnailUseCase(item.previewFile)
                         Picasso.get().load(File(preview.local.path)).into(itemIcon)
                     }
-                }
-                else{
+                } else {
                     if (item.placeType == PlaceType.Local)
-                        Glide.with(context).load(File(item.path)).placeholder(resId).fitCenter().into(itemIcon)
+                        Glide.with(context).load(File(item.path)).placeholder(resId).fitCenter()
+                            .into(itemIcon)
                     else
                         Glide.with(context).load(resId).into(itemIcon)
                 }
@@ -173,95 +166,36 @@ class ListFilesAdapter (
         }
     }
 
-    /*override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListFilesViewHolder {
-        val binding = FileItemBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return ListFilesViewHolder(binding)
-    }*/
-
-    /*override fun onBindViewHolder(holder: ListFilesViewHolder, position: Int) {
-
-        val item = getItem(position)
-        with(holder.binding) {
-            if (item.isChecked)
-                root.setBackgroundColor(context.getColor(R.color.activated_item_foreground))
-            else
-                root.setBackgroundColor(context.getColor(R.color.just_item_foreground))
-            if (item.is_file()) {
-                val resId = R.drawable.file_asset
-                itemName.text = item.name
-                itemDate.text = covertTimestampToTime(item.unixTimeDate)
-                itemDetails.text = humanReadableByteCountSI(item.size)
-                if (item.previewFile != null){
-                    scope.launch {
-                        val preview = loadThumbnailUseCase(item.previewFile)
-                        Picasso.get().load(File(preview.local.path)).into(itemIcon)
-                    }
-                    //Picasso.get().load(File(item.previewFile)).into(itemIcon)
-                }
-                else{
-                    if (item.placeType == PlaceType.Local)
-                        Picasso.get().load(File(item.path)).placeholder(resId).fit().into(itemIcon)
-                    else
-                        Picasso.get().load(resId).into(itemIcon)
-                    //Glide.with(context).load(resId).into(itemIcon)
-                }
-
-            } else {
-                val resId = R.drawable.folder_asset
-                itemName.text = item.name
-                itemDate.text = covertTimestampToTime(item.unixTimeDate)
-                //itemDetails.text = humanReadableByteCountSI(item.size)
-                //Glide.with(context).load(resId).into(imageViewItemFile)
-                Picasso.get().load(resId).into(itemIcon)
-            }
-            root.setOnClickListener {
-                onFileClickListener?.onFileClick(item)
-            }
-            root.setOnLongClickListener {
-                onFileLongClickListener?.onFileLongClick(item)
-                return@setOnLongClickListener true//false
-            }
-
-        }
-    }*/
-
     interface OnFileClickListener {
         fun onFileClick(tdObject: TdObject)
     }
+
     interface OnFileLongClickListener {
         fun onFileLongClick(tdObject: TdObject)
     }
 
 
-    private var notFilteredList =  listOf<TdObject>()
+    private var notFilteredList = listOf<TdObject>()
 
     override fun submitList(list: MutableList<TdObject>?) {
         super.submitList(list)
-        notFilteredList = list?.toList()?: listOf()
+        notFilteredList = list?.toList() ?: listOf()
     }
 
 
-    fun filter1(filter: String?){
-        if (filter == null){
+    fun filter1(filter: String?) {
+        if (filter == null) {
             super.submitList(notFilteredList)
             return
         }
         val char = filter.trim()
-        if (char.isBlank()){
+        if (char.isBlank()) {
             super.submitList(notFilteredList)
             return
         }
 
         super.submitList(notFilteredList.filter {
-            if (it.name == "..")
-                true
-            else
-                it.name.lowercase().contains(char.lowercase())
+            it.name.lowercase().contains(char.lowercase())
         }.toMutableList())
     }
-
 }

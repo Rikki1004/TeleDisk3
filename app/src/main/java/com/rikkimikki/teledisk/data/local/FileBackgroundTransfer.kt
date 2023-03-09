@@ -14,21 +14,14 @@ import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.presentation.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.internal.LockFreeLinkedListNode
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 
 class FileBackgroundTransfer: Service() {
     val repository = TelegramRepository
-
     private val transferFileDownloadUseCase = TransferFileDownloadUseCase(repository)
     private val transferFileUploadUseCase = TransferFileUploadUseCase(repository)
     private val fileOperationComplete = FileOperationCompleteUseCase(repository)
@@ -36,42 +29,30 @@ class FileBackgroundTransfer: Service() {
     private val getRemoteFilesNoLDUseCase = GetRemoteFilesNoLDUseCase(repository)
     private val getLocalFilesNoLDUseCase = GetLocalFilesNoLDUseCase(repository)
     private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
-    private var currentFileId = -1
-
+    private val scope = CoroutineScope(Dispatchers.IO)
     private val lock = Mutex()
-    private var lockedObject = Any()
-
-    private lateinit var lambda : suspend (TdApi.File) -> Unit
-
-    private lateinit var notification:Notification
-
-    val scope = CoroutineScope(Dispatchers.IO)
-
-
-    private lateinit var files : Array<TdObject>
     private var folderDestination : TdObject? = null
     private var isDownload : Boolean = true
     private var isCopy : Boolean = true
     private var needOpen : Boolean = false
-
     private var filesNeedSend = mutableListOf<TdObject>()
-
+    private var currentFileId = NO_ID
+    private lateinit var files : Array<TdObject>
+    private lateinit var lambda : suspend (TdApi.File) -> Unit
+    private lateinit var notification:NotificationCompat.Builder
+    private lateinit var mNotificationManager :NotificationManager
 
     companion object {
         private const val CHANNEL_ID = "Foreground LibTd Operations"
         private const val CHANNEL_NAME = "Foreground File Transfer"
         private const val SERVICE_ID = 1
-
-        private lateinit var mNotificationManager :NotificationManager
+        private const val NO_ID = -1
 
         private const val EXTRA_FILES = "FILES"
         private const val EXTRA_COPY = "COPY"
         private const val EXTRA_FOLDER_DESTINATION = "FOLDER"
         private const val EXTRA_IS_DOWNLOAD = "IS_DOWNLOAD"
         private const val EXTRA_NEED_OPEN = "NEED_OPEN"
-
-        private const val byteBufferSize = 1024 * 1024 * 50
-
 
         fun getIntent(context: Context, files:Array<TdObject>,folderDestination : TdObject,is_copy:Boolean) :Intent{
             val intent = Intent(context,
@@ -82,7 +63,7 @@ class FileBackgroundTransfer: Service() {
             intent.putExtra(EXTRA_IS_DOWNLOAD, files[0].placeType != PlaceType.Local && folderDestination.placeType == PlaceType.Local)
             return intent
         }
-        fun getIntent(context: Context, file:TdObject) :Intent{
+        fun getIntent(context: Context, file:TdObject) :Intent{//Open remote file
             val intent = Intent(context,
                 FileBackgroundTransfer::class.java)
             intent.putExtra(EXTRA_FILES, arrayOf(file))
@@ -91,7 +72,7 @@ class FileBackgroundTransfer: Service() {
             intent.putExtra(EXTRA_COPY, true)
             return intent
         }
-        fun getIntent(context: Context, files: Array<TdObject>) :Intent{
+        fun getIntent(context: Context, files: Array<TdObject>) :Intent{//Share remote files
             val intent = Intent(context,
                 FileBackgroundTransfer::class.java)
             intent.putExtra(EXTRA_FILES, files)
@@ -104,43 +85,28 @@ class FileBackgroundTransfer: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
         createNotificationChannel()
-        //val notificationIntent = Intent(this, MainActivity::class.java)
 
-        val pendingIntent: PendingIntent =
-            Intent(this, MainActivity::class.java).let { notificationIntent ->
-                PendingIntent.getActivity(this, 0, notificationIntent,
-                    PendingIntent.FLAG_IMMUTABLE)
-            }
         notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Загружается")
-            .setContentText("Файл")
-            .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentIntent(pendingIntent)
+            .setContentTitle(getString(R.string.is_processing))
+            .setSmallIcon(R.drawable.ic_launcher_main_foreground)
+            .setContentIntent(getPendingIntent())
             .setOnlyAlertOnce(true)
             .setPriority(PRIORITY_MAX)
             .setDefaults(FOREGROUND_SERVICE_DEFAULT)
-            //.addAction()
-            .build()
 
-        startForeground(SERVICE_ID, notification)
-
-
+        startForeground(SERVICE_ID, notification.build())
         checkIntent(intent)
-
         startObservers(isDownload)
 
         scope.launch {
             lock.tryLock()
-            val a = files
-            println(a)
             for (i in files)
                 transfer(i,folderDestination)
 
             if (filesNeedSend.isNotEmpty())
                 tempPathsForSendUseCase().postValue(filesNeedSend)
-            //stopSelf()
+            stopSelf()
         }
         return START_NOT_STICKY
     }
@@ -154,56 +120,32 @@ class FileBackgroundTransfer: Service() {
                 transferFileDownloadUseCase(file).let {currentFileId = it.id; if (it.local.isDownloadingCompleted) lambda(it) }
             }
             !file.is_local() && !needOpen -> {
-
                 if (file.is_file()){
                     lambda = {
-
-                        filesNeedSend.add(TdObject("file", PlaceType.Local, FileType.File,it.local.path))
+                        filesNeedSend.add(TdObject(file.name, PlaceType.Local, FileType.File,it.local.path))
                         fileOperationComplete().postValue(Pair(it.local.path,false))
                         if(lock.isLocked) lock.unlock()
-
                     }
                     transferFileDownloadUseCase(file).let {currentFileId = it.id; if (it.local.isDownloadingCompleted) lambda(it) else lock.lock()}
-
                 }else{
                     for (i in getRemoteFilesNoLDUseCase(file.groupID,file.path)){
                         transfer(i,null)
                     }
                 }
-
             }
-
         } else when{
             file.is_local() && folder.is_local() -> {
                 val localFileOnTd = File(file.path)
-                var fileDestination = File(folder.path+"/"+file.name)
-                var counter = 1
-                while (fileDestination.exists()){
-                    fileDestination = File(folder.path+"/("+ counter++ +")"+file.name)
-                }
+                val fileDestination = checkName(folder.path, file.name)
 
-
-                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Перемещается")
-                    .setContentText(file.name)
-                    .setSmallIcon(R.drawable.ic_launcher_background)
-                    .setProgress(0,0,true)
-                    .build()
-                mNotificationManager.notify(SERVICE_ID, notification)
+                setNotification(file.name)
 
                 localFileOnTd.copyRecursively(fileDestination)
-
                 fileOperationComplete().postValue(Pair(fileDestination.path,false))
-
-                stopSelf()
             }
             file.is_local() && !folder.is_local() -> {
                 if (file.is_file()){
-                    var a = file
-                    println(a)
-
                     lambda = {
-
                         val groupId = folder.groupID
                         val remotePath = folder.path
                         val inputFileLocal = TdApi.InputFileLocal(file.path)
@@ -212,9 +154,7 @@ class FileBackgroundTransfer: Service() {
 
                         sendUploadedFileUseCase(groupId,doc)
                         fileOperationComplete().postValue(Pair(it.local.path,false))
-
                         if(lock.isLocked) lock.unlock()
-
                     }
                     transferFileUploadUseCase(file).let {
                         currentFileId = it.id
@@ -223,7 +163,6 @@ class FileBackgroundTransfer: Service() {
                         else
                             lock.lock()
                     }
-
                 }else{
                     for (i in getLocalFilesNoLDUseCase(file.path)){
                         transfer(i,folder.copy(path = folder.path+"/"+file.name))
@@ -231,7 +170,6 @@ class FileBackgroundTransfer: Service() {
                 }
             }
             !file.is_local() && !folder.is_local() -> {
-
                 if (file.is_file()){
                     val groupId = folder.groupID
                     val remotePath = folder.path
@@ -242,44 +180,24 @@ class FileBackgroundTransfer: Service() {
 
                     sendUploadedFileUseCase(groupId,doc)
                     fileOperationComplete().postValue(Pair(formattedText.text,false))
-
                 }else{
-
                     for (i in getRemoteFilesNoLDUseCase(file.groupID,file.path)){
                         transfer(i,folder.copy(path = folder.path+"/"+file.name))
                     }
                 }
-
             }
             !file.is_local() && folder.is_local() -> {
                 if (file.is_file()){
-
                     lambda = {
-
                         val localFileOnTd = File(it.local.path)
-                        var fileDestination = File(folder.path+"/"+file.name)
-                        var counter = 1
-                        while (fileDestination.exists()){
-                            fileDestination = File(folder.path+"/("+ counter++ +")"+file.name)
-                        }
+                        val fileDestination = checkName(folder.path,file.name)
 
-                        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                            .setContentTitle("Перемещается")
-                            .setContentText(file.name)
-                            .setSmallIcon(R.drawable.ic_launcher_background)
-                            .setProgress(0,0,true)
-                            .build()
-                        mNotificationManager.notify(SERVICE_ID, notification)
-
+                        setNotification(file.name)
                         localFileOnTd.copyTo(fileDestination)
-
                         fileOperationComplete().postValue(Pair(it.local.path,false))
-
                         if(lock.isLocked) lock.unlock()
-
                     }
                     transferFileDownloadUseCase(file).let { currentFileId = it.id; if (it.local.isDownloadingCompleted) lambda(it) else lock.lock()}
-
                 }else{
                     for (i in getRemoteFilesNoLDUseCase(file.groupID,file.path)){
                         transfer(i,folder.copy(path = folder.path+"/"+file.name))
@@ -289,34 +207,43 @@ class FileBackgroundTransfer: Service() {
         }
     }
 
+    private fun setNotification(name:String,hasMoving:Boolean = false){
+        notification.setContentTitle(if (hasMoving) getString(R.string.is_moving) else getString(R.string.is_processing))
+        notification.setProgress(0,0,true)
+        notification.setContentText(name)
+        mNotificationManager.notify(SERVICE_ID, notification.build())
+    }
+
+    private fun checkName(path: String,name:String):File{
+        var fileDestination = File("$path/$name")
+        var counter = 1
+        while (fileDestination.exists()){
+            fileDestination = File(path+"/("+ counter++ +")"+name)
+        }
+        return fileDestination
+    }
+
 
     private fun startObservers(isDownload:Boolean) {
         TelegramRepository.downloadLD.observeForever {
             if (currentFileId == it.id){
-                //mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                if ((isDownload && it.local.isDownloadingCompleted) ||
+                    (!isDownload && it.local.downloadedSize == it.remote.uploadedSize && !it.remote.isUploadingActive)){
 
-                //if ((isDownload && it.local.isDownloadingCompleted) || (!isDownload && it.remote.isUploadingCompleted)){
-                if ((isDownload && it.local.isDownloadingCompleted) || (!isDownload && it.local.downloadedSize == it.remote.uploadedSize && it.remote.isUploadingActive == false)){
-                    val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setContentTitle(if (isDownload) "Успешно загружен" else "Успешно выгружен")
-                        .setContentText("Файл")
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setProgress(0,0,false)
-                        .build()
-                    mNotificationManager.notify(SERVICE_ID, notification)
+                    notification.setContentTitle(if (isDownload) getString(R.string.upload_success) else getString(
+                        R.string.download_success))
+                    notification.setProgress(0,0,false)
+                    mNotificationManager.notify(SERVICE_ID, notification.build())
 
-                    currentFileId = -1
+                    currentFileId = NO_ID
                     scope.launch { lambda(it)}
-
                 }
                 else{
-                    val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setContentTitle("Загружается")
-                        .setContentText("Файл")
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setProgress(it.size,if (isDownload) it.local.downloadedSize else it.remote.uploadedSize,false)
-                        .build()
-                    mNotificationManager.notify(SERVICE_ID, notification)
+
+                    notification.setContentTitle(if (isDownload) getString(R.string.is_downloading) else getString(
+                                            R.string.is_uploading))
+                    notification.setProgress(it.size,if (isDownload) it.local.downloadedSize else it.remote.uploadedSize,false)
+                    mNotificationManager.notify(SERVICE_ID, notification.build())
                 }
 
             }
@@ -326,7 +253,7 @@ class FileBackgroundTransfer: Service() {
     private fun checkIntent(intent: Intent?){
         if (intent == null) throw java.lang.Exception()
         files = intent.getParcelableArrayExtra(EXTRA_FILES)?.map { it as TdObject }!!.toTypedArray()  // as Array<TdObject>?: throw java.lang.Exception()
-        folderDestination = intent.getParcelableExtra<TdObject>(EXTRA_FOLDER_DESTINATION)
+        folderDestination = intent.getParcelableExtra(EXTRA_FOLDER_DESTINATION)
         isDownload = intent.getBooleanExtra(EXTRA_IS_DOWNLOAD,false)
         isCopy = intent.getBooleanExtra(EXTRA_COPY,false)
         needOpen = intent.getBooleanExtra(EXTRA_NEED_OPEN,false)
@@ -334,6 +261,15 @@ class FileBackgroundTransfer: Service() {
 
     override fun onBind(intent: Intent): IBinder? {
         return null
+    }
+
+    private fun getPendingIntent(): PendingIntent{
+        val pendingIntent: PendingIntent =
+            Intent(this, MainActivity::class.java).let { notificationIntent ->
+                PendingIntent.getActivity(this, 0, notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE)
+            }
+        return pendingIntent
     }
 
     private fun createNotificationChannel() {

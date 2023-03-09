@@ -1,12 +1,17 @@
 package com.rikkimikki.teledisk.utils
 
 
+import com.rikkimikki.teledisk.domain.TdObject
 import java.sql.Timestamp
 import java.text.CharacterIterator
 import java.text.SimpleDateFormat
 import java.text.StringCharacterIterator
 import java.util.*
 
+
+const val GLOBAL_MAIN_STORAGE_PATH = "/storage/emulated/0"
+const val GLOBAL_CACHE_DIRS_PATH_OFFSET = "/Android/data"
+const val GLOBAL_REMOTE_STORAGE_PATH = "/"
 fun covertTimestampToTime(timestamp:Long?) : String{
     if (timestamp == null || timestamp == 0L) return ""
     val stamp = Timestamp(timestamp)
@@ -18,6 +23,10 @@ fun covertTimestampToTime(timestamp:Long?) : String{
 }
 
 fun humanReadableByteCountSI(bytesCount: Long): String {
+    if (bytesCount == Long.MAX_VALUE)
+        return "∞"
+    if (bytesCount == 0L)
+        return ""
     var bytes = bytesCount
     if (-1000 < bytes && bytes < 1000) {
         return "$bytes B"
@@ -28,4 +37,23 @@ fun humanReadableByteCountSI(bytesCount: Long): String {
         ci.next()
     }
     return String.format("%.1f %cB", bytes / 1000.0, ci.current())
+}
+
+fun findIndex(obj: TdObject, list: List<TdObject>):Int?{
+    var index : Int? = null
+    for (i in list.indices){
+        if (with(list[i]){
+                name == obj.name &&
+                        placeType == obj.placeType &&
+                        fileType == obj.fileType &&
+                        path == obj.path &&
+                        size == obj.size &&
+                        unixTimeDate == obj.unixTimeDate &&
+                        fileID == obj.fileID &&
+                        groupID == obj.groupID
+            }
+        )
+            index = i
+    }
+    return index
 }

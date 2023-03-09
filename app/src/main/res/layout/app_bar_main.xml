@@ -29,6 +29,7 @@
         </androidx.fragment.app.FragmentContainerView>
 
         <androidx.fragment.app.FragmentContainerView
+            android:background="@color/colorMainBackground"
             android:id="@+id/bottom_view_container"
             android:name="com.rikkimikki.teledisk.presentation.main.BottomFileActionsFragment"
             android:layout_width="match_parent"
