@@ -1,11 +1,14 @@
 package com.rikkimikki.teledisk.presentation.main
 
+import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.*
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
@@ -16,6 +19,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afollestad.materialdialogs.LayoutMode
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.WhichButton
+import com.afollestad.materialdialogs.actions.setActionButtonEnabled
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.input.getInputField
+import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
@@ -452,7 +462,7 @@ class ListFilesFragment : Fragment() {
 
         toolbar.setOnMenuItemClickListener {
             when(it.itemId){
-                R.id.action_settings -> {}
+                R.id.action_share -> {viewModel.shareItems()}
                 R.id.action_search -> {
                     /*findNavController()
                         .navigate(MainFragmentDirections
@@ -471,7 +481,7 @@ class ListFilesFragment : Fragment() {
                     toolbar.menu.findItem(R.id.action_layout_grid).isVisible = true
                     it.isVisible =false
                 }
-                R.id.action_done -> {}
+                R.id.action_new_folder -> {createFolderDialog()}
             }
             true
         }
@@ -507,9 +517,17 @@ class ListFilesFragment : Fragment() {
     }
 
 
-
-    private fun getType(): ScopeType {
-        return requireArguments().getSerializable(EXTRA_SCOPE_TYPE) as ScopeType
+    private fun createFolderDialog() {
+        MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
+            title(R.string.new_folder)
+            positiveButton(R.string.create)
+            negativeButton(R.string.cancel)
+            input(
+                hint = getString(R.string.new_folder_hint),
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                waitForPositiveButton = true
+            ) { _, text -> viewModel.createFolder(text.toString())}
+        }
     }
 
     companion object {

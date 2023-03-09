@@ -2,12 +2,17 @@ package com.rikkimikki.teledisk.presentation.main
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.lifecycle.ViewModelProvider
+import com.afollestad.materialdialogs.LayoutMode
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentBottomFileActionTransferBinding
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
@@ -32,8 +37,8 @@ class BottomFileActionTransferFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_TEXT_VIEW))
-            createDialog(savedInstanceState.getString(EXTRA_TEXT_VIEW))
+        //if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_TEXT_VIEW))
+        //    createDialog(savedInstanceState.getString(EXTRA_TEXT_VIEW))
 
         with(binding){
             textViewBottomPanelPaste.setOnClickListener {
@@ -44,11 +49,8 @@ class BottomFileActionTransferFragment : Fragment() {
                     viewModel.moveFile()
                 close()
             }
-            textViewBottomPanelCancel.setOnClickListener { viewModel.refresh() ; close() }
-            textViewBottomPanelCreate .setOnClickListener {
-                //viewModel.createFolder("my folder"); viewModel.refresh()
-                createDialog()
-            }
+            textViewBottomPanelCancel.setOnClickListener { viewModel.refresh(); close() }
+            textViewBottomPanelCreate .setOnClickListener {createFolderDialog()}
         }
     }
     private fun close(){
@@ -57,7 +59,20 @@ class BottomFileActionTransferFragment : Fragment() {
             .commit()
     }
 
-    private fun createDialog(et:String? = null ) {
+    private fun createFolderDialog() {
+        MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
+            title(R.string.new_folder)
+            positiveButton(R.string.create)
+            negativeButton(R.string.cancel)
+            input(
+                hint = getString(R.string.new_folder_hint),
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                waitForPositiveButton = true
+            ) { _, text -> viewModel.createFolder(text.toString())}
+        }
+    }
+
+    /*private fun createDialog(et:String? = null ) {
         editText = EditText(requireContext())
         editText?.let { if (et != null) it.setText(et.toString()) }
         dialog = AlertDialog.Builder(requireContext())
@@ -71,7 +86,7 @@ class BottomFileActionTransferFragment : Fragment() {
             .setNegativeButton("Отмена", null)
             .create()
         dialog?.show()
-    }
+    }*/
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

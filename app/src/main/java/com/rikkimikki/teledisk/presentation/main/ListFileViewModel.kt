@@ -16,9 +16,7 @@ import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
 import com.rikkimikki.teledisk.domain.*
-import com.rikkimikki.teledisk.utils.GLOBAL_CACHE_DIRS_PATH_OFFSET
-import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
-import com.rikkimikki.teledisk.utils.SingleLiveData
+import com.rikkimikki.teledisk.utils.*
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
@@ -182,6 +180,10 @@ init {
             refreshSelectedItems()
             refresh()
         }
+    }
+    fun getRenamedItemName() : Pair<String,Boolean>{
+        val item = selectedItems[0]
+        return item.name to item.is_file()
     }
 
     fun deleteItem() {
@@ -354,6 +356,28 @@ init {
             intent.type = "*/*"//contentResolver.getType(uri)
             intent.putExtra(Intent.EXTRA_STREAM, uri)
             needLaunchIntent.value = intent
+        }
+    }
+
+    fun getInfo():FileInfo {
+        if (selectedItems.size == 1){
+            val item = selectedItems[0]
+            return FileInfo(
+                item.name,
+                covertTimestampToTime(item.unixTimeDate),
+                humanReadableByteCountSI(item.size),
+                item.path,
+                true
+            )
+        } else {
+            val filesCount =selectedItems.filter { it.is_file() }.size
+            val foldersCount=selectedItems.filter { !it.is_file() }.size
+            val totalSize= selectedItems.sumOf { it.size }
+            return FileInfo(
+                size =  humanReadableByteCountSI(totalSize),
+                contains = "%s folders, %s files".format(foldersCount, filesCount),
+                single = false
+            )
         }
     }
 }

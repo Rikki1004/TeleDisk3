@@ -27,6 +27,7 @@
 
         </androidx.appcompat.widget.Toolbar>
 
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/pathToolbar"
             android:layout_width="match_parent"
@@ -69,7 +70,7 @@
             app:contentInsetStart="5dp"
             app:contentInsetStartWithNavigation="0dp"
             app:maxButtonHeight="20dp"
-            app:menu="@menu/files_action_hidden_menu"
+            app:menu="@menu/files_filter_menu"
             app:titleTextColor="@color/colorMainText">
 
             <LinearLayout
@@ -97,6 +98,9 @@
                     tools:text="↑ or ↓ TextView" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
+
+        <View android:background="@color/colorStoreBackgroundOther" android:layout_width="match_parent" android:layout_height="1px"/>
+
 
 
         <!--<SearchView

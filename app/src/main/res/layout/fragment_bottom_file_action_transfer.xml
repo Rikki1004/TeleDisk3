@@ -1,39 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-android:orientation="horizontal"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-tools:context=".presentation.main.BottomFileActionTransferFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/colorStoreBackgroundOther" />
 
-    <TextView
-        android:id="@+id/textViewBottomPanelPaste"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Paste"
-        app:drawableTopCompat="@drawable/ic_content_paste_black_18dp" />
+        android:background="@color/colorMainBackground"
+
+        android:orientation="horizontal"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        tools:context=".presentation.main.BottomFileActionsFragment">
+
+        <LinearLayout
+            android:id="@+id/textViewBottomPanelPaste"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_content_paste_black_18dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Paste" />
+        </LinearLayout>
 
 
-    <TextView
-        android:id="@+id/textViewBottomPanelCreate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Create"
-        app:drawableTopCompat="@drawable/ic_add_circle_outline_black_18dp" />
+        <LinearLayout
+            android:id="@+id/textViewBottomPanelCreate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_add_circle_outline_black_18dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Create" />
+        </LinearLayout>
 
 
-    <TextView
-        android:id="@+id/textViewBottomPanelCancel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Cancel"
-        app:drawableTopCompat="@drawable/ic_remove_circle_black_18dp" />
+        <LinearLayout
+            android:id="@+id/textViewBottomPanelCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_remove_circle_black_18dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Cancel" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

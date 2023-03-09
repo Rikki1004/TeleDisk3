@@ -16,12 +16,6 @@
         android:visible="false"
         app:showAsAction="always"/>
 
-    <!--<item
-        android:id="@+id/action_search"
-        android:title="@android:string/search_go"
-        android:icon="@drawable/magnify_custom"
-        app:showAsAction="always"/>-->
-
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/magnify_custom"
@@ -32,14 +26,14 @@
 
 
     <item
-        android:id="@+id/action_settings"
-        android:icon="@drawable/ic_folder_vector"
-        android:title="abc1"
+        android:id="@+id/action_share"
+        android:icon="@drawable/ic_share_black_18dp"
+        android:title="Share"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/action_done"
-        android:icon="@drawable/ic_folder_vector"
-        android:title="abc2"
+        android:id="@+id/action_new_folder"
+        android:icon="@drawable/ic_add_circle_outline_black_18dp"
+        android:title="New folder"
         app:showAsAction="never"/>
 
 
