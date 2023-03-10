@@ -40,6 +40,7 @@
 
         android:indeterminateTintMode="src_atop"
         android:indeterminateTint="@color/md_grey_white"
+        android:theme="@style/ProgressBarStyle"
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

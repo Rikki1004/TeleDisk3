@@ -2,6 +2,7 @@ package com.rikkimikki.teledisk.presentation.main
 
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -13,9 +14,14 @@ import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afollestad.materialdialogs.LayoutMode
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.input.input
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.rikkimikki.teledisk.R
@@ -24,10 +30,7 @@ import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.PlaceItem
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.domain.TdObject
-import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
-import com.rikkimikki.teledisk.utils.GLOBAL_REMOTE_STORAGE_PATH
-import com.rikkimikki.teledisk.utils.isNightModeEnabled
-import com.rikkimikki.teledisk.utils.setIsNightModeEnabled
+import com.rikkimikki.teledisk.utils.*
 
 
 class MainFragment : Fragment() {
@@ -36,6 +39,7 @@ class MainFragment : Fragment() {
     private lateinit var adapter : PlaceAdapter
     private lateinit var viewModel: ListFileViewModel
     private var chatsList = mutableListOf<Long>()
+    private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,8 +51,19 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this)[ListFileViewModel::class.java]
-        initClickListeners()
+        viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
+
+        binding.textViewTopPanelDocsCount.text = getCount(requireContext(),FiltersFromType.DOCUMENTS)
+        binding.textViewTopPanelAppsCount.text = getCount(requireContext(),FiltersFromType.APPS)
+        binding.textViewTopPanelArchivesCount.text = getCount(requireContext(),FiltersFromType.ARCHIVES)
+        binding.textViewTopPanelImagesCount.text = getCount(requireContext(),FiltersFromType.PHOTO)
+        binding.textViewTopPanelMusicCount.text = getCount(requireContext(),FiltersFromType.MUSIC)
+        binding.textViewTopPanelVideoCount.text = getCount(requireContext(),FiltersFromType.VIDEO)
+
+        if (viewModel.is_copy_mode){
+            actionsView.visibility = View.VISIBLE
+        }
+
 
         val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val drawerSwitch: SwitchMaterial =
@@ -66,6 +81,9 @@ class MainFragment : Fragment() {
         navView.setNavigationItemSelectedListener {
             if (it.groupId == GROUP_ID) {
                 viewModel.currentGroup = chatsList[it.itemId]
+            }
+            if (it.groupId == GROUP_ID_ADD_GROUP) {
+                createFolderDialog()
             }
             return@setNavigationItemSelectedListener true
         }
@@ -89,13 +107,39 @@ class MainFragment : Fragment() {
                 a.title = s
 
             }
+            submenu.add(GROUP_ID_ADD_GROUP, 0, Menu.NONE, "Создать группу")
             navView.invalidate()
         }
 
         adapter = PlaceAdapter(requireContext())
 
+
+        binding.horizontalRecycleView.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.HORIZONTAL }
+        binding.horizontalRecycleView.adapter = adapter
+
+        adapter.placeItemList = viewModel.getStorages()
+
+        initClickListeners()
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
+    }
+
+    private fun checkGroup():Boolean{
+        if (viewModel.currentGroup == ListFileViewModel.NO_GROUP){
+            Toast.makeText(requireContext(), getString(R.string.first_select_a_group), Toast.LENGTH_SHORT).show()
+            return true
+        }
+        return false
+    }
+
+    private fun initClickListeners() {
+
         adapter.onPlaceClickListener = object : PlaceAdapter.OnPlaceClickListener{
             override fun onPlaceClick(placeItem: PlaceItem) {
+                if (checkGroup()) return
                 findNavController()
                     .navigate(
                         MainFragmentDirections
@@ -105,18 +149,7 @@ class MainFragment : Fragment() {
                     )
             }
         }
-        binding.horizontalRecycleView.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.HORIZONTAL }
-        binding.horizontalRecycleView.adapter = adapter
 
-        adapter.placeItemList = viewModel.getStorages()
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
-    }
-
-    private fun initClickListeners() {
         with(binding) {
 
             imageViewOpenDrawer.setOnClickListener {
@@ -133,6 +166,7 @@ class MainFragment : Fragment() {
                     )
             }
             textViewTelediskSearch.setOnClickListener {
+                if (checkGroup()) return@setOnClickListener
                 findNavController()
                     .navigate(
                         MainFragmentDirections
@@ -186,46 +220,34 @@ class MainFragment : Fragment() {
                             )
                     )
             }
-
-
-            /*constraintLayoutStorageMain.setOnClickListener {
+            textViewTopPanelArchives.setOnClickListener {
                 findNavController()
                     .navigate(
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
-                                ScopeType.Local, FiltersFromType.DEFAULT
+                                ScopeType.Local, FiltersFromType.ARCHIVES,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }
-            constraintLayoutStorageSd.setOnClickListener {
-                findNavController()
-                    .navigate(
-                        MainFragmentDirections
-                            .actionMainFragmentToListFilesFragment(
-                                ScopeType.Sd, FiltersFromType.DEFAULT
-                            )
-                    )
-            }
-            constraintLayoutStorageTd.setOnClickListener {
-                findNavController()
-                    .navigate(
-                        MainFragmentDirections
-                            .actionMainFragmentToListFilesFragment(
-                                ScopeType.TeleDisk, FiltersFromType.DEFAULT
-                            )
-                    )
-            }*/
-            /*constraintLayoutStorageVk.setOnClickListener {
-                findNavController()
-                    .navigate(MainFragmentDirections
-                        .actionMainFragmentToListFilesFragment(
-                            ScopeType.VkMsg,FiltersFromType.DEFAULT))
-            }*/
+        }
+    }
+
+    private fun createFolderDialog() {
+        MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
+            title(R.string.new_folder)
+            positiveButton(R.string.create)
+            negativeButton(R.string.cancel)
+            input(
+                hint = "Новая группа",
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                waitForPositiveButton = true
+            ) { _, text -> viewModel.createGroup(text.toString())}
         }
     }
 
     companion object {
         const val GROUP_ID = 10
+        const val GROUP_ID_ADD_GROUP = 11
         const val NEON_COLOR = "#03DAC5"
     }
 }

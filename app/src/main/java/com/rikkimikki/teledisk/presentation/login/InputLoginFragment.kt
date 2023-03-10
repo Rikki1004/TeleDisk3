@@ -46,6 +46,7 @@ class InputLoginFragment : Fragment() {
                     else -> null
                 }
             }
+            binding.textEditStartLogin.setText("")
         }
 
         viewModel.authState.observe(viewLifecycleOwner, Observer { state ->

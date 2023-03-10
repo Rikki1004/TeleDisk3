@@ -14,9 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
-import com.rikkimikki.teledisk.databinding.FileItemBinding
-import com.rikkimikki.teledisk.databinding.FileItemGridBinding
-import com.rikkimikki.teledisk.domain.GetRemoteFilesUseCase
 import com.rikkimikki.teledisk.domain.LoadThumbnailUseCase
 import com.rikkimikki.teledisk.domain.PlaceType
 import com.rikkimikki.teledisk.domain.TdObject

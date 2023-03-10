@@ -1,9 +1,11 @@
 package com.rikkimikki.teledisk.data.tdLib
 
 
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
 import com.rikkimikki.teledisk.utils.SingleLiveData
@@ -26,11 +28,14 @@ import kotlin.concurrent.thread
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
 
+
     val dataFromStore = SingleLiveData<List<TdObject>>()
 
     val shareRemoteFiles = SingleLiveData<List<TdObject>>()
     override fun tempPathsForSend(): SingleLiveData<List<TdObject>> {
         return shareRemoteFiles
+        //api.setOption()
+        //TdApi.OptionValue.
     }
 
     var currentLocalFolderPath = GLOBAL_MAIN_STORAGE_PATH
@@ -297,6 +302,10 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         if (chatsPart.isEmpty()) {
             offsetChatId = 0L
             offsetOrder = 9223372036854775807L
+            if (chatsResult.isEmpty()){
+                chatsResult.add(api.createNewBasicGroupChat(intArrayOf(api.getMe().id),"|Teledisk|"))
+            }
+
             allChats.value = chatsResult
             chatsResult.clear()
             return
@@ -429,7 +438,12 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         return allChats
     }
 
-    override suspend fun getRemoteFiles(id: Long,path: String): LiveData<List<TdObject>> {
+    override suspend fun createGroup(name: String) {
+        api.createNewBasicGroupChat(intArrayOf(api.getMe().id),name)
+        loadAllChats()
+    }
+
+    override suspend fun getRemoteFiles(id: Long, path: String): LiveData<List<TdObject>> {
         loadFolder(id,path)
         return dataFromStore
     }

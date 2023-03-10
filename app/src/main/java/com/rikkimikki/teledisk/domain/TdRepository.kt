@@ -34,4 +34,6 @@ interface TdRepository {
 
     fun fileOperationComplete() : SingleLiveData<Pair<String, Boolean>>
 
+    suspend fun createGroup(name:String)
+
 }

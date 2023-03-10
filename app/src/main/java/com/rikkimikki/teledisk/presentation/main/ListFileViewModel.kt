@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.*
 import com.rikkimikki.teledisk.BuildConfig
+import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
@@ -40,6 +41,7 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
     private val getAllFilteredLocalFilesUseCase = GetAllFilteredLocalFilesUseCase(repository)
     private val getAllFilteredRemoteFilesUseCase = GetAllFilteredRemoteFilesUseCase(repository)
+    private val createGroupUseCase = CreateGroupUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
@@ -51,6 +53,8 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     var needLaunchIntent = SingleLiveData<Intent>()
     var needPressBackButton = SingleLiveData<Unit>()
     var needCancelSelect = SingleLiveData<Unit>()
+    var needHideSelect = SingleLiveData<Unit>()
+    var is_copy_mode = false
 
     val selectedItems = mutableListOf<TdObject>()
     lateinit var currentDirectory : TdObject
@@ -66,8 +70,8 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
         if (sharedpreferences.contains(PREF_GROUP_IG))
             return sharedpreferences.getLong(PREF_GROUP_IG,NO_GROUP)
         else
-            Toast.makeText(getApplication(), "Группа не выбрана", Toast.LENGTH_SHORT).show()
-        return NO_GROUP
+            //Toast.makeText(getApplication(), "Группа не выбрана", Toast.LENGTH_SHORT).show()
+            return NO_GROUP
     }
 
     private lateinit var sharedpreferences: SharedPreferences
@@ -110,23 +114,31 @@ init {
     }
 
     fun copyFile(){
+        if (selectedItems.size > 1000){
+            Toast.makeText(getApplication(), R.string.limit_1000, Toast.LENGTH_SHORT).show()
+            return
+        }
         val startIntent = FileBackgroundTransfer.getIntent(
             getApplication(),
             selectedItems.toTypedArray(),
             currentDirectory,
             true
             )
-        ContextCompat.startForegroundService(getApplication(), startIntent)
+        transferFiles(startIntent)
         refreshSelectedItems()
     }
     fun moveFile() {
+        if (selectedItems.size > 1000){
+            Toast.makeText(getApplication(), R.string.limit_1000, Toast.LENGTH_SHORT).show()
+            return
+        }
         val startIntent = FileBackgroundTransfer.getIntent(
             getApplication(),
             selectedItems.toTypedArray(),
             currentDirectory,
             false
         )
-        ContextCompat.startForegroundService(getApplication(), startIntent)
+        transferFiles(startIntent)
         refreshSelectedItems()
     }
 
@@ -212,23 +224,6 @@ init {
             getLocalFiles(directory.path)
     }
 
-    fun openFile(file: TdObject) {
-        if (file.is_file() && file.placeType == PlaceType.Local){
-            TODO()
-        }
-        if (file.is_file() && file.placeType == PlaceType.TeleDisk){
-            viewModelScope.launch {
-                TelegramRepository.loadFile(file.fileID.toInt())
-            }
-        }
-
-    }
-    fun getDwndLD():LiveData<TdApi.File>{
-        //val medLD = MediatorLiveData<TdApi.File>()
-        //medLD.addSource(downloadLD, Observer { if (it.local.isDownloadingCompleted) isRemoteDownloadComplete.value = "" })
-        //return medLD
-        return downloadLD
-    }
 
     fun getStorages():List<PlaceItem>{
 
@@ -277,7 +272,6 @@ init {
     fun getNeedOpenLD(): LiveData<Pair<String, Boolean>> {
         return fileOperationComplete()
     }
-    //getDataFromLocal("/storage/emulated/0/Download")
 
 
     fun openLocalFile(path:String){
@@ -296,12 +290,16 @@ init {
     fun shareItems(listSelected: List<TdObject> = selectedItems){
         if (listSelected.isEmpty())
             return
+        if (listSelected.size > 1000){
+            Toast.makeText(getApplication(), R.string.limit_1000, Toast.LENGTH_SHORT).show()
+            return
+        }
         if (!listSelected[0].is_local()){
             val startIntent = FileBackgroundTransfer.getIntent(
                 getApplication(),
                 listSelected.toTypedArray()
             )
-            ContextCompat.startForegroundService(getApplication(), startIntent)
+            transferFiles(startIntent)
             return
         }
 
@@ -334,31 +332,7 @@ init {
             needLaunchIntent.value = intent
         }
     }
-    fun shareLocalFile(items:List<TdObject> = selectedItems){
 
-        if (selectedItems.size > 1){
-            val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
-            val urisList = arrayListOf<Uri>()
-            for (i in selectedItems){
-                if (i.is_file() && i.is_local()){
-                    urisList.add(FileProvider.getUriForFile(getApplication(),
-                        BuildConfig.APPLICATION_ID + ".provider", File(i.path)
-                    ))
-                }
-            }
-            intent.type = "*/*"
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisList);
-            needLaunchIntent.value = intent
-        }else{
-            val intent = Intent(Intent.ACTION_SEND)
-            val uri = FileProvider.getUriForFile(getApplication(),
-                BuildConfig.APPLICATION_ID + ".provider", File(selectedItems[0].path)
-            )
-            intent.type = "*/*"//contentResolver.getType(uri)
-            intent.putExtra(Intent.EXTRA_STREAM, uri)
-            needLaunchIntent.value = intent
-        }
-    }
 
     fun getInfo():FileInfo {
         if (selectedItems.size == 1){
@@ -382,7 +356,21 @@ init {
         }
     }
 
+    private fun transferFiles(intent: Intent) {
+        ContextCompat.startForegroundService(getApplication(), intent)
+    }
+
     fun prepareToCopy() {
+        is_copy_mode = true
+        needHideSelect.value = Unit
+    }
+    fun cancelCopy() {
+        is_copy_mode = false
         needCancelSelect.value = Unit
+    }
+
+    fun createGroup(text: String) {
+        val groupName = "|$text|"
+        viewModelScope.launch { createGroupUseCase(groupName) }
     }
 }

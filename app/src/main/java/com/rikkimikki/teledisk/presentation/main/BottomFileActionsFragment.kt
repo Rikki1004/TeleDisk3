@@ -93,9 +93,9 @@ class BottomFileActionsFragment : Fragment() {
                 }
             }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             popupMenu.setForceShowIcon(true)
-        }
+        }*/
         popupMenu.show()
     }
 

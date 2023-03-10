@@ -6,6 +6,7 @@ enum class FiltersFromType(vararg val ext:String) {
     DOCUMENTS("asp","doc","docm","docx","dot","epub","fb2","key","pdf","txt","bat","pot","potm","potx","pps","ppt","pptm","pptx","rtf","xlr","xls","xls","xlsm","xlsx"),
     MUSIC("aac","ac3","aif","aiff","amr","aud","flac","iff","m3u","m3u8","m4a","m4b","mp3","ogg","wav","xwb"),
     APPS("apk"),
+    ARCHIVES("zip"),
     ALL_LOCAL(""),
     ALL_REMOTE(""),
     DEFAULT
