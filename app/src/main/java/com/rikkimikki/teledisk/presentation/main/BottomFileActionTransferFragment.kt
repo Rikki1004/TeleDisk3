@@ -61,9 +61,10 @@ class BottomFileActionTransferFragment : Fragment() {
         }
     }
 
-    fun end():Boolean{
+
+    private fun end():Boolean{
         if (viewModel.currentDirectory.path == "*"){
-            Toast.makeText(requireContext(), "Здесь это сделать нельзя", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.it_cant_be_done_here), Toast.LENGTH_SHORT).show()
             return false
         }
         return true

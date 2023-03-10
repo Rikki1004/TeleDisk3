@@ -40,6 +40,7 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
     private val getAllFilteredLocalFilesUseCase = GetAllFilteredLocalFilesUseCase(repository)
     private val getAllFilteredRemoteFilesUseCase = GetAllFilteredRemoteFilesUseCase(repository)
+    private val createGroupUseCase = CreateGroupUseCase(repository)
     val fileScope = repository.dataFromStore
     val chatScope = repository.allChats
 
@@ -68,8 +69,8 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
         if (sharedpreferences.contains(PREF_GROUP_IG))
             return sharedpreferences.getLong(PREF_GROUP_IG,NO_GROUP)
         else
-            Toast.makeText(getApplication(), "Группа не выбрана", Toast.LENGTH_SHORT).show()
-        return NO_GROUP
+            //Toast.makeText(getApplication(), "Группа не выбрана", Toast.LENGTH_SHORT).show()
+            return NO_GROUP
     }
 
     private lateinit var sharedpreferences: SharedPreferences
@@ -391,5 +392,10 @@ init {
     fun cancelCopy() {
         is_copy_mode = false
         needCancelSelect.value = Unit
+    }
+
+    fun createGroup(text: String) {
+        val groupName = "|$text|"
+        viewModelScope.launch { createGroupUseCase(groupName) }
     }
 }

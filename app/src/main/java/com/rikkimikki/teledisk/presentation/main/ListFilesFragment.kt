@@ -30,6 +30,7 @@ import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
 import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.presentation.main.ListFileViewModel.Companion.NO_GROUP
 import com.rikkimikki.teledisk.utils.findIndex
 
 class ListFilesFragment : Fragment() {
@@ -246,6 +247,7 @@ class ListFilesFragment : Fragment() {
 
     private fun init() {
         viewModel.setLocalPath(args.path)
+
         when (args.filter) {
             FiltersFromType.DEFAULT -> {
                 when (args.scopeType) {

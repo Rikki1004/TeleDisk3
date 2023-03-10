@@ -26,11 +26,14 @@ import kotlin.concurrent.thread
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
 
+
     val dataFromStore = SingleLiveData<List<TdObject>>()
 
     val shareRemoteFiles = SingleLiveData<List<TdObject>>()
     override fun tempPathsForSend(): SingleLiveData<List<TdObject>> {
         return shareRemoteFiles
+        //api.setOption()
+        //TdApi.OptionValue.
     }
 
     var currentLocalFolderPath = GLOBAL_MAIN_STORAGE_PATH
@@ -429,7 +432,12 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         return allChats
     }
 
-    override suspend fun getRemoteFiles(id: Long,path: String): LiveData<List<TdObject>> {
+    override suspend fun createGroup(name: String) {
+        api.createNewBasicGroupChat(intArrayOf(api.getMe().id),name)
+        loadAllChats()
+    }
+
+    override suspend fun getRemoteFiles(id: Long, path: String): LiveData<List<TdObject>> {
         loadFolder(id,path)
         return dataFromStore
     }
