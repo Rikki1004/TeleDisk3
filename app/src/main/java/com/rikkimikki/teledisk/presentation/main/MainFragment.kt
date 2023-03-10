@@ -30,10 +30,7 @@ import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.PlaceItem
 import com.rikkimikki.teledisk.domain.ScopeType
 import com.rikkimikki.teledisk.domain.TdObject
-import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
-import com.rikkimikki.teledisk.utils.GLOBAL_REMOTE_STORAGE_PATH
-import com.rikkimikki.teledisk.utils.isNightModeEnabled
-import com.rikkimikki.teledisk.utils.setIsNightModeEnabled
+import com.rikkimikki.teledisk.utils.*
 
 
 class MainFragment : Fragment() {
@@ -55,6 +52,13 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
+
+        binding.textViewTopPanelDocsCount.text = getCount(requireContext(),FiltersFromType.DOCUMENTS)
+        binding.textViewTopPanelAppsCount.text = getCount(requireContext(),FiltersFromType.APPS)
+        binding.textViewTopPanelArchivesCount.text = getCount(requireContext(),FiltersFromType.ARCHIVES)
+        binding.textViewTopPanelImagesCount.text = getCount(requireContext(),FiltersFromType.PHOTO)
+        binding.textViewTopPanelMusicCount.text = getCount(requireContext(),FiltersFromType.MUSIC)
+        binding.textViewTopPanelVideoCount.text = getCount(requireContext(),FiltersFromType.VIDEO)
 
         if (viewModel.is_copy_mode){
             actionsView.visibility = View.VISIBLE
@@ -213,6 +217,15 @@ class MainFragment : Fragment() {
                         MainFragmentDirections
                             .actionMainFragmentToListFilesFragment(
                                 ScopeType.Local, FiltersFromType.VIDEO,GLOBAL_MAIN_STORAGE_PATH
+                            )
+                    )
+            }
+            textViewTopPanelArchives.setOnClickListener {
+                findNavController()
+                    .navigate(
+                        MainFragmentDirections
+                            .actionMainFragmentToListFilesFragment(
+                                ScopeType.Local, FiltersFromType.ARCHIVES,GLOBAL_MAIN_STORAGE_PATH
                             )
                     )
             }

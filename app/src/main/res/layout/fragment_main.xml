@@ -349,6 +349,7 @@
 
             <TextView
                 style="@style/cardFilterTextView"
+                android:id="@+id/textViewTopPanelImagesCount"
                 android:text="@string/filter_zero"
                 android:textColor="@color/colorPrimaryText" />
 
@@ -370,6 +371,7 @@
 
             <TextView
                 style="@style/cardFilterTextView"
+                android:id="@+id/textViewTopPanelVideoCount"
                 android:text="@string/filter_zero"
                 android:textColor="@color/colorPrimaryText" />
 
@@ -391,6 +393,7 @@
 
             <TextView
                 style="@style/cardFilterTextView"
+                android:id="@+id/textViewTopPanelMusicCount"
                 android:text="@string/filter_zero"
                 android:textColor="@color/colorPrimaryText" />
 
@@ -431,6 +434,7 @@
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
+                android:id="@+id/textViewTopPanelDocsCount"
                 android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
@@ -452,6 +456,7 @@
             <TextView
                 style="@style/cardFilterTextView"
                 android:text="@string/filter_zero"
+                android:id="@+id/textViewTopPanelAppsCount"
                 android:textColor="@color/colorPrimaryText" />
 
         </LinearLayout>
@@ -472,6 +477,7 @@
 
             <TextView
                 style="@style/cardFilterTextView"
+                android:id="@+id/textViewTopPanelArchivesCount"
                 android:text="@string/filter_zero"
                 android:textColor="@color/colorPrimaryText" />
         </LinearLayout>

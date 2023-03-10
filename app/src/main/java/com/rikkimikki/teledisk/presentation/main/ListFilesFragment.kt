@@ -32,6 +32,7 @@ import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
 import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.presentation.main.ListFileViewModel.Companion.NO_GROUP
 import com.rikkimikki.teledisk.utils.findIndex
+import com.rikkimikki.teledisk.utils.saveCount
 
 class ListFilesFragment : Fragment() {
     private var _binding: FragmentListFilesBinding? = null
@@ -194,6 +195,7 @@ class ListFilesFragment : Fragment() {
             binding.loadDataProgressBar.visibility = View.GONE
             val a = filter(it).toMutableList()
             adapter.submitList(a)
+            saveCount(requireContext(),args.filter,a.size)
             //}
         })
 

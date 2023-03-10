@@ -1,9 +1,11 @@
 package com.rikkimikki.teledisk.data.tdLib
 
 
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
 import com.rikkimikki.teledisk.utils.SingleLiveData
@@ -300,6 +302,10 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         if (chatsPart.isEmpty()) {
             offsetChatId = 0L
             offsetOrder = 9223372036854775807L
+            if (chatsResult.isEmpty()){
+                chatsResult.add(api.createNewBasicGroupChat(intArrayOf(api.getMe().id),"|Teledisk|"))
+            }
+
             allChats.value = chatsResult
             chatsResult.clear()
             return
