@@ -56,4 +56,5 @@
     <string name="send_input_text">Отправить</string>
     <string name="first_select_a_group">Сначала выберите группу</string>
     <string name="teledisk_as_folder">|Teledisk|</string>
+    <string name="limit_1000">Не более 1000 элементов</string>
 </resources>
