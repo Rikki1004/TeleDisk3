@@ -31,7 +31,6 @@ class BottomFileActionsFragment : Fragment() {
     private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
     private lateinit var viewModel: ListFileViewModel
     private var dialog: AlertDialog? = null
-    private var editText : EditText? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -135,10 +134,6 @@ class BottomFileActionsFragment : Fragment() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        editText?.let { outState.putString(EXTRA_TEXT_VIEW,it.text.toString()) }
-    }
 
     override fun onDestroyView() {
         _binding = null

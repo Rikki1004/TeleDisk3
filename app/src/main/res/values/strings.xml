@@ -1,22 +1,5 @@
 <resources>
     <string name="app_name">Teledisk</string>
-    <string name="send">Send</string>
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome!"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="images_source">Images</string>
-    <string name="video_source">Video</string>
-    <string name="documents_source">Documents</string>
-    <string name="music_source">Music</string>
-    <string name="apps_source">Apps</string>
 
     <string name="filter_menu_time">Время изменения</string>
     <string name="filter_menu_name">Имя файла</string>
@@ -52,18 +35,17 @@
     <string name="is_moving">Перемещается</string>
     <string name="is_processing">Подготавливается</string>
     <string name="it_cant_be_done_here">Здесь это сделать нельзя</string>
-    <string name="Input_phone_number">Input phone nomber</string>
+    <string name="Input_phone_number">Введите номер телефона</string>
     <string name="send_input_text">Отправить</string>
     <string name="first_select_a_group">Сначала выберите группу</string>
     <string name="teledisk_as_folder">|Teledisk|</string>
     <string name="limit_1000">Не более 1000 элементов</string>
     <string name="not_available_yet">Пока недоступно</string>
     <string name="all_transfers_are_completed">Все передачи завершены</string>
-    <string name="path_to_td_files">/data/user/0/com.rikkimikki.teledisk/files/</string>
     <string name="is_canceled">Отменено</string>
     <string name="cancel_button_text">Отмена</string>
     <string name="group_choosen">Группа выбрана</string>
-    <string name="folders_files">%s folders, %s files</string>
+    <string name="folders_files">%s Папок, %s файлов</string>
     <string name="create_group_menu">Создать группу</string>
     <string name="new_group_creating_title">Новая группа</string>
     <string name="operation_completed_successfully">операция успешно завершена: </string>
@@ -72,18 +54,18 @@
     <string name="drawer_dark_theme">Темная тема</string>
     <string name="drawer_your_disks">Ваши диски</string>
     <string name="menu_share">Поделиться</string>
-    <string name="menu_info">Подроднее</string>
+    <string name="menu_info">Подробнее</string>
     <string name="menu_grid">Сетка</string>
     <string name="menu_linear">Список</string>
-    <string name="menu_search">Search</string>
-    <string name="menu_new_folder">New folder</string>
+    <string name="menu_search">Поиск</string>
+    <string name="menu_new_folder">Новая папка</string>
     <string name="bottom_paste">Вставить</string>
     <string name="bottom_create">Создать папку</string>
     <string name="bottom_cancel">Отмена</string>
     <string name="bottom_copy">Копировать</string>
-    <string name="bottom_move">Переместить</string>
+    <string name="bottom_move">Перемест…</string>
     <string name="bottom_delete">Удалить</string>
-    <string name="bottom_rename">Переименовать</string>
+    <string name="bottom_rename">Переимен…</string>
     <string name="bottom_more">Еще</string>
     <string name="search_from_teledisk">Теледиск</string>
     <string name="search_from_phone">Телефон</string>
@@ -95,4 +77,5 @@
     <string name="info_path">Путь</string>
     <string name="info_contains">Содержит</string>
     <string name="need_wait_previous_download">Сначала дожитесь завершения загрузки</string>
+    <string name="invalid_file_size">Недопустимый размер файла</string>
 </resources>

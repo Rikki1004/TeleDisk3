@@ -35,6 +35,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="12sp"
                 android:layout_gravity="center"
                 android:text="@string/bottom_copy" />
         </LinearLayout>
@@ -56,6 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:textSize="12sp"
                 android:text="@string/bottom_move" />
         </LinearLayout>
 
@@ -74,6 +76,7 @@
 
             <TextView
                 android:layout_width="wrap_content"
+                android:textSize="12sp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/bottom_delete" />
@@ -97,6 +100,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="12sp"
                 android:layout_gravity="center"
                 android:text="@string/bottom_rename" />
 
@@ -118,6 +122,7 @@
 
             <TextView
                 android:layout_width="wrap_content"
+                android:textSize="12sp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/bottom_more" />

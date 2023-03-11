@@ -16,7 +16,6 @@ import com.rikkimikki.teledisk.domain.baseClasses.PlaceType
 import com.rikkimikki.teledisk.domain.baseClasses.TdObject
 import com.rikkimikki.teledisk.utils.covertTimestampToTime
 import com.rikkimikki.teledisk.utils.humanReadableByteCountSI
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,7 +30,7 @@ class ListFilesAdapter(
 
     private val loadThumbnailUseCase = LoadThumbnailUseCase(repository)
 
-    val MANAGER_LINEAR = "linear"
+    val MANAGER_LINEAR = "linear" //so it is necessary
     val MANAGER_GRID = "grid"
 
     var layoutManagerType = MANAGER_LINEAR
@@ -77,6 +76,7 @@ class ListFilesAdapter(
 
             } else {
                 val resId = R.drawable.folder_asset
+                itemDetails.text = if (item.size != 0L) humanReadableByteCountSI(item.size) else ""
                 itemName.text = item.name
                 itemDate.text = covertTimestampToTime(item.unixTimeDate)
                 Glide.with(context).load(resId).into(itemIcon)
@@ -107,7 +107,7 @@ class ListFilesAdapter(
                 if (item.previewFile != null) {
                     scope.launch {
                         val preview = loadThumbnailUseCase(item.previewFile)
-                        Picasso.get().load(File(preview.local.path)).into(itemIcon)
+                        Glide.with(context).load(File(preview.local.path)).into(itemIcon)
                     }
                 } else {
                     if (item.placeType == PlaceType.Local)

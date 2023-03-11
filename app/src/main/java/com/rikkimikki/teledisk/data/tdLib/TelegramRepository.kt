@@ -96,7 +96,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                         prepareFileName(doc.caption.text.ifBlank { doc.document.fileName.ifBlank { NO_NAME_FILE_NAME + counter++ } },requiredPath,chatId)
 
                     }
-                    if (name.isBlank())
+                    if (name.isBlank() || "_part_(" in name.substringAfterLast(".")) // files larger than 2gb are not included
                         continue
                     val thumbnail = doc.document.thumbnail?.photo?.id
                     val id = doc.document.document.id
@@ -183,7 +183,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                     val name = doc.caption.text.ifBlank { doc.document.fileName.ifBlank {NO_NAME_FILE_NAME + counter++ } }
                     val clearName = delL(name).substringAfterLast("/")
 
-                    if (name.isBlank())
+                    if (name.isBlank() || "_part_(" in name.substringAfterLast(".")) // files larger than 2gb are not included
                         continue
                     val thumbnail = doc.document.thumbnail?.photo?.id
                     val id = doc.document.document.id

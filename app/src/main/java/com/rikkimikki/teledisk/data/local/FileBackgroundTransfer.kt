@@ -58,6 +58,7 @@ class FileBackgroundTransfer: Service() {
         private const val CHANNEL_NAME = "Foreground File Transfer"
         private const val SERVICE_ID = 1
         private const val NO_ID = -1
+        private const val MAX_SIZE = 1920*1000*1000
 
         private const val EXTRA_FILES = "FILES"
         private const val EXTRA_COPY = "COPY"
@@ -98,14 +99,20 @@ class FileBackgroundTransfer: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if(intent?.action != null && intent.action.equals(EXTRA_STOP_ACTION)) {
-            scope.launch {
-                cancelFileTransferUseCase(currentFileId,isDownload)
-                currentFileId = NO_ID
-                notification.setContentTitle(getString(R.string.is_canceled))
-                notification.setProgress(0,0,true)
-                notification.setAutoCancel(true)
-                mNotificationManager.notify(SERVICE_ID, notification.build())
-                stopForeground(false)
+            if (!isDownload){
+                scope.launch {
+                    cancelFileTransferUseCase(currentFileId,isDownload)
+                    currentFileId = NO_ID
+                    stopForeground(true)
+                    stopSelf()
+                }
+            }
+            else{
+                scope.launch {
+                    cancelFileTransferUseCase(currentFileId,isDownload)
+                    currentFileId = NO_ID
+                }
+                stopForeground(true)
                 stopSelf()
             }
             return START_NOT_STICKY
@@ -133,15 +140,18 @@ class FileBackgroundTransfer: Service() {
         scope.launch {
             //lock.tryLock()
             for (i in files){
-                if (i.size>0 || !i.is_file()){
+                if ((i.size in 1 until MAX_SIZE) || !i.is_file()){
                     notification.setContentText(i.name)
                     transfer(i,folderDestination)
                 }
+                else
+                    Toast.makeText(application, getString(R.string.invalid_file_size), Toast.LENGTH_SHORT).show()
             }
             if(!needOpen) fileOperationComplete().postValue(Pair(getString(R.string.all_transfers_are_completed),false))
 
             if (filesNeedSend.isNotEmpty())
                 tempPathsForSendUseCase().postValue(filesNeedSend)
+            mNotificationManager.cancelAll()
             stopSelf()
         }
         return START_NOT_STICKY
