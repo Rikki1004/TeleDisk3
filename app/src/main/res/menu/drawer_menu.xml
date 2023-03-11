@@ -4,12 +4,12 @@
 
     <item
         android:id="@+id/dark_theme_switch"
-        android:title="Темная тема"
+        android:title="@string/drawer_dark_theme"
         app:actionLayout="@layout/switch_item"
         app:actionViewClass="com.google.android.material.switchmaterial.SwitchMaterial"/>
     <item
         android:id="@+id/disk_container"
-        android:title="Ваши диски">
+        android:title="@string/drawer_your_disks">
         <menu />
     </item>
 </menu>

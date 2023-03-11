@@ -1,4 +1,4 @@
-package com.rikkimikki.teledisk.presentation.main
+package com.rikkimikki.teledisk.presentation.adapters
 
 import androidx.recyclerview.widget.DiffUtil
 import com.rikkimikki.teledisk.domain.baseClasses.TdObject

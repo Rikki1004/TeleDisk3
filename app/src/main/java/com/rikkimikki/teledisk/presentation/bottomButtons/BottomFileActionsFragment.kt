@@ -1,5 +1,6 @@
-package com.rikkimikki.teledisk.presentation.main
+package com.rikkimikki.teledisk.presentation.bottomButtons
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.text.InputType
@@ -21,6 +22,7 @@ import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentBottomFileActionsBinding
 import com.rikkimikki.teledisk.domain.baseClasses.FileInfo
+import com.rikkimikki.teledisk.presentation.main.ListFileViewModel
 
 
 class BottomFileActionsFragment : Fragment() {
@@ -52,13 +54,17 @@ class BottomFileActionsFragment : Fragment() {
             textViewBottomPanelCopy.setOnClickListener {
                 viewModel.refresh()
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.bottom_view_container,BottomFileActionTransferFragment.newInstance(true))
+                    .replace(R.id.bottom_view_container,
+                        BottomFileActionTransferFragment.newInstance(true)
+                    )
                     .commit()
             }
             textViewBottomPanelMove.setOnClickListener {
                 viewModel.refresh()
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.bottom_view_container,BottomFileActionTransferFragment.newInstance(false))
+                    .replace(R.id.bottom_view_container,
+                        BottomFileActionTransferFragment.newInstance(false)
+                    )
                     .commit()
             }
             textViewBottomPanelDelete.setOnClickListener { viewModel.deleteItem() }
@@ -110,7 +116,7 @@ class BottomFileActionsFragment : Fragment() {
             }
         }
     }
-
+    @SuppressLint("CheckResult")
     private fun renameFileDialog(oldItem:Pair<String,Boolean>) {
         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
             if (oldItem.second)

@@ -1,13 +1,11 @@
 package com.rikkimikki.teledisk.data.local
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_DEFAULT
 import androidx.core.app.NotificationCompat.PRIORITY_MAX
@@ -49,6 +47,7 @@ class FileBackgroundTransfer: Service() {
     private var needOpen : Boolean = false
     private var filesNeedSend = mutableListOf<TdObject>()
     private var currentFileId = NO_ID
+    private var serviceExist = false
     private lateinit var files : Array<TdObject>
     private lateinit var lambda : suspend (TdApi.File) -> Unit
     private lateinit var notification:NotificationCompat.Builder
@@ -96,6 +95,7 @@ class FileBackgroundTransfer: Service() {
         }
     }
 
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if(intent?.action != null && intent.action.equals(EXTRA_STOP_ACTION)) {
             scope.launch {
@@ -103,12 +103,20 @@ class FileBackgroundTransfer: Service() {
                 currentFileId = NO_ID
                 notification.setContentTitle(getString(R.string.is_canceled))
                 notification.setProgress(0,0,true)
+                notification.setAutoCancel(true)
                 mNotificationManager.notify(SERVICE_ID, notification.build())
                 stopForeground(false)
                 stopSelf()
             }
             return START_NOT_STICKY
         }
+
+        if (serviceExist){
+            Toast.makeText(this, getString(R.string.need_wait_previous_download), Toast.LENGTH_SHORT).show()
+            return START_NOT_STICKY
+        }
+        serviceExist = true
+
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
 
@@ -119,11 +127,9 @@ class FileBackgroundTransfer: Service() {
             .setOnlyAlertOnce(true)
             .setPriority(PRIORITY_MAX)
             .setDefaults(FOREGROUND_SERVICE_DEFAULT)
-
         startForeground(SERVICE_ID, notification.build())
         checkIntent(intent)
         startObservers(isDownload)
-
         scope.launch {
             //lock.tryLock()
             for (i in files){

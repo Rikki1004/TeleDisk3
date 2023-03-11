@@ -29,6 +29,7 @@ import com.rikkimikki.teledisk.databinding.FragmentMainBinding
 import com.rikkimikki.teledisk.domain.baseClasses.FiltersFromType
 import com.rikkimikki.teledisk.domain.baseClasses.PlaceItem
 import com.rikkimikki.teledisk.domain.baseClasses.ScopeType
+import com.rikkimikki.teledisk.presentation.adapters.PlaceAdapter
 import com.rikkimikki.teledisk.utils.*
 
 

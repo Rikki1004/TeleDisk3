@@ -32,7 +32,6 @@
         app:layout_constraintBottom_toTopOf="@+id/mainScopeProgressBarFreeSpace"
         app:layout_constraintStart_toStartOf="parent" />
 
-<!--style="@style/SmallProgressBar"-->
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/mainScopeProgressBarFreeSpace"
         app:trackThickness="7dp"

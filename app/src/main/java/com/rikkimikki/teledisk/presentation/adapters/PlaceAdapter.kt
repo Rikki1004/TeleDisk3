@@ -1,4 +1,4 @@
-package com.rikkimikki.teledisk.presentation.main
+package com.rikkimikki.teledisk.presentation.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -20,7 +20,7 @@ class PlaceAdapter(private val context: Context) : RecyclerView.Adapter<PlaceAda
             notifyDataSetChanged()
         }
 
-    var onPlaceClickListener:OnPlaceClickListener? = null
+    var onPlaceClickListener: OnPlaceClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaceItemViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.store_item,parent,false)

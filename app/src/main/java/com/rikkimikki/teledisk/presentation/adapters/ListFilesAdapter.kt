@@ -1,4 +1,4 @@
-package com.rikkimikki.teledisk.presentation.main
+package com.rikkimikki.teledisk.presentation.adapters
 
 import android.content.Context
 import android.view.LayoutInflater

@@ -1,5 +1,6 @@
 package com.rikkimikki.teledisk.presentation.main
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.text.InputType
@@ -17,7 +18,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
@@ -29,8 +29,8 @@ import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
-import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.domain.baseClasses.*
+import com.rikkimikki.teledisk.presentation.adapters.ListFilesAdapter
 import com.rikkimikki.teledisk.utils.findIndex
 import com.rikkimikki.teledisk.utils.saveCount
 
@@ -42,19 +42,17 @@ class ListFilesFragment : Fragment() {
     private lateinit var viewModel: ListFileViewModel
     private val args by navArgs<ListFilesFragmentArgs>()
 
-    private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
-
-    private var filter: (list: List<TdObject>) -> List<TdObject> = { it }
+    private var filter: (list: List<TdObject>) -> List<TdObject> = { it } //initially, the filter returns the list without changing it
     private var filterReversed: Boolean = false
     private var lastFilter: Int = -1
     private var selectMode: Boolean = false
+    private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
 
     private val bp1 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelCopy)}
     private val bp2 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMove)}
     private val bp3 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelDelete)}
     private val bp4 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelRename)}
     private val bp5 by lazy { actionsView.findViewById<LinearLayout>(R.id.textViewBottomPanelMore)}
-
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -73,27 +71,125 @@ class ListFilesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
+        initBackPressed()
+        initClickListeners()
+        initAdapter()
+        initObservers()
+        toolBarSettings()
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object :
-            OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                this.isEnabled = false
-                //changeToolbarSelectMode(false)
+        if (savedInstanceState == null || !savedInstanceState.containsKey(SAVE_LIST)) {
+            init()
+        } else {
+            val li = savedInstanceState.getParcelableArray(SAVE_LIST) as Array<TdObject>
+            adapter.submitList(null)
+            adapter.submitList(li.toMutableList())
+            binding.loadDataProgressBar.visibility = View.GONE
 
-                viewModel.currentDirectory = TdObject("noDir", PlaceType.Local,
-                    FileType.Folder,"*")
+            if (savedInstanceState.getBoolean(SELECT_MODE)){
+                changeToolbarSelectMode(true)
+            }
+        }
+    }
 
-                if (selectMode){
-                    actionsView.visibility = View.GONE
-                    viewModel.selectedItems.clear()
+    private fun init() {
+        viewModel.setLocalPath(args.path)
+
+        when (args.filter) {
+            FiltersFromType.DEFAULT -> {
+                when (args.scopeType) {
+                    ScopeType.TeleDisk -> viewModel.getRemoteFiles(args.path)
+                    ScopeType.Local -> viewModel.getLocalFiles(args.path)
+                    ScopeType.Sd -> viewModel.getLocalFiles(args.path)
+                    ScopeType.VkMsg -> {}
+                }
+            }
+            FiltersFromType.ALL_REMOTE -> {
+                viewModel.getRemoteFilesFiltered(args.filter, args.path)
+            }
+            FiltersFromType.ALL_LOCAL -> {
+                viewModel.getLocalFilesFiltered(args.filter, args.path)
+            }
+            else -> {
+                viewModel.getLocalFilesFiltered(args.filter, args.path)
+            }
+        }
+    }
+
+    private fun initObservers() {
+        viewModel.needHideSelect.observe(viewLifecycleOwner) {
+            deselect()
+        }
+        viewModel.needCancelSelect.observe(viewLifecycleOwner) {
+            changeToolbarSelectMode(false)
+        }
+        viewModel.needLaunchIntent.observe(viewLifecycleOwner) {
+            startActivity(it)
+        }
+        viewModel.needPressBackButton.observe(viewLifecycleOwner) {
+            requireActivity().onBackPressed()
+        }
+
+
+        viewModel.getNeedOpenLD().observe(viewLifecycleOwner) {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.operation_completed_successfully) + it.first,
+                Toast.LENGTH_SHORT
+            ).show()
+            if (it.second)
+                viewModel.openLocalFile(it.first)
+            else
+                viewModel.refresh()
+        }
+
+        viewModel.fileScope.observe(viewLifecycleOwner) {
+            initTopToolbar(it)
+            binding.loadDataProgressBar.visibility = View.GONE
+            val li = filter(it).toMutableList()
+            adapter.submitList(li)
+            saveCount(requireContext(),args.filter,li.size)
+        }
+    }
+
+    private fun initAdapter() {
+        adapter = ListFilesAdapter(requireContext())
+        adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener {
+            override fun onFileLongClick(tdObject: TdObject) {
+                if (!viewModel.is_copy_mode)
+                    checkedItemsProcessing(tdObject)
+            }
+        }
+
+        adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener {
+            override fun onFileClick(tdObject: TdObject) {
+                if (selectMode) {
+                    checkedItemsProcessing(tdObject)
+                    return
+                }
+                if (tdObject.is_folder()) {
+                    viewModel.changeDirectory(tdObject)
                 }
 
-                requireActivity().onBackPressed()
+                if (tdObject.is_file()) {
+                    if (tdObject.placeType == PlaceType.TeleDisk) {
+                        val startIntent =
+                            FileBackgroundTransfer.getIntent(requireActivity(), tdObject)
+                        ContextCompat.startForegroundService(requireActivity(), startIntent)
+                    }
+                    if (tdObject.placeType == PlaceType.Local) {
+                        viewModel.openLocalFile(tdObject.path)
+                    }
+                }
             }
-        })
+        }
+        binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply {
+            orientation = LinearLayoutManager.VERTICAL
+        }
+        binding.recycleViewListFiles.adapter = adapter
+    }
 
-        adapter = ListFilesAdapter(requireContext())
-
+    private fun initClickListeners() {
         binding.buttomDeselect.setOnClickListener {
             changeToolbarSelectMode(false)
         }
@@ -119,101 +215,25 @@ class ListFilesFragment : Fragment() {
 
             configureBottomNavigation(li2)
         }
+    }
 
-        adapter.onFileLongClickListener = object : ListFilesAdapter.OnFileLongClickListener {
-            override fun onFileLongClick(tdObject: TdObject) {
-                if (!viewModel.is_copy_mode)
-                    checkedItemsProcessing(tdObject)
-            }
-        }
+    private fun initBackPressed() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object :
+            OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                this.isEnabled = false
 
-        adapter.onFileClickListener = object : ListFilesAdapter.OnFileClickListener {
-            override fun onFileClick(tdObject: TdObject) {
-                if (selectMode) {
-                    checkedItemsProcessing(tdObject)
-                    return
-                }
-                if (tdObject.is_folder()) {
-                    viewModel.changeDirectory(tdObject)
+                viewModel.currentDirectory = TdObject("noDir", PlaceType.Local,
+                    FileType.Folder,"*")
+
+                if (selectMode){
+                    actionsView.visibility = View.GONE
+                    viewModel.selectedItems.clear()
                 }
 
-                if (tdObject.is_file()) {
-                    if (tdObject.placeType == PlaceType.TeleDisk) {
-                        val startIntent =
-                            FileBackgroundTransfer.getIntent(requireActivity(), tdObject)
-
-                        ContextCompat.startForegroundService(requireActivity(), startIntent)
-                    }
-                    if (tdObject.placeType == PlaceType.Local) {
-                        //startActivity(viewModel.openLocalFile(tdObject.path))
-                        viewModel.openLocalFile(tdObject.path)
-                    }
-                }
+                requireActivity().onBackPressed()
             }
-        }
-
-        binding.recycleViewListFiles.layoutManager = LinearLayoutManager(requireActivity()).apply {
-            orientation = LinearLayoutManager.VERTICAL
-        }
-
-        binding.recycleViewListFiles.adapter = adapter
-        //adapter.submitList(null)
-        viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
-        //viewModel.fileScope.removeObservers(viewLifecycleOwner)
-
-        viewModel.needHideSelect.observe(viewLifecycleOwner, Observer {
-            deselect()
         })
-        viewModel.needCancelSelect.observe(viewLifecycleOwner, Observer {
-            changeToolbarSelectMode(false)
-        })
-
-        viewModel.needLaunchIntent.observe(viewLifecycleOwner, Observer {
-            startActivity(it)
-        })
-
-        viewModel.needPressBackButton.observe(viewLifecycleOwner, Observer {
-            requireActivity().onBackPressed()
-        })
-
-
-        viewModel.getNeedOpenLD().observe(viewLifecycleOwner, Observer {
-            Toast.makeText(
-                requireContext(),
-                "операция успешно завершена: " + it.first,
-                Toast.LENGTH_SHORT
-            ).show()
-            if (it.second)
-                viewModel.openLocalFile(it.first)
-            else
-                viewModel.refresh()
-        })
-
-        viewModel.fileScope.observe(viewLifecycleOwner, Observer {
-            //adapter.submitList(null)
-            initTopToolbar(it)
-            binding.loadDataProgressBar.visibility = View.GONE
-            val a = filter(it).toMutableList()
-            adapter.submitList(a)
-            saveCount(requireContext(),args.filter,a.size)
-            //}
-        })
-
-        toolBarSettings()
-
-        if (savedInstanceState == null || !savedInstanceState.containsKey(SAVE_LIST)) {
-            init()
-        } else {
-            val li = savedInstanceState.getParcelableArray(SAVE_LIST) as Array<TdObject>
-            adapter.submitList(null)
-            adapter.submitList(li.toMutableList())
-            binding.loadDataProgressBar.visibility = View.GONE
-
-            if (savedInstanceState.getBoolean(SELECT_MODE)){
-                changeToolbarSelectMode(true)
-                //configureBottomNavigation(li.toList())
-            }
-        }
     }
 
     override fun onResume() {
@@ -229,61 +249,32 @@ class ListFilesFragment : Fragment() {
     }
 
     private fun initTopToolbar(list: List<TdObject> = adapter.currentList.toList()){
-        binding.pathTextView.setText(viewModel.currentDirectory.path)
+        binding.pathTextView.text = viewModel.currentDirectory.path
         val count = list.size
-        binding.toolBarTextViewCount.setText(
-            requireActivity().getString(
-                R.string.filter_menu_count_items,
-                count.toString()
-            )
+        binding.toolBarTextViewCount.text = requireActivity().getString(
+            R.string.filter_menu_count_items,
+            count.toString()
         )
     }
 
     private fun notifyCounter() {
         binding.toolBarTextViewCountChecked.text = if (viewModel.selectedItems.isEmpty()) {
-            "Элементы не выбраны"
+            getString(R.string.no_items_selected)
         } else {
-            "Выбрано: " + viewModel.selectedItems.size
+            getString(R.string.items_selected) + viewModel.selectedItems.size
         }
     }
-
-    private fun init() {
-        viewModel.setLocalPath(args.path)
-
-        when (args.filter) {
-            FiltersFromType.DEFAULT -> {
-                when (args.scopeType) {
-                    ScopeType.TeleDisk -> viewModel.getRemoteFiles(args.path)
-                    ScopeType.Local -> viewModel.getLocalFiles(args.path)
-                    ScopeType.Sd -> viewModel.getLocalFiles(args.path)
-                    ScopeType.VkMsg -> {}
-                }
-            }
-            FiltersFromType.ALL_REMOTE -> {
-                viewModel.getRemoteFilesFiltered(args.filter, args.path)
-            }
-            FiltersFromType.ALL_LOCAL -> {
-                viewModel.getLocalFilesFiltered(args.filter, args.path)
-            }
-
-            else -> {
-                viewModel.getLocalFilesFiltered(args.filter, args.path)
-            }
-        }
-    }
-
 
     private fun toolBarSettings() {
         val toolbar = binding.toolbar
         val infoToolbar = binding.infoToolbar
-        val pathToolbar = binding.pathToolbar
         val searchBar = toolbar.menu.findItem(R.id.action_search).actionView as SearchView
 
         infoToolbar.overflowIcon =
             AppCompatResources.getDrawable(requireContext(),R.drawable.arrow_down_drop_circle_outline_custom)
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_18dp)
-        toolbar.setNavigationOnClickListener { view ->
+        toolbar.setNavigationOnClickListener {
             viewModel.clickArrow(args.path)
         }
 
@@ -344,18 +335,18 @@ class ListFilesFragment : Fragment() {
 
                     val s = SpannableString(newTitle)
                     s.setSpan(
-                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        ForegroundColorSpan(Color.parseColor(SELECTED_COLOR)),
                         0,
                         s.length,
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
-                    it.setTitle(s)
+                    it.title = s
                     binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
-                            val files = items.filter { it.is_file() }
-                            val folders = items.filter { !it.is_file() }
+                            val files = items.filter {item -> item.is_file() }
+                            val folders = items.filter {item -> !item.is_file() }
 
                             val filteredFolders = folders.sortedBy { item -> item.size }
                             val filteredFiles = if (filterReversed)
@@ -378,18 +369,18 @@ class ListFilesFragment : Fragment() {
 
                     val s = SpannableString(newTitle)
                     s.setSpan(
-                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        ForegroundColorSpan(Color.parseColor(SELECTED_COLOR)),
                         0,
                         s.length,
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
-                    it.setTitle(s)
+                    it.title = s
                     binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
-                            val files = items.filter { it.is_file() }
-                            val folders = items.filter { !it.is_file() }
+                            val files = items.filter { item -> item.is_file() }
+                            val folders = items.filter { item -> !item.is_file() }
 
                             val filteredFolders = folders.sortedBy { item -> item.name }
                             val filteredFiles = if (filterReversed)
@@ -412,18 +403,18 @@ class ListFilesFragment : Fragment() {
 
                     val s = SpannableString(newTitle)
                     s.setSpan(
-                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        ForegroundColorSpan(Color.parseColor(SELECTED_COLOR)),
                         0,
                         s.length,
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
-                    it.setTitle(s)
+                    it.title = s
                     binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
-                            val files = items.filter { it.is_file() }
-                            val folders = items.filter { !it.is_file() }
+                            val files = items.filter { item -> item.is_file() }
+                            val folders = items.filter { item -> !item.is_file() }
 
                             val filteredFolders = folders.sortedBy { item -> item.unixTimeDate }
                             val filteredFiles = if (filterReversed)
@@ -446,18 +437,18 @@ class ListFilesFragment : Fragment() {
 
                     val s = SpannableString(newTitle)
                     s.setSpan(
-                        ForegroundColorSpan(Color.parseColor("#ABCABC")),
+                        ForegroundColorSpan(Color.parseColor(SELECTED_COLOR)),
                         0,
                         s.length,
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
-                    it.setTitle(s)
+                    it.title = s
                     binding.toolBarTextViewFilter.text = newTitle
 
                     filter =
                         { items ->
-                            val files = items.filter { it.is_file() }
-                            val folders = items.filter { !it.is_file() }
+                            val files = items.filter { item -> item.is_file() }
+                            val folders = items.filter { item -> !item.is_file() }
 
                             val filteredFolders = folders.sortedBy { item -> item.name }
                             val filteredFiles = if (filterReversed)
@@ -474,7 +465,6 @@ class ListFilesFragment : Fragment() {
                 viewModel.refresh()
             else
                 init()
-
             true
         }
 
@@ -484,7 +474,7 @@ class ListFilesFragment : Fragment() {
                 R.id.action_layout_grid -> {
                     adapter.layoutManagerType = adapter.MANAGER_GRID
                     binding.recycleViewListFiles.layoutManager =
-                        GridLayoutManager(requireActivity(), 4)
+                        GridLayoutManager(requireActivity(), 6)
                     toolbar.menu.findItem(R.id.action_layout_linear).isVisible = true
                     it.isVisible = false
                 }
@@ -501,7 +491,6 @@ class ListFilesFragment : Fragment() {
             }
             true
         }
-
     }
 
 
@@ -525,11 +514,8 @@ class ListFilesFragment : Fragment() {
             li[it] = newObj
             adapter.submitList(li)
         }
-
         configureBottomNavigation(li)
-
         //we adjust the upper and lower panels according to the choice
-
     }
     private fun configureBottomNavigation(li:List<TdObject> = adapter.currentList.toMutableList()){
         val oneChecked = li.filter { it.isChecked }.size == 1
@@ -568,7 +554,6 @@ class ListFilesFragment : Fragment() {
             viewModel.selectedItems.clear()
             deselect()
         }
-        //viewModel.selectedItems.clear()
     }
 
     private fun deselect() {
@@ -586,7 +571,7 @@ class ListFilesFragment : Fragment() {
         super.onDestroyView()
     }
 
-
+    @SuppressLint("CheckResult")
     private fun createFolderDialog() {
         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
             title(R.string.new_folder)
@@ -601,17 +586,8 @@ class ListFilesFragment : Fragment() {
     }
 
     companion object {
-        private const val EXTRA_SCOPE_TYPE = "scopeType"
-        private const val EXTRA_FILTER = "filter"
         const val SELECT_MODE = "selectMode"
         const val SAVE_LIST = "list"
-        /*fun newInstance(scopeType: ScopeType, filter: FiltersFromType? = null): Fragment {
-            return ListFilesFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(EXTRA_SCOPE_TYPE, scopeType)
-                    putSerializable(EXTRA_FILTER, filter)
-                }
-            }
-        }*/
+        const val SELECTED_COLOR = "#ABCABC"
     }
 }

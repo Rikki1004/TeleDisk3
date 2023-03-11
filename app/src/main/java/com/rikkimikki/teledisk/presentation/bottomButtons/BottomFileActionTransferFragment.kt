@@ -1,5 +1,6 @@
-package com.rikkimikki.teledisk.presentation.main
+package com.rikkimikki.teledisk.presentation.bottomButtons
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.text.InputType
@@ -16,6 +17,7 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentBottomFileActionTransferBinding
+import com.rikkimikki.teledisk.presentation.main.ListFileViewModel
 
 
 class BottomFileActionTransferFragment : Fragment() {
@@ -66,10 +68,10 @@ class BottomFileActionTransferFragment : Fragment() {
     }
     private fun close(){
         requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.bottom_view_container,BottomFileActionsFragment.newInstance(true))
+            .replace(R.id.bottom_view_container, BottomFileActionsFragment.newInstance(true))
             .commit()
     }
-
+    @SuppressLint("CheckResult")
     private fun createFolderDialog() {
         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
             title(R.string.new_folder)
