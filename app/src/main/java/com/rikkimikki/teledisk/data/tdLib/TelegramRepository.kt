@@ -1,10 +1,13 @@
 package com.rikkimikki.teledisk.data.tdLib
 
 
+import android.app.Application
+import android.content.pm.ApplicationInfo
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import com.google.android.material.internal.ContextUtils
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.domain.*
 import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
@@ -485,10 +488,9 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             File(remotePath+"/"+name+"/").mkdir()
         }else{
             val groupId = folder.groupID
-            val tempFileDir = File("/data/user/0/com.rikkimikki.teledisk/files/","FOLDER")//File(createTempFile("FOLDER").pathString)
-            //val tempFile = File(Environment.getDownloadCacheDirectory(),tempFileDir)
+            val tempFileDir = File(R.string.path_to_td_files.toString(),"FOLDER")
+
             tempFileDir.writeText("FOLDER")
-            //tempFileDir.renameTo(File("FOLDER"))
             val inputFileLocal = TdApi.InputFileLocal(tempFileDir.absolutePath)
             val formattedText = TdApi.FormattedText(remotePath+(if (remotePath.isBlank()) "" else "/")+name+"/", arrayOf())
             val doc = TdApi.InputMessageDocument(inputFileLocal,TdApi.InputThumbnail(), formattedText)
@@ -499,9 +501,6 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     override fun getStorages(): LiveData<List<ScopeType>> {
         TODO("Not yet implemented")
     }
-
-
-
 
 
     override suspend fun renameFile(file: TdObject, newName: String) {
@@ -570,10 +569,5 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             val messageId = file.messageID
             api.deleteMessages(chatId, longArrayOf(messageId),true)
         }
-    }
-
-    fun reload() {
-        dataFromStore.value = listOf ()
-        allChats.value = listOf()
     }
 }

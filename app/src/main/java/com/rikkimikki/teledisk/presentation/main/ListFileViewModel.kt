@@ -115,7 +115,7 @@ init {
 
     fun copyFile(){
         if (selectedItems.size > 1000){
-            Toast.makeText(getApplication(), R.string.limit_1000, Toast.LENGTH_SHORT).show()
+            Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.limit_1000), Toast.LENGTH_SHORT).show()
             return
         }
         val startIntent = FileBackgroundTransfer.getIntent(
@@ -129,7 +129,7 @@ init {
     }
     fun moveFile() {
         if (selectedItems.size > 1000){
-            Toast.makeText(getApplication(), R.string.limit_1000, Toast.LENGTH_SHORT).show()
+            Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.limit_1000), Toast.LENGTH_SHORT).show()
             return
         }
         val startIntent = FileBackgroundTransfer.getIntent(
@@ -294,7 +294,7 @@ init {
         if (listSelected.isEmpty())
             return
         if (listSelected.size > 1000){
-            Toast.makeText(getApplication(), R.string.limit_1000, Toast.LENGTH_SHORT).show()
+            Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.limit_1000), Toast.LENGTH_SHORT).show()
             return
         }
         if (!listSelected[0].is_local()){

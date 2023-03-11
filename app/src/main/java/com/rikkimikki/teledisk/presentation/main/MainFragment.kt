@@ -1,5 +1,6 @@
 package com.rikkimikki.teledisk.presentation.main
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.text.InputType
@@ -24,12 +25,12 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentMainBinding
 import com.rikkimikki.teledisk.domain.FiltersFromType
 import com.rikkimikki.teledisk.domain.PlaceItem
 import com.rikkimikki.teledisk.domain.ScopeType
-import com.rikkimikki.teledisk.domain.TdObject
 import com.rikkimikki.teledisk.utils.*
 
 
@@ -64,6 +65,8 @@ class MainFragment : Fragment() {
             actionsView.visibility = View.VISIBLE
         }
 
+        val a = R.string.path_to_td_files.toString()
+        println(a)
 
         val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val drawerSwitch: SwitchMaterial =

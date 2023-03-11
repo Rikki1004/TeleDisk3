@@ -59,4 +59,5 @@
     <string name="limit_1000">Не более 1000 элементов</string>
     <string name="not_available_yet">Пока недоступно</string>
     <string name="all_transfers_are_completed">Все передачи завершены</string>
+    <string name="path_to_td_files">/data/user/0/com.rikkimikki.teledisk/files/</string>
 </resources>
