@@ -325,7 +325,7 @@ init {
             return FileInfo(
                 item.name,
                 covertTimestampToTime(item.unixTimeDate),
-                humanReadableByteCountSI(item.size),
+                if (item.size != 0L) humanReadableByteCountSI(item.size) else "-",
                 item.path,
                 true
             )
@@ -334,7 +334,7 @@ init {
             val foldersCount=selectedItems.filter { !it.is_file() }.size
             val totalSize= selectedItems.sumOf { it.size }
             return FileInfo(
-                size =  humanReadableByteCountSI(totalSize),
+                size =  if (totalSize != 0L) humanReadableByteCountSI(totalSize) else "-",
                 contains = getApplication<Application>().getString(R.string.folders_files).format(foldersCount, filesCount),
                 single = false
             )

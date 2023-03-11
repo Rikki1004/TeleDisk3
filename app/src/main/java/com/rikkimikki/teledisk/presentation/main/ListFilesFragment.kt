@@ -7,6 +7,7 @@ import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -474,7 +475,7 @@ class ListFilesFragment : Fragment() {
                 R.id.action_layout_grid -> {
                     adapter.layoutManagerType = adapter.MANAGER_GRID
                     binding.recycleViewListFiles.layoutManager =
-                        GridLayoutManager(requireActivity(), 6)
+                        GridLayoutManager(requireActivity(), getColumnCount())
                     toolbar.menu.findItem(R.id.action_layout_linear).isVisible = true
                     it.isVisible = false
                 }
@@ -492,7 +493,6 @@ class ListFilesFragment : Fragment() {
             true
         }
     }
-
 
     private fun checkedItemsProcessing(tdObject: TdObject) {
         //turn on the selection mode if it is not enabled and create a new reversible TdObject
@@ -565,12 +565,6 @@ class ListFilesFragment : Fragment() {
         val li2 = li.map { it.copy(isChecked = false) }
         adapter.submitList(li2.toMutableList())
     }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
-    }
-
     @SuppressLint("CheckResult")
     private fun createFolderDialog() {
         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
@@ -583,6 +577,18 @@ class ListFilesFragment : Fragment() {
                 waitForPositiveButton = true
             ) { _, text -> viewModel.createFolder(text.toString()) }
         }
+    }
+
+    private fun getColumnCount(): Int {
+        val displayMetrics = DisplayMetrics()
+        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val width = (displayMetrics.widthPixels / displayMetrics.density).toInt()
+        return if (width / 90 > 4) width / 90 else 4
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
     companion object {
