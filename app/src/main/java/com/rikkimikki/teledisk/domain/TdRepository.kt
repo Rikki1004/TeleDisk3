@@ -36,4 +36,6 @@ interface TdRepository {
 
     suspend fun createGroup(name:String)
 
+    suspend fun cancelFileTransfer(id:Int,is_download:Boolean)
+
 }

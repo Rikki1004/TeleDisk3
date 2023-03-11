@@ -488,7 +488,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             File(remotePath+"/"+name+"/").mkdir()
         }else{
             val groupId = folder.groupID
-            val tempFileDir = File(R.string.path_to_td_files.toString(),"FOLDER")
+            val tempFileDir = File("/data/user/0/com.rikkimikki.teledisk/files/","FOLDER")
 
             tempFileDir.writeText("FOLDER")
             val inputFileLocal = TdApi.InputFileLocal(tempFileDir.absolutePath)
@@ -569,5 +569,12 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             val messageId = file.messageID
             api.deleteMessages(chatId, longArrayOf(messageId),true)
         }
+    }
+
+    override suspend fun cancelFileTransfer(id: Int, is_download: Boolean) {
+        if (is_download)
+            api.cancelDownloadFile(id,false)
+        else
+            api.cancelUploadFile(id)
     }
 }

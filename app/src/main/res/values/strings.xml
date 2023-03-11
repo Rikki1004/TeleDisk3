@@ -60,4 +60,6 @@
     <string name="not_available_yet">Пока недоступно</string>
     <string name="all_transfers_are_completed">Все передачи завершены</string>
     <string name="path_to_td_files">/data/user/0/com.rikkimikki.teledisk/files/</string>
+    <string name="is_canceled">Отменено</string>
+    <string name="cancel_button_text">Отмена</string>
 </resources>
