@@ -1,27 +1,23 @@
 package com.rikkimikki.teledisk.data.tdLib
 
 
-import android.app.Application
-import android.content.pm.ApplicationInfo
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
-import com.google.android.material.internal.ContextUtils
-import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.domain.*
-import com.rikkimikki.teledisk.utils.GLOBAL_MAIN_STORAGE_PATH
-import com.rikkimikki.teledisk.utils.SingleLiveData
-import kotlinx.coroutines.flow.*
-import kotlinx.telegram.core.TelegramException
+import com.rikkimikki.teledisk.domain.baseClasses.FileType
+import com.rikkimikki.teledisk.domain.baseClasses.FiltersFromType
+import com.rikkimikki.teledisk.domain.baseClasses.PlaceType
+import com.rikkimikki.teledisk.domain.baseClasses.TdObject
+import com.rikkimikki.teledisk.utils.*
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.telegram.core.TelegramFlow
 import kotlinx.telegram.coroutines.*
 import kotlinx.telegram.extensions.ChatKtx
 import kotlinx.telegram.extensions.UserKtx
 import kotlinx.telegram.flows.authorizationStateFlow
 import kotlinx.telegram.flows.fileFlow
-import kotlinx.telegram.flows.userFlow
-import kotlinx.telegram.flows.userStatusFlow
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.Chat
 import java.io.File
@@ -29,27 +25,16 @@ import kotlin.concurrent.thread
 
 
 object TelegramRepository : UserKtx, ChatKtx , TdRepository {
-
-
-
     val dataFromStore = SingleLiveData<List<TdObject>>()
-
-    val shareRemoteFiles = SingleLiveData<List<TdObject>>()
-    override fun tempPathsForSend(): SingleLiveData<List<TdObject>> {
-        return shareRemoteFiles
-        //api.setOption()
-        //TdApi.OptionValue.
-    }
-
+    val is_ready = MutableLiveData<Boolean>()
+    val allChats = MutableLiveData<List<Chat>>()
+    private val needOpenLD = SingleLiveData<Pair<String,Boolean>>()
+    private val shareRemoteFiles = SingleLiveData<List<TdObject>>()
+    override val api: TelegramFlow = TelegramFlow()
+    private var counter = 0
     var currentLocalFolderPath = GLOBAL_MAIN_STORAGE_PATH
 
-    val is_ready = MutableLiveData<Boolean>()
-    var counter = 0
-
-    override val api: TelegramFlow = TelegramFlow()
-
-    val allChats = MutableLiveData<List<Chat>>()
-
+    val downloadLD = api.fileFlow().asLiveData()
     val authFlow = api.authorizationStateFlow()
         .onEach {
             checkRequiredParams(it)
@@ -90,76 +75,84 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             when(message.content.constructor){
                 TdApi.MessageDocument.CONSTRUCTOR -> {
                     val doc = message.content as TdApi.MessageDocument
-                    val (name,path) = if (doc.document.fileName == "FOLDER"){
+                    val (name,path) = if (doc.document.fileName == FOLDER){
                         prepareFileName(doc.caption.text,requiredPath,chatId)
 
                         if (!needShow && doc.caption.text == (delL(requiredPath))+"/"){
-                            messagesResult.add(TdObject(
+                            messagesResult.add(
+                                TdObject(
                                 doc.document.fileName,
                                 PlaceType.TeleDisk,
                                 FileType.File,
                                 doc.caption.text,
                                 groupID = chatId,
                                 fileID = doc.document.document.id,
-                                messageID = message.id))
+                                messageID = message.id)
+                            )
                         }
                         continue
                     }
                     else{
-                        prepareFileName(doc.caption.text.ifBlank { doc.document.fileName.ifBlank { "noNameFile"+ counter++ } },requiredPath,chatId)
+                        prepareFileName(doc.caption.text.ifBlank { doc.document.fileName.ifBlank { NO_NAME_FILE_NAME + counter++ } },requiredPath,chatId)
 
                     }
                     if (name.isBlank())
                         continue
-                    val thumbnail = doc.document.thumbnail?.photo?.id// ?.local?.path
+                    val thumbnail = doc.document.thumbnail?.photo?.id
                     val id = doc.document.document.id
                     val messageId = message.id
                     val size = doc.document.document.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(name,
+                            PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 TdApi.MessageAudio.CONSTRUCTOR -> {
                     val audio = message.content as TdApi.MessageAudio
-                    val (name,path) = prepareFileName(audio.caption.text.ifBlank { audio.audio.fileName.ifBlank { "noNameFile"+ counter++ } },requiredPath,chatId)
+                    val (name,path) = prepareFileName(audio.caption.text.ifBlank { audio.audio.fileName.ifBlank { NO_NAME_FILE_NAME + counter++ } },requiredPath,chatId)
 
                     if (name.isBlank())
                         continue
-                    val thumbnail = audio.audio.albumCoverThumbnail?.photo?.id// ?.local?.path
+                    val thumbnail = audio.audio.albumCoverThumbnail?.photo?.id
                     val id = audio.audio.audio.id
                     val messageId = message.id
                     val size = audio.audio.audio.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(name,
+                            PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 TdApi.MessagePhoto.CONSTRUCTOR -> {
                     val photo = message.content as TdApi.MessagePhoto
-                    //val thumbnail = photo.photo.sizes.map { it.photo.local.path }
                     val thumbnail = photo.photo.sizes[0].photo.id
-                    //var thumbnail : String? = null
-                    //for (i in photo.photo.sizes)
-                    //    if (i.photo.local.path.isNotBlank())
-                    //        thumbnail = i.photo.local.path
-                    //val thumbnail = photo.photo.sizes[0].photo.local.path
-                    val (name,path) = prepareFileName(photo.caption.text.ifBlank { "noNameFile"+ counter++ +".jpeg" },requiredPath,chatId)
+                    val (name,path) = prepareFileName(photo.caption.text.ifBlank { NO_NAME_FILE_NAME + counter++ +".jpeg" },requiredPath,chatId)
                     if (name.isBlank())
                         continue
                     val id = photo.photo.sizes[photo.photo.sizes.size-1].photo.id
                     val messageId = message.id
                     val size = photo.photo.sizes[photo.photo.sizes.size-1].photo.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(name,
+                            PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 TdApi.MessageVideo.CONSTRUCTOR -> {
                     val video = message.content as TdApi.MessageVideo
-                    val thumbnail = video.video.thumbnail?.photo?.id//?.local?.path
-                    val (name,path) = prepareFileName(video.caption.text.ifBlank { video.video.fileName.ifBlank { "noNameFile"+ counter++ +".mp4" } },requiredPath,chatId)
+                    val thumbnail = video.video.thumbnail?.photo?.id
+                    val (name,path) = prepareFileName(video.caption.text.ifBlank { video.video.fileName.ifBlank { NO_NAME_FILE_NAME + counter++ +".mp4" } },requiredPath,chatId)
                     if (name.isBlank())
                         continue
                     val id = video.video.video.id
                     val messageId = message.id
                     val size = video.video.video.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(name,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(name,
+                            PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 else -> {}
             }
@@ -169,7 +162,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
 
 
 
-    private suspend fun getAllRemoteData(chatId: Long,filter: FiltersFromType, order:Long = 0, offset:Int = -1){
+    private suspend fun getAllRemoteData(chatId: Long, filter: FiltersFromType, order:Long = 0, offset:Int = -1){
         val messages = api.getChatHistory(chatId,order,offset,100,false).messages
         if (offset == -1)
             messagesResult.clear()
@@ -183,78 +176,78 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                 TdApi.MessageDocument.CONSTRUCTOR -> {
                     val doc = message.content as TdApi.MessageDocument
 
-                    if (doc.document.fileName == "FOLDER"){
+                    if (doc.document.fileName == FOLDER){
                         continue
                     }
 
-                    val name = doc.caption.text.ifBlank { doc.document.fileName.ifBlank { "noNameFile"+ counter++ } }
+                    val name = doc.caption.text.ifBlank { doc.document.fileName.ifBlank {NO_NAME_FILE_NAME + counter++ } }
                     val clearName = delL(name).substringAfterLast("/")
-                    val path = name
 
                     if (name.isBlank())
                         continue
-                    val thumbnail = doc.document.thumbnail?.photo?.id// ?.local?.path
+                    val thumbnail = doc.document.thumbnail?.photo?.id
                     val id = doc.document.document.id
                     val messageId = message.id
                     val size = doc.document.document.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(clearName,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(clearName,
+                            PlaceType.TeleDisk,FileType.File,name,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 TdApi.MessageAudio.CONSTRUCTOR -> {
                     val audio = message.content as TdApi.MessageAudio
-                    val name = audio.caption.text.ifBlank { audio.audio.fileName.ifBlank { "noNameFile"+ counter++ } }
+                    val name = audio.caption.text.ifBlank { audio.audio.fileName.ifBlank { NO_NAME_FILE_NAME + counter++ } }
                     val clearName = delL(name).substringAfterLast("/")
-                    val path = name
 
                     if (name.isBlank())
                         continue
-                    val thumbnail = audio.audio.albumCoverThumbnail?.photo?.id// ?.local?.path
+                    val thumbnail = audio.audio.albumCoverThumbnail?.photo?.id
                     val id = audio.audio.audio.id
                     val messageId = message.id
                     val size = audio.audio.audio.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(clearName,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(clearName,
+                            PlaceType.TeleDisk,FileType.File,name,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 TdApi.MessagePhoto.CONSTRUCTOR -> {
                     val photo = message.content as TdApi.MessagePhoto
                     val thumbnail = photo.photo.sizes[0].photo.id
-                    val name = photo.caption.text.ifBlank { "noNameFile"+ counter++ +".jpeg" }
+                    val name = photo.caption.text.ifBlank { NO_NAME_FILE_NAME + counter++ +".jpeg" }
                     val clearName = delL(name).substringAfterLast("/")
-                    val path = name
                     if (name.isBlank())
                         continue
                     val id = photo.photo.sizes[photo.photo.sizes.size-1].photo.id
                     val messageId = message.id
                     val size = photo.photo.sizes[photo.photo.sizes.size-1].photo.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(clearName,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(clearName,
+                            PlaceType.TeleDisk,FileType.File,name,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 TdApi.MessageVideo.CONSTRUCTOR -> {
                     val video = message.content as TdApi.MessageVideo
-                    val thumbnail = video.video.thumbnail?.photo?.id//?.local?.path
-                    val name = video.caption.text.ifBlank { video.video.fileName.ifBlank { "noNameFile"+ counter++ +".mp4" } }
+                    val thumbnail = video.video.thumbnail?.photo?.id
+                    val name = video.caption.text.ifBlank { video.video.fileName.ifBlank { NO_NAME_FILE_NAME + counter++ +".mp4" } }
                     val clearName = delL(name).substringAfterLast("/")
-                    val path = name
                     if (name.isBlank())
                         continue
                     val id = video.video.video.id
                     val messageId = message.id
                     val size = video.video.video.size.toLong()
                     val time = (if (message.editDate == 0) message.date else message.editDate )*1000L
-                    messagesResult.add(TdObject(clearName,PlaceType.TeleDisk,FileType.File,path,size,time,thumbnail,chatId,id,messageId))
+                    messagesResult.add(
+                        TdObject(clearName,
+                            PlaceType.TeleDisk,FileType.File,name,size,time,thumbnail,chatId,id,messageId)
+                    )
                 }
                 else -> {}
             }
         }
         getAllRemoteData(chatId,filter,messages.last().id,0)
-    }
-
-
-
-    val downloadLD = api.fileFlow().asLiveData()
-    suspend fun loadFile(id: Int) {
-        val load = api.downloadFile(id,32,0,0,false)
-        //downloadLD.value = api.fileFlow().asLiveData()
     }
 
 
@@ -269,16 +262,21 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
                 val currentFolderPath = clearName.substring(0,secondSlashPosition)
                 if (currentFolderPath !in folderList){
                     folderList.add(currentFolderPath)
-                    messagesResult.add(TdObject(currentFolderPath.substring(currentFolderPath.lastIndexOf("/")+1),PlaceType.TeleDisk,FileType.Folder,"/"+currentFolderPath, groupID = chatId, fileID = (1..Int.MAX_VALUE).random()))
+                    messagesResult.add(
+                        TdObject(currentFolderPath.substring(
+                        currentFolderPath.lastIndexOf("/")+1),
+                        PlaceType.TeleDisk,
+                        FileType.Folder,
+                        "/$currentFolderPath",
+                        groupID = chatId,
+                        fileID = (1..Int.MAX_VALUE).random())
+                    )
                 }
             }else
-                return Pair(clearName.substring(clearName.lastIndexOf("/")+1),"/"+clearName)
+                return Pair(clearName.substring(clearName.lastIndexOf("/")+1), "/$clearName")
         }
         println(slashPosition)
         return Pair("","")
-
-        //if ("/" in clearName)
-        //obj[dialog.message.rpartition('/')[0]] = ["dir", dialog]
     }
     private fun delL(word:String):String{
         var newWord = word.replace("\\", "/")
@@ -296,19 +294,17 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         return newWord
     }
 
-
     private var offsetChatId = 0L
-    private var offsetOrder = 9223372036854775807L
+    private var offsetOrder = Long.MAX_VALUE
     private val chatsResult = mutableListOf<Chat>()
     private suspend fun loadAllChats() {
         val chatsPart = api.getChats(TdApi.ChatListMain(), offsetOrder, offsetChatId,100).chatIds
         if (chatsPart.isEmpty()) {
             offsetChatId = 0L
-            offsetOrder = 9223372036854775807L
-            if (chatsResult.isEmpty()){
-                chatsResult.add(api.createNewBasicGroupChat(intArrayOf(api.getMe().id),"|Teledisk|"))
-            }
-
+            offsetOrder = Long.MAX_VALUE
+            /*if (chatsResult.isEmpty()){
+                chatsResult.add(api.createNewBasicGroupChat(intArrayOf(api.getMe().id),"|$TELEDISK|"))
+            }*/
             allChats.value = chatsResult
             chatsResult.clear()
             return
@@ -326,28 +322,28 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         loadAllChats()
     }
 
-    fun getDataFromDisk(path:String){
+    private fun getDataFromDisk(path:String){
         val tempList = mutableListOf<TdObject>()
 
         File(path).listFiles()?.forEach {
             if (it.isFile)
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))
+                tempList.add(
+                    TdObject(it.name,
+                        PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified())
+                )
             else
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.Folder,it.absolutePath, 0L,it.lastModified()))
+                tempList.add(
+                    TdObject(it.name,
+                        PlaceType.Local,FileType.Folder,it.absolutePath, 0L,it.lastModified())
+                )
         }
-        //dataFromStore.value = tempList
         dataFromStore.postValue(tempList)
     }
 
-
-    override suspend fun getRemoteFilesFiltered(
-        id: Long,
-        filter: FiltersFromType
-    ): LiveData<List<TdObject>> {
+    override suspend fun getRemoteFilesFiltered(id: Long,filter: FiltersFromType): LiveData<List<TdObject>> {
         getAllRemoteData(id,filter)
         return dataFromStore
     }
-
 
     override fun getLocalFilesFiltered(filter: FiltersFromType): LiveData<List<TdObject>> {
         thread {
@@ -355,7 +351,10 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             val path = currentLocalFolderPath
 
             File(path).walk().filter{ it.isFile && filter.ext.any { suffix -> it.name.lowercase().endsWith(suffix) } }.forEach {
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))
+                tempList.add(
+                    TdObject(it.name,
+                        PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified())
+                )
             }
             dataFromStore.postValue(tempList)
         }
@@ -377,132 +376,76 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
         )
     }
 
-
-
-    val userInfoFlow = flowOf(
-        api.userFlow(),
-        api.userStatusFlow().map {
-            api.getUser(it.userId)
-        }
-    ).flattenMerge().map { user: TdApi.User ->
-
-        if (api.getMe().id == user.id) "it's me!"
-        else {
-            val userInfo = arrayListOf(user.firstName)
-
-            if (user.getFullInfo().groupInCommonCount > 0) {
-                user.getGroupsInCommon(0, 10).chatIds.map {
-                    api.getChat(it).let { chat ->
-                        val admins = chat.getAdministrators().administrators.map { admin ->
-                            api.getUser(admin.userId).firstName
-                        }.joinToString()
-                        "    '${chat.title}'" +
-                            (" admins: $admins".takeIf { admins.isNotBlank() } ?: "")
-                    }
-                }.joinToString("\n").let {
-                    userInfo.add(" has chats in common:\n$it")
-                }
-            }
-
-            userInfo.joinToString()
-        }
-    }.retryWhen { cause, _ -> cause is TelegramException }
-
-    val needOpenLD = SingleLiveData<Pair<String,Boolean>>()//MutableLiveData<TdApi.File>()
     override fun fileOperationComplete(): SingleLiveData<Pair<String, Boolean>> {
         return needOpenLD
     }
-
     override suspend fun transferFileDownload(from: TdObject) : TdApi.File{
         return api.downloadFile(from.fileID,31,0,0,false)
     }
     override suspend fun transferFileUpload(from: TdObject) : TdApi.File{
         val file = TdApi.InputFileLocal(from.path)
         return api.uploadFile(file, TdApi.FileTypeDocument(),31)
-
-        //api.sendMessage(from.fileID,31,0,0,false)
     }
     override suspend fun sendUploadedFile(chatId:Long,doc: TdApi.InputMessageContent):TdApi.File{
         val options = TdApi.SendMessageOptions(true,false,null)
         val result = api.sendMessage(chatId,0, options,null, doc).content as TdApi.MessageDocument
         return result.document.document
     }
-
     override suspend fun loadThumbnail(id: Int): TdApi.File {
         return api.downloadFile(id,32,0,0,true)
     }
-
-    override suspend fun TdApi.User.addChatMember(chatId: Long, forwardLimit: Int) {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun getAllChats() : LiveData<List<Chat>>{
         loadAllChats()
         return allChats
     }
-
     override suspend fun createGroup(name: String) {
         api.createNewBasicGroupChat(intArrayOf(api.getMe().id),name)
         loadAllChats()
     }
-
     override suspend fun getRemoteFiles(id: Long, path: String): LiveData<List<TdObject>> {
         loadFolder(id,path)
         return dataFromStore
     }
-
     override suspend fun getRemoteFilesNoLD(id: Long, path: String): List<TdObject> {
         loadFolder(id,path, needShow = false)
         return messagesResult.toList()
     }
-
     override fun getLocalFiles(path: String): LiveData<List<TdObject>> {
         thread { getDataFromDisk(path) }
         return dataFromStore
     }
-
     override fun getLocalFilesNoLD(path: String): List<TdObject> {
         val tempList = mutableListOf<TdObject>()
 
         File(path).listFiles()?.forEach {
             if (it.isFile)
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified()))
+                tempList.add(
+                    TdObject(it.name,
+                        PlaceType.Local,FileType.File,it.absolutePath,it.length(),it.lastModified())
+                )
             else
-                tempList.add(TdObject(it.name,PlaceType.Local,FileType.Folder,it.absolutePath, 0L,it.lastModified()))
+                tempList.add(
+                    TdObject(it.name,
+                        PlaceType.Local,FileType.Folder,it.absolutePath, 0L,it.lastModified())
+                )
         }
-        val a = tempList
-        return a//tempList
+        return tempList
     }
-
-    override fun getChatFolder(id: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun createFile(folder:TdObject, name: String) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun createFolder(folder:TdObject, name: String) {
+    override suspend fun createFolder(folder: TdObject, name: String) {
         val remotePath = delL(folder.path)
         if (folder.is_local()){
-            File(remotePath+"/"+name+"/").mkdir()
+            File("$remotePath/$name/").mkdir()
         }else{
             val groupId = folder.groupID
-            val tempFileDir = File("/data/user/0/com.rikkimikki.teledisk/files/","FOLDER")
+            val tempFileDir = File(GLOBAL_PATH_TO_FILES,FOLDER)
 
-            tempFileDir.writeText("FOLDER")
+            tempFileDir.writeText(FOLDER)
             val inputFileLocal = TdApi.InputFileLocal(tempFileDir.absolutePath)
             val formattedText = TdApi.FormattedText(remotePath+(if (remotePath.isBlank()) "" else "/")+name+"/", arrayOf())
             val doc = TdApi.InputMessageDocument(inputFileLocal,TdApi.InputThumbnail(), formattedText)
             sendUploadedFile(groupId,doc)
         }
     }
-
-    override fun getStorages(): LiveData<List<ScopeType>> {
-        TODO("Not yet implemented")
-    }
-
-
     override suspend fun renameFile(file: TdObject, newName: String) {
         if (file.is_local()){
             File(file.path).renameTo(File(file.getFilePath(),newName))
@@ -514,14 +457,12 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             api.editMessageCaption(chatId,messageId,null,caption)
         }
     }
-
-
     override suspend fun renameFolder(folder: TdObject, newName: String) {
         val clear = delP(folder.path)
         val startPath = Pair(delL(folder.path), clear.substringBeforeLast("/")+"/"+newName)
         renameFolderHelper(folder,newName,startPath)
     }
-    private suspend fun renameFolderHelper(folder: TdObject, newName: String,startPath :Pair<String,String>) {
+    private suspend fun renameFolderHelper(folder: TdObject, newName: String, startPath :Pair<String,String>) {
         if (folder.is_local()){
             File(folder.path).renameTo(File(folder.getFilePath(),newName))
         }else{
@@ -538,7 +479,6 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             }
         }
     }
-
     override suspend fun deleteFolder(folder: TdObject) {
         val messages = mutableListOf<Long>()
 
@@ -570,11 +510,13 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             api.deleteMessages(chatId, longArrayOf(messageId),true)
         }
     }
-
     override suspend fun cancelFileTransfer(id: Int, is_download: Boolean) {
         if (is_download)
             api.cancelDownloadFile(id,false)
         else
             api.cancelUploadFile(id)
+    }
+    override fun tempPathsForSend(): SingleLiveData<List<TdObject>> {
+        return shareRemoteFiles
     }
 }

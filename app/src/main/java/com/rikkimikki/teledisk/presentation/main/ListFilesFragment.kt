@@ -30,7 +30,7 @@ import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
 import com.rikkimikki.teledisk.domain.*
-import com.rikkimikki.teledisk.presentation.main.ListFileViewModel.Companion.NO_GROUP
+import com.rikkimikki.teledisk.domain.baseClasses.*
 import com.rikkimikki.teledisk.utils.findIndex
 import com.rikkimikki.teledisk.utils.saveCount
 
@@ -80,7 +80,7 @@ class ListFilesFragment : Fragment() {
                 this.isEnabled = false
                 //changeToolbarSelectMode(false)
 
-                viewModel.currentDirectory = TdObject("noDir",PlaceType.Local,
+                viewModel.currentDirectory = TdObject("noDir", PlaceType.Local,
                     FileType.Folder,"*")
 
                 if (selectMode){

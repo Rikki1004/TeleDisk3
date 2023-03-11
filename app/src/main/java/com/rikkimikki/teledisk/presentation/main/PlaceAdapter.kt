@@ -8,7 +8,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.StoreItemBinding
-import com.rikkimikki.teledisk.domain.PlaceItem
+import com.rikkimikki.teledisk.domain.baseClasses.PlaceItem
 import com.rikkimikki.teledisk.utils.humanReadableByteCountSI
 
 

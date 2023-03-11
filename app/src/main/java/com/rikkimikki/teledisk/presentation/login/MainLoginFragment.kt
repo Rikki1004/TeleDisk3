@@ -1,12 +1,10 @@
 package com.rikkimikki.teledisk.presentation.login
 
-import InputLoginFragment
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentMainLoginBinding
@@ -34,33 +32,25 @@ class MainLoginFragment : Fragment() {
 
         binding.buttonStartLogin.setOnClickListener {
             requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.login_view_container,InputLoginFragment.newInstance())
+                .replace(R.id.login_view_container, InputLoginFragment.newInstance())
                 .commit()
         }
-
     }
 
     private fun startObservers() {
-        val o = Observer<Boolean> {  }
-        viewModel.authState.observe(viewLifecycleOwner, Observer {  })
-
-        viewModel.getReadyState().observe(viewLifecycleOwner, Observer {
+        viewModel.authState.observe(viewLifecycleOwner){}
+        viewModel.getReadyState().observe(viewLifecycleOwner) {
             if (it){
                 startActivity(MainActivity.getInstance(requireContext()))
             }
             else
                 requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.login_view_container,InputLoginFragment.newInstance())
+                    .replace(R.id.login_view_container, InputLoginFragment.newInstance())
                     .commit()
-        })
+        }
     }
-
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
-    }
-
-    companion object {
-        fun newInstance() = MainLoginFragment()
     }
 }

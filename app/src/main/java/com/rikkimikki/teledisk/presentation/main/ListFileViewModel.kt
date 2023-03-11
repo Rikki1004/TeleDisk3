@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Environment
 import android.os.StatFs
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -15,18 +14,14 @@ import com.rikkimikki.teledisk.BuildConfig
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
-import com.rikkimikki.teledisk.data.tdLib.TelegramRepository.downloadLD
-import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.domain.baseClasses.*
+import com.rikkimikki.teledisk.domain.useCases.*
 import com.rikkimikki.teledisk.utils.*
 import kotlinx.coroutines.launch
-import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
 
 
 class ListFileViewModel(application: Application):AndroidViewModel(application) {
-    var currentLocalPath = "/"
-    var currentRemotePath = "/"
-
     val repository = TelegramRepository
 
     private val getRemoteFilesUseCase = GetRemoteFilesUseCase(repository)
@@ -42,27 +37,21 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val getAllFilteredLocalFilesUseCase = GetAllFilteredLocalFilesUseCase(repository)
     private val getAllFilteredRemoteFilesUseCase = GetAllFilteredRemoteFilesUseCase(repository)
     private val createGroupUseCase = CreateGroupUseCase(repository)
+    private var sharedpreferences: SharedPreferences
     val fileScope = repository.dataFromStore
-    val chatScope = repository.allChats
-
-
-    //private val context = getApplication<Application>().applicationContext
-    //var context: Context? = getApplication<Application>().getApplicationContext()
-
-
+    val selectedItems = mutableListOf<TdObject>()
     var needLaunchIntent = SingleLiveData<Intent>()
     var needPressBackButton = SingleLiveData<Unit>()
     var needCancelSelect = SingleLiveData<Unit>()
     var needHideSelect = SingleLiveData<Unit>()
     var is_copy_mode = false
 
-    val selectedItems = mutableListOf<TdObject>()
     lateinit var currentDirectory : TdObject
     var currentGroup : Long = NO_GROUP
     set(value) {
         sharedpreferences.edit().putLong(PREF_GROUP_IG,value).apply()
         field = value
-        Toast.makeText(getApplication(), "Группа выбрана", Toast.LENGTH_SHORT).show()
+        Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.group_choosen), Toast.LENGTH_SHORT).show()
     }
     get() {
         if (field != NO_GROUP)
@@ -70,11 +59,8 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
         if (sharedpreferences.contains(PREF_GROUP_IG))
             return sharedpreferences.getLong(PREF_GROUP_IG,NO_GROUP)
         else
-            //Toast.makeText(getApplication(), "Группа не выбрана", Toast.LENGTH_SHORT).show()
             return NO_GROUP
     }
-
-    private lateinit var sharedpreferences: SharedPreferences
 
     private val contentResolver by lazy {
         application.contentResolver
@@ -83,9 +69,6 @@ class ListFileViewModel(application: Application):AndroidViewModel(application) 
     private val externalCacheDirs by lazy {
         application.externalCacheDirs
     }
-    /*private val application by lazy {
-        application
-    }*/
 
     companion object{
         const val PREF_GROUP_IG = "group"
@@ -96,20 +79,14 @@ init {
     sharedpreferences =
         application.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE)
 
-    //repository.reload()
     tempPathsForSendUseCase().observeForever {
         shareItems(it)
     }
 }
-    val isRemoteDownloadComplete = SingleLiveData<String>()
-
     fun refresh(){
         changeDirectory(currentDirectory)
     }
-    fun refreshFileScope(){
-        fileScope.value = listOf()
-    }
-    fun refreshSelectedItems(){
+    private fun refreshSelectedItems(){
         selectedItems.clear()
     }
 
@@ -147,13 +124,13 @@ init {
     }
 
     fun getRemoteFiles(path:String){
-        currentDirectory = TdObject("currentDir",PlaceType.TeleDisk,FileType.Folder,path, groupID = currentGroup)
+        currentDirectory = TdObject("currentDir", PlaceType.TeleDisk,FileType.Folder,path, groupID = currentGroup)
         viewModelScope.launch { getRemoteFilesUseCase(currentGroup,path) }
     }
 
     fun getLocalFiles(path:String){
 
-        currentDirectory = TdObject("currentDir",PlaceType.Local,FileType.Folder,path)
+        currentDirectory = TdObject("currentDir", PlaceType.Local,FileType.Folder,path)
         viewModelScope.launch { getLocalFilesUseCase(path) }
     }
     fun clickArrow(startPath: String){
@@ -169,12 +146,12 @@ init {
             needPressBackButton.value = Unit
     }
 
-    fun getLocalFilesFiltered(filter:FiltersFromType,path:String){
-        currentDirectory = TdObject("",PlaceType.Local,FileType.Folder,path)
+    fun getLocalFilesFiltered(filter: FiltersFromType, path:String){
+        currentDirectory = TdObject("", PlaceType.Local,FileType.Folder,path)
         viewModelScope.launch { getAllFilteredLocalFilesUseCase(filter) }
     }
-    fun getRemoteFilesFiltered(filter:FiltersFromType,path:String){
-        currentDirectory = TdObject("",PlaceType.TeleDisk,FileType.Folder,path, groupID = currentGroup)
+    fun getRemoteFilesFiltered(filter: FiltersFromType, path:String){
+        currentDirectory = TdObject("", PlaceType.TeleDisk,FileType.Folder,path, groupID = currentGroup)
         viewModelScope.launch { getAllFilteredRemoteFilesUseCase(currentGroup,filter) }
     }
 
@@ -220,62 +197,66 @@ init {
         return repository.allChats.map { it.map { it.id to it.title.substring(1,it.title.length-1) } }
     }
 
-    fun changeDirectory(directory:TdObject) {
+    fun changeDirectory(directory: TdObject) {
         if (directory.is_folder() && directory.placeType == PlaceType.TeleDisk)
             getRemoteFiles(directory.path)
         if (directory.is_folder() && directory.placeType == PlaceType.Local)
             getLocalFiles(directory.path)
     }
 
-
     fun getStorages():List<PlaceItem>{
 
         val placeItems = mutableListOf<PlaceItem>()
 
-
         for(i in externalCacheDirs){
             val stat = StatFs(i.path)
             if (i.absolutePath.startsWith(GLOBAL_MAIN_STORAGE_PATH)){
-                placeItems.add(PlaceItem(
-                    "Память устройства",
+                placeItems.add(
+                    PlaceItem(
+                    MAIN_STORE,
                     i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET),
                     stat.totalBytes,
                     stat.availableBytes,
                     ScopeType.Local,
                     true
-                ))
+                )
+                )
             }else{
-                placeItems.add(PlaceItem(
+                placeItems.add(
+                    PlaceItem(
                     i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET).let { it.substring(0,it.length-1) },
                     i.path.substringBefore(GLOBAL_CACHE_DIRS_PATH_OFFSET),
                     stat.totalBytes,
                     stat.availableBytes,
                     ScopeType.Sd
-                ))
+                )
+                )
             }
         }
 
-        placeItems.add(1,PlaceItem(
-            "Teledisk",
+        placeItems.add(1, PlaceItem(
+            TELEDISK,
             "/",
             0,
             Long.MAX_VALUE,
             ScopeType.TeleDisk
-        ))
+        )
+        )
 
-        placeItems.add(PlaceItem(
-            "VkDisk (В разработке)",
+        placeItems.add(
+            PlaceItem(
+                VK_DISK,
             "/",
             0,
             Long.MAX_VALUE,
             ScopeType.VkMsg
-        ))
+        )
+        )
         return placeItems
     }
     fun getNeedOpenLD(): LiveData<Pair<String, Boolean>> {
         return fileOperationComplete()
     }
-
 
     fun openLocalFile(path:String){
         val uri = FileProvider.getUriForFile(getApplication(),
@@ -286,7 +267,6 @@ init {
         intent.setDataAndType(uri,type)
         intent.flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        //return intent
         needLaunchIntent.value = intent
     }
 
@@ -331,7 +311,7 @@ init {
         if (urisList.size > 1){
             val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
             intent.type = "*/*"
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisList);
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisList)
             needLaunchIntent.value = intent
         }
         refreshSelectedItems()
@@ -339,8 +319,7 @@ init {
         refresh()
     }
 
-
-    fun getInfo():FileInfo {
+    fun getInfo(): FileInfo {
         if (selectedItems.size == 1){
             val item = selectedItems[0]
             return FileInfo(
@@ -356,7 +335,7 @@ init {
             val totalSize= selectedItems.sumOf { it.size }
             return FileInfo(
                 size =  humanReadableByteCountSI(totalSize),
-                contains = "%s folders, %s files".format(foldersCount, filesCount),
+                contains = getApplication<Application>().getString(R.string.folders_files).format(foldersCount, filesCount),
                 single = false
             )
         }

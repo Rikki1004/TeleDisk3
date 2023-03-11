@@ -1,6 +1,6 @@
 package com.rikkimikki.teledisk.utils
 
-import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.domain.baseClasses.TdObject
 
 fun findIndex(obj: TdObject, list: List<TdObject>):Int?{
     var index : Int? = null

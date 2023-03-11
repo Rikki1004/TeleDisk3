@@ -4,19 +4,16 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Filter
-import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
-import com.rikkimikki.teledisk.domain.LoadThumbnailUseCase
-import com.rikkimikki.teledisk.domain.PlaceType
-import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.domain.useCases.LoadThumbnailUseCase
+import com.rikkimikki.teledisk.domain.baseClasses.PlaceType
+import com.rikkimikki.teledisk.domain.baseClasses.TdObject
 import com.rikkimikki.teledisk.utils.covertTimestampToTime
 import com.rikkimikki.teledisk.utils.humanReadableByteCountSI
 import com.squareup.picasso.Picasso
@@ -119,7 +116,6 @@ class ListFilesAdapter(
                     else
                         Glide.with(context).load(resId).into(itemIcon)
                 }
-
             } else {
                 val resId = R.drawable.folder_asset
                 itemName.text = item.name
@@ -130,7 +126,7 @@ class ListFilesAdapter(
             }
             itemView.setOnLongClickListener {
                 onFileLongClickListener?.onFileLongClick(item)
-                return@setOnLongClickListener true//false
+                return@setOnLongClickListener true
             }
         }
     }
@@ -147,7 +143,6 @@ class ListFilesAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-
         if (layoutManagerType == MANAGER_LINEAR) {
             (holder as View1ViewHolder).bind(position)
         } else {

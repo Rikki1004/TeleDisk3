@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.rikkimikki.teledisk.data.local.FileBackgroundTransfer.Companion.EXTRA_STOP_ACTION
-import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
-import com.rikkimikki.teledisk.domain.CancelFileTransferUseCase
 
 class CancelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

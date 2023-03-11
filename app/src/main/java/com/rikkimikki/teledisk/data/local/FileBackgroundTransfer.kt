@@ -13,7 +13,10 @@ import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_DEFAULT
 import androidx.core.app.NotificationCompat.PRIORITY_MAX
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.data.tdLib.TelegramRepository
-import com.rikkimikki.teledisk.domain.*
+import com.rikkimikki.teledisk.domain.baseClasses.FileType
+import com.rikkimikki.teledisk.domain.baseClasses.PlaceType
+import com.rikkimikki.teledisk.domain.baseClasses.TdObject
+import com.rikkimikki.teledisk.domain.useCases.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +68,7 @@ class FileBackgroundTransfer: Service() {
 
         const val EXTRA_STOP_ACTION = "STOP_ACTION"
 
-        fun getIntent(context: Context, files:Array<TdObject>,folderDestination : TdObject,is_copy:Boolean) :Intent{
+        fun getIntent(context: Context, files:Array<TdObject>, folderDestination : TdObject, is_copy:Boolean) :Intent{
             val intent = Intent(context,
                 FileBackgroundTransfer::class.java)
             intent.putExtra(EXTRA_FILES, files)
@@ -74,7 +77,7 @@ class FileBackgroundTransfer: Service() {
             intent.putExtra(EXTRA_IS_DOWNLOAD, files[0].placeType != PlaceType.Local && folderDestination.placeType == PlaceType.Local)
             return intent
         }
-        fun getIntent(context: Context, file:TdObject) :Intent{//Open remote file
+        fun getIntent(context: Context, file: TdObject) :Intent{//Open remote file
             val intent = Intent(context,
                 FileBackgroundTransfer::class.java)
             intent.putExtra(EXTRA_FILES, arrayOf(file))
@@ -101,7 +104,7 @@ class FileBackgroundTransfer: Service() {
                 notification.setContentTitle(getString(R.string.is_canceled))
                 notification.setProgress(0,0,true)
                 mNotificationManager.notify(SERVICE_ID, notification.build())
-                stopForeground(false);
+                stopForeground(false)
                 stopSelf()
             }
             return START_NOT_STICKY
@@ -139,7 +142,7 @@ class FileBackgroundTransfer: Service() {
     }
 
 
-    private suspend fun transfer(file: TdObject,folder:TdObject?) {
+    private suspend fun transfer(file: TdObject, folder: TdObject?) {
         if (folder == null ) when{
             //file.is_local() -> {fileOperationComplete().postValue(Pair(file.path,true)); stopSelf()} //newer
             !file.is_local() && needOpen -> {

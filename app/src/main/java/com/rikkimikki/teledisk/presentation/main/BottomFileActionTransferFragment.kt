@@ -16,7 +16,6 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentBottomFileActionTransferBinding
-import com.rikkimikki.teledisk.databinding.FragmentListFilesBinding
 
 
 class BottomFileActionTransferFragment : Fragment() {
@@ -40,9 +39,6 @@ class BottomFileActionTransferFragment : Fragment() {
 
         viewModel.prepareToCopy()
 
-        //if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_TEXT_VIEW))
-        //    createDialog(savedInstanceState.getString(EXTRA_TEXT_VIEW)) t3e4
-
         with(binding){
             textViewBottomPanelPaste.setOnClickListener {
                 if (end()){
@@ -54,7 +50,6 @@ class BottomFileActionTransferFragment : Fragment() {
                         viewModel.moveFile()
                     close()
                 }
-
             }
             textViewBottomPanelCancel.setOnClickListener { viewModel.cancelCopy();viewModel.refresh(); close() }
             textViewBottomPanelCreate .setOnClickListener {if (end()) createFolderDialog()}
@@ -87,7 +82,6 @@ class BottomFileActionTransferFragment : Fragment() {
             ) { _, text -> viewModel.createFolder(text.toString())}
         }
     }
-
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

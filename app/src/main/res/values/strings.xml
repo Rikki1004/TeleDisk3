@@ -62,4 +62,8 @@
     <string name="path_to_td_files">/data/user/0/com.rikkimikki.teledisk/files/</string>
     <string name="is_canceled">Отменено</string>
     <string name="cancel_button_text">Отмена</string>
+    <string name="group_choosen">Группа выбрана</string>
+    <string name="folders_files">%s folders, %s files</string>
+    <string name="create_group_menu">Создать группу</string>
+    <string name="new_group_creating_title">Новая группа</string>
 </resources>
