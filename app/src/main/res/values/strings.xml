@@ -57,4 +57,6 @@
     <string name="first_select_a_group">Сначала выберите группу</string>
     <string name="teledisk_as_folder">|Teledisk|</string>
     <string name="limit_1000">Не более 1000 элементов</string>
+    <string name="not_available_yet">Пока недоступно</string>
+    <string name="all_transfers_are_completed">Все передачи завершены</string>
 </resources>

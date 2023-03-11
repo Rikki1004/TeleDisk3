@@ -180,7 +180,7 @@ init {
 
 
     fun createFolder(name:String){
-        viewModelScope.launch { createFolderUseCase(currentDirectory, name) }
+        viewModelScope.launch { createFolderUseCase(currentDirectory, name); refresh() }
     }
 
     fun renameItem(newName: String) {
@@ -191,8 +191,10 @@ init {
             else
                 renameFolderUseCase(file,newName)
             refreshSelectedItems()
+            needCancelSelect.value = Unit
             refresh()
         }
+
     }
     fun getRenamedItemName() : Pair<String,Boolean>{
         val item = selectedItems[0]
@@ -208,6 +210,7 @@ init {
                     deleteFolderUseCase(i)
             }
             refreshSelectedItems()
+            needCancelSelect.value = Unit
             refresh()
         }
     }
@@ -331,6 +334,9 @@ init {
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisList);
             needLaunchIntent.value = intent
         }
+        refreshSelectedItems()
+        needCancelSelect.value = Unit
+        refresh()
     }
 
 

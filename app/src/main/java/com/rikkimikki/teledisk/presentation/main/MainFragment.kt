@@ -140,6 +140,10 @@ class MainFragment : Fragment() {
         adapter.onPlaceClickListener = object : PlaceAdapter.OnPlaceClickListener{
             override fun onPlaceClick(placeItem: PlaceItem) {
                 if (checkGroup()) return
+                if (placeItem.scopeType == ScopeType.VkMsg){
+                    Toast.makeText(requireContext(), getString(R.string.not_available_yet), Toast.LENGTH_SHORT).show()
+                    return
+                }
                 findNavController()
                     .navigate(
                         MainFragmentDirections

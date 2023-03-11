@@ -67,7 +67,7 @@ class BottomFileActionsFragment : Fragment() {
                     .commit()
             }
             textViewBottomPanelDelete.setOnClickListener { viewModel.deleteItem() }
-            textViewBottomPanelRename.setOnClickListener {RenameFileDialog(viewModel.getRenamedItemName())}
+            textViewBottomPanelRename.setOnClickListener {renameFileDialog(viewModel.getRenamedItemName())}
             textViewBottomPanelMore.setOnClickListener {
                 //infoDialog(viewModel.getInfo())
                 showPopupMenu(it)
@@ -75,6 +75,9 @@ class BottomFileActionsFragment : Fragment() {
         }
     }
 
+    private fun deselect(){
+        viewModel.needCancelSelect.value = Unit
+    }
     private fun showPopupMenu(v: View) {
         val popupMenu = PopupMenu(requireContext(), v)
         popupMenu.inflate(R.menu.files_action_bottom)
@@ -120,7 +123,7 @@ class BottomFileActionsFragment : Fragment() {
         }
     }
 
-    private fun RenameFileDialog(oldItem:Pair<String,Boolean>) {
+    private fun renameFileDialog(oldItem:Pair<String,Boolean>) {
         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
             if (oldItem.second)
                 title(R.string.rename_file)

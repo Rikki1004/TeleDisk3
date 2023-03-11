@@ -258,7 +258,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
     private val folderList = mutableListOf<String>()
     private fun prepareFileName(name: String,requiredPath: String,chatId:Long):Pair <String,String>{
         val clearName = delL(name)
-        val slashPosition = clearName.indexOf(requiredPath.substring(1))
+        val slashPosition = clearName.indexOf((requiredPath+(if (requiredPath=="/") "" else "/")).substring(1))
         val secondSlashPosition = clearName.indexOf("/",requiredPath.length)
         println(messagesResult)
         if (slashPosition == 0 ){
@@ -490,7 +490,7 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             tempFileDir.writeText("FOLDER")
             //tempFileDir.renameTo(File("FOLDER"))
             val inputFileLocal = TdApi.InputFileLocal(tempFileDir.absolutePath)
-            val formattedText = TdApi.FormattedText(remotePath+"/"+name+"/", arrayOf())
+            val formattedText = TdApi.FormattedText(remotePath+(if (remotePath.isBlank()) "" else "/")+name+"/", arrayOf())
             val doc = TdApi.InputMessageDocument(inputFileLocal,TdApi.InputThumbnail(), formattedText)
             sendUploadedFile(groupId,doc)
         }
@@ -559,7 +559,8 @@ object TelegramRepository : UserKtx, ChatKtx , TdRepository {
             }
         }
         deleteFolderHelper(folder)
-        api.deleteMessages(folder.groupID,messages.toLongArray(),true)
+        if (!folder.is_local() && messages.isNotEmpty())
+            api.deleteMessages(folder.groupID,messages.toLongArray(),true)
     }
     override suspend fun deleteFile(file: TdObject) {
         if (file.is_local()){

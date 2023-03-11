@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
 
@@ -29,6 +30,8 @@ class FileBackgroundTransfer: Service() {
     private val getRemoteFilesNoLDUseCase = GetRemoteFilesNoLDUseCase(repository)
     private val getLocalFilesNoLDUseCase = GetLocalFilesNoLDUseCase(repository)
     private val tempPathsForSendUseCase = TempPathsForSendUseCase(repository)
+    private val deleteFileUseCase = DeleteFileUseCase(repository)
+    private val deleteFolderUseCase = DeleteFolderUseCase(repository)
     private val scope = CoroutineScope(Dispatchers.IO)
     private val lock = Mutex()
     private var folderDestination : TdObject? = null
@@ -100,9 +103,17 @@ class FileBackgroundTransfer: Service() {
         startObservers(isDownload)
 
         scope.launch {
-            lock.tryLock()
-            for (i in files)
-                transfer(i,folderDestination)
+            //lock.tryLock()
+            for (i in files){
+                lock.withLock {
+                    if (i.size>0 || !i.is_file()){
+                        notification.setContentText(i.name)
+                        transfer(i,folderDestination)
+                    }
+                }
+
+            }
+            if(!needOpen) fileOperationComplete().postValue(Pair(getString(R.string.all_transfers_are_completed),false))
 
             if (filesNeedSend.isNotEmpty())
                 tempPathsForSendUseCase().postValue(filesNeedSend)
@@ -123,7 +134,6 @@ class FileBackgroundTransfer: Service() {
                 if (file.is_file()){
                     lambda = {
                         filesNeedSend.add(TdObject(file.name, PlaceType.Local, FileType.File,it.local.path))
-                        fileOperationComplete().postValue(Pair(it.local.path,false))
                         if(lock.isLocked) lock.unlock()
                     }
                     transferFileDownloadUseCase(file).let {currentFileId = it.id; if (it.local.isDownloadingCompleted) lambda(it) else lock.lock()}
@@ -141,7 +151,7 @@ class FileBackgroundTransfer: Service() {
                 setNotification(file.name)
 
                 localFileOnTd.copyRecursively(fileDestination)
-                fileOperationComplete().postValue(Pair(fileDestination.path,false))
+                if (!isCopy) localFileOnTd.deleteRecursively()
             }
             file.is_local() && !folder.is_local() -> {
                 if (file.is_file()){
@@ -149,11 +159,11 @@ class FileBackgroundTransfer: Service() {
                         val groupId = folder.groupID
                         val remotePath = folder.path
                         val inputFileLocal = TdApi.InputFileLocal(file.path)
-                        val formattedText = TdApi.FormattedText(remotePath+"/"+file.name, arrayOf())
+                        val formattedText = TdApi.FormattedText(remotePath+(if (remotePath == "/") "" else "/")+file.name, arrayOf())
                         val doc = TdApi.InputMessageDocument(inputFileLocal,TdApi.InputThumbnail(), formattedText)
 
                         sendUploadedFileUseCase(groupId,doc)
-                        fileOperationComplete().postValue(Pair(it.local.path,false))
+                        if (!isCopy) File(file.path).deleteRecursively()
                         if(lock.isLocked) lock.unlock()
                     }
                     transferFileUploadUseCase(file).let {
@@ -179,7 +189,7 @@ class FileBackgroundTransfer: Service() {
                     val doc = TdApi.InputMessageDocument(inputFileId,thumbnail, formattedText)
 
                     sendUploadedFileUseCase(groupId,doc)
-                    fileOperationComplete().postValue(Pair(formattedText.text,false))
+                    if (!isCopy) deleteFileUseCase(file)
                 }else{
                     for (i in getRemoteFilesNoLDUseCase(file.groupID,file.path)){
                         transfer(i,folder.copy(path = folder.path+"/"+file.name))
@@ -193,8 +203,10 @@ class FileBackgroundTransfer: Service() {
                         val fileDestination = checkName(folder.path,file.name)
 
                         setNotification(file.name)
-                        localFileOnTd.copyTo(fileDestination)
-                        fileOperationComplete().postValue(Pair(it.local.path,false))
+                        if(localFileOnTd.name != "FOLDER")
+                            localFileOnTd.copyTo(fileDestination)
+                        localFileOnTd.delete()
+                        if (!isCopy) deleteFileUseCase(file)
                         if(lock.isLocked) lock.unlock()
                     }
                     transferFileDownloadUseCase(file).let { currentFileId = it.id; if (it.local.isDownloadingCompleted) lambda(it) else lock.lock()}
@@ -202,6 +214,7 @@ class FileBackgroundTransfer: Service() {
                     for (i in getRemoteFilesNoLDUseCase(file.groupID,file.path)){
                         transfer(i,folder.copy(path = folder.path+"/"+file.name))
                     }
+                    if (!isCopy) deleteFolderUseCase(file)
                 }
             }
         }
