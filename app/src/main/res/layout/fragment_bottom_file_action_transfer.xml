@@ -17,7 +17,7 @@
         android:orientation="horizontal"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        tools:context=".presentation.main.BottomFileActionsFragment">
+        tools:context=".presentation.bottomButtons.BottomFileActionsFragment">
 
         <LinearLayout
             android:id="@+id/textViewBottomPanelPaste"
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Paste" />
+                android:text="@string/bottom_paste" />
         </LinearLayout>
 
 
@@ -57,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Create" />
+                android:text="@string/bottom_create" />
         </LinearLayout>
 
 
@@ -78,7 +78,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Cancel" />
+                android:text="@string/bottom_cancel" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

@@ -7,20 +7,30 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_main"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_main_round"
         android:supportsRtl="true"
-        android:theme="@style/AppThemeDark"
-        android:requestLegacyExternalStorage="true">
+        android:theme="@style/AppThemeDark">
+        <receiver
+            android:name=".data.local.CancelReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="STOP_ACTION"/>
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".data.local.FileBackgroundTransfer"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true"
+            android:launchMode="singleTop" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -44,7 +54,7 @@
         <activity
             android:name=".presentation.main.MainActivity"
             android:exported="false"
-            android:launchMode="singleTop"/>
+            android:launchMode="singleTop" />
         <activity
             android:name=".presentation.login.LoginActivity"
             android:exported="true"

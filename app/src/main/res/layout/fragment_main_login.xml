@@ -6,14 +6,14 @@
     tools:context="com.rikkimikki.teledisk.presentation.login.MainLoginFragment">
 
     <TextView
-        android:id="@+id/textViewStartLoagin"
+        android:id="@+id/textViewStartLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="50dp"
         android:gravity="center"
-        android:text="Teledisk использует ваш аккаут Telegram как безлимитное облако и чтобы его использовать, нужно войти"
+        android:text="@string/teledisk_preview"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonStartLogin"
         app:layout_constraintEnd_toEndOf="parent"
@@ -26,10 +26,10 @@
         android:id="@+id/buttonStartLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Войти"
+        android:text="@string/button_preview"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewStartLoagin" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewStartLogin" />
 </androidx.constraintlayout.widget.ConstraintLayout>

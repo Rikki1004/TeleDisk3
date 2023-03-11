@@ -16,7 +16,7 @@
 
 
     android:layout_height="wrap_content"
-    tools:context=".presentation.main.BottomFileActionsFragment">
+    tools:context=".presentation.bottomButtons.BottomFileActionsFragment">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Copy" />
+                android:text="@string/bottom_copy" />
         </LinearLayout>
 
         <LinearLayout
@@ -56,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Move" />
+                android:text="@string/bottom_move" />
         </LinearLayout>
 
         <LinearLayout
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Delete" />
+                android:text="@string/bottom_delete" />
 
         </LinearLayout>
 
@@ -98,29 +98,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Rename" />
+                android:text="@string/bottom_rename" />
 
         </LinearLayout>
-
-        <!--<LinearLayout
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:orientation="vertical"
-            android:layout_weight="1"
-            android:id="@+id/textViewBottomPanelShare">
-
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_share_black_18dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Share" />
-        </LinearLayout>-->
 
         <LinearLayout
             android:layout_height="wrap_content"
@@ -140,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="More" />
+                android:text="@string/bottom_more" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

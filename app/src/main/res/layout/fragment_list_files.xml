@@ -140,22 +140,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="end"
                     android:textColor="@color/colorMainText"
                     tools:text="↑ or ↓ TextView" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
         <View android:background="@color/colorStoreBackgroundOther" android:layout_width="match_parent" android:layout_height="1px"/>
-
-
-
-        <!--<SearchView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchViewListFiles"
-            android:iconifiedByDefault="false"/>-->
-
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycleViewListFiles"
@@ -164,7 +155,6 @@
             android:background="@color/colorMainBackground"
             tools:context=".presentation.main.ListFilesFragment"
             tools:listitem="@layout/file_item" />
-        <!--app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"-->
     </LinearLayout>
 
     <LinearLayout

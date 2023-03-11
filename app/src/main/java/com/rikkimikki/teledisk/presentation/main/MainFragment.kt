@@ -26,10 +26,10 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.rikkimikki.teledisk.R
 import com.rikkimikki.teledisk.databinding.FragmentMainBinding
-import com.rikkimikki.teledisk.domain.FiltersFromType
-import com.rikkimikki.teledisk.domain.PlaceItem
-import com.rikkimikki.teledisk.domain.ScopeType
-import com.rikkimikki.teledisk.domain.TdObject
+import com.rikkimikki.teledisk.domain.baseClasses.FiltersFromType
+import com.rikkimikki.teledisk.domain.baseClasses.PlaceItem
+import com.rikkimikki.teledisk.domain.baseClasses.ScopeType
+import com.rikkimikki.teledisk.presentation.adapters.PlaceAdapter
 import com.rikkimikki.teledisk.utils.*
 
 
@@ -40,6 +40,7 @@ class MainFragment : Fragment() {
     private lateinit var viewModel: ListFileViewModel
     private var chatsList = mutableListOf<Long>()
     private val actionsView by lazy { requireActivity().findViewById<FragmentContainerView>(R.id.bottom_view_container) }
+    private lateinit var navView : NavigationView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,20 +53,27 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListFileViewModel::class.java]
-
-        binding.textViewTopPanelDocsCount.text = getCount(requireContext(),FiltersFromType.DOCUMENTS)
-        binding.textViewTopPanelAppsCount.text = getCount(requireContext(),FiltersFromType.APPS)
-        binding.textViewTopPanelArchivesCount.text = getCount(requireContext(),FiltersFromType.ARCHIVES)
-        binding.textViewTopPanelImagesCount.text = getCount(requireContext(),FiltersFromType.PHOTO)
-        binding.textViewTopPanelMusicCount.text = getCount(requireContext(),FiltersFromType.MUSIC)
-        binding.textViewTopPanelVideoCount.text = getCount(requireContext(),FiltersFromType.VIDEO)
+        navView = requireActivity().findViewById(R.id.nav_view)
 
         if (viewModel.is_copy_mode){
             actionsView.visibility = View.VISIBLE
         }
 
+        setCount()
+        adapterSettings()
+        initSwitch()
+        initClickListeners()
+        initObservers()
+    }
 
-        val navView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
+    private fun adapterSettings() {
+        adapter = PlaceAdapter(requireContext())
+        binding.horizontalRecycleView.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.HORIZONTAL }
+        binding.horizontalRecycleView.adapter = adapter
+        adapter.placeItemList = viewModel.getStorages()
+    }
+
+    private fun initSwitch() {
         val drawerSwitch: SwitchMaterial =
             navView.menu.findItem(R.id.dark_theme_switch).actionView as SwitchMaterial
 
@@ -76,8 +84,18 @@ class MainFragment : Fragment() {
                 requireActivity().recreate()
             }
         }
+    }
 
+    private fun setCount() {
+        binding.textViewTopPanelDocsCount.text = getCount(requireContext(), FiltersFromType.DOCUMENTS)
+        binding.textViewTopPanelAppsCount.text = getCount(requireContext(), FiltersFromType.APPS)
+        binding.textViewTopPanelArchivesCount.text = getCount(requireContext(), FiltersFromType.ARCHIVES)
+        binding.textViewTopPanelImagesCount.text = getCount(requireContext(), FiltersFromType.PHOTO)
+        binding.textViewTopPanelMusicCount.text = getCount(requireContext(), FiltersFromType.MUSIC)
+        binding.textViewTopPanelVideoCount.text = getCount(requireContext(), FiltersFromType.VIDEO)
+    }
 
+    private fun initObservers() {
         navView.setNavigationItemSelectedListener {
             if (it.groupId == GROUP_ID) {
                 viewModel.currentGroup = chatsList[it.itemId]
@@ -107,19 +125,9 @@ class MainFragment : Fragment() {
                 a.title = s
 
             }
-            submenu.add(GROUP_ID_ADD_GROUP, 0, Menu.NONE, "Создать группу")
+            submenu.add(GROUP_ID_ADD_GROUP, 0, Menu.NONE, getString(R.string.create_group_menu))
             navView.invalidate()
         }
-
-        adapter = PlaceAdapter(requireContext())
-
-
-        binding.horizontalRecycleView.layoutManager = LinearLayoutManager(requireActivity()).apply { orientation = LinearLayoutManager.HORIZONTAL }
-        binding.horizontalRecycleView.adapter = adapter
-
-        adapter.placeItemList = viewModel.getStorages()
-
-        initClickListeners()
     }
 
     override fun onDestroyView() {
@@ -140,6 +148,10 @@ class MainFragment : Fragment() {
         adapter.onPlaceClickListener = object : PlaceAdapter.OnPlaceClickListener{
             override fun onPlaceClick(placeItem: PlaceItem) {
                 if (checkGroup()) return
+                if (placeItem.scopeType == ScopeType.VkMsg){
+                    Toast.makeText(requireContext(), getString(R.string.not_available_yet), Toast.LENGTH_SHORT).show()
+                    return
+                }
                 findNavController()
                     .navigate(
                         MainFragmentDirections
@@ -149,7 +161,6 @@ class MainFragment : Fragment() {
                     )
             }
         }
-
         with(binding) {
 
             imageViewOpenDrawer.setOnClickListener {
@@ -238,7 +249,7 @@ class MainFragment : Fragment() {
             positiveButton(R.string.create)
             negativeButton(R.string.cancel)
             input(
-                hint = "Новая группа",
+                hint = getString(R.string.new_group_creating_title),
                 inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
                 waitForPositiveButton = true
             ) { _, text -> viewModel.createGroup(text.toString())}
