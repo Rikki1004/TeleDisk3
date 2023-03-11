@@ -15,6 +15,11 @@
 4. Авторизуетесь по номеру телефона (на нем должен уже быть создан аккаунт), даете разрешения на доступ к памяти
 5. Готово, теперь на вашем телефоне есть бесплатное и безлимитное удаленное хранилище, которое, к тому же, синхронизированно с таким же [хранилищем](https://github.com/Rikki1004/teleDisk2.0) на вашем компьютере
  
+ ### Как выглядит?
+<img src="https://user-images.githubusercontent.com/81743483/224511651-5cfe879e-036f-4903-a6ce-48877519186e.png" width="30%">
+<img src="https://user-images.githubusercontent.com/81743483/224511656-11fae4e0-c9db-4e72-a748-54c2f9cf57b8.png" width="30%">
+<img src="https://user-images.githubusercontent.com/81743483/224511673-0f6ed35e-7a34-4b75-92bf-1d4d3f252e2f.png" width="30%">
+
 <a name="license"></a>
 ## License
 `TeleDisk` лицензируется в соответствии с условиями лицензии Boost Software License. Тут [LICENSE_1_0.txt](http://www.boost.org/LICENSE_1_0.txt) немного подробнее.
